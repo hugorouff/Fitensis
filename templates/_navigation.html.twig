@@ -1,0 +1,57 @@
+{% set path = app.request.pathInfo %}
+{% set links = [
+    {
+        url: '/#outils',
+        label: 'Outils',
+        active: path in ['/', '/outils']
+    },
+    {
+        url: '/exercises',
+        label: 'Exercices',
+        active: path == '/exercises'
+    },
+    {
+        url: '/recipes',
+        label: 'Recettes',
+        active: path == '/recipes'
+    },
+    {
+        url: '/calendrier',
+        label: 'Mes séances',
+        active: path == '/calendrier' or path starts with '/entrainements'
+    },
+    {
+        url: '/performances',
+        label: 'Performances',
+        active: path == '/performances' or path starts with '/performances/excel'
+    },
+    {
+        url: '/profil',
+        label: 'Mon compte',
+        active: path == '/profil'
+    },
+    {
+        url: '/assistant',
+        label: 'Assistant IA',
+        active: path == '/assistant'
+    }
+] %}
+<header class="site-header">
+    <div class="site-header-inner">
+        <a class="site-logo" href="/" aria-label="Fitensis — accueil">
+            <span class="datensis-mark" aria-hidden="true"></span> <span>Fitensis</span>
+        </a>
+        <nav class="site-nav" aria-label="Navigation principale">
+            {% for link in links %}
+                {% if link.active %}
+                    <a href="{{ link.url }}" class="is-current" aria-current="page">
+                        {{ link.label }}
+                    </a>
+                {% else %}
+                    <a href="{{ link.url }}">{{ link.label }}</a>
+                {% endif %}
+            {% endfor %}
+            <a href="/exercises" class="site-cta">Catalogue</a>
+        </nav>
+    </div>
+</header>

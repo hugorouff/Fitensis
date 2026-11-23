@@ -1,0 +1,89 @@
+<div
+    class="recipe-portions"
+    data-source-ingredients="{{ recipe.source_ingredients
+        |default(recipe.ingredients)
+        |json_encode
+        |e('html_attr') }}"
+>
+    <span class="eyebrow">
+        {{ recipe.online|default(false)
+            ? 'RECETTE INTERNET · THEMEALDB'
+            : 'ANCIENNE PROPOSITION IA' }}
+    </span>
+    {% if recipe.image|default('') %}
+        <img
+            class="ai-recipe-image"
+            src="{{ recipe.image }}"
+            alt=""
+            loading="lazy"
+            referrerpolicy="no-referrer"
+        />
+    {% endif %}
+    <h3>{{ recipe.title }}</h3>
+    <p>
+        {{ recipe.reason|default('') }}
+    </p>
+    <div class="ai-portions-grid">
+        <label>
+            Portions souhaitées<input
+                class="recipe-servings"
+                type="number"
+                min="1"
+                max="12"
+                step="1"
+                value="{{ recipe.portions }}"
+            />
+        </label>
+        <label>
+            Portions de la recette source<input
+                class="recipe-base"
+                type="number"
+                min="1"
+                max="12"
+                step="1"
+                value="{{ recipe.base_portions|default(recipe.portions) }}"
+            />
+        </label>
+    </div>
+    {% if recipe.online|default(false) %}
+        <p class="muted">
+            La source ne précise pas les portions : base de 2 proposée à confirmer sur le site
+            d’origine. Corrige cette base puis choisis tes portions. Quantités indicatives, hors
+            ajustement du temps de cuisson.
+        </p>
+    {% endif %}
+    <div class="recipe-ingredients-details">
+        <h4>Ingrédients et quantités</h4>
+        <ul class="recipe-ingredients">
+            {% for ingredient in recipe.ingredients %}
+                <li>{{ ingredient }}</li>
+            {% endfor %}
+        </ul>
+        <p class="muted">
+            Les quantités numériques sont recalculées. « Au goût », les unités non chiffrées et les
+            indications de préparation restent à ajuster.
+        </p>
+        {% if recipe.steps %}
+            <ol>
+                {% for step in recipe.steps %}
+                    <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+        {% endif %}
+    </div>
+    <p class="recipe-scale-status muted" aria-live="polite"></p>
+    {% if recipe.catalog_id %}
+        <p>
+            <a href="/recipes?recipe={{ recipe.catalog_id|url_encode }}">
+                Préparation et détail de la recette ↗
+            </a>
+        </p>
+    {% endif %}
+    {% if (recipe.online|default(false)) and (recipe.source_url|default('')) %}
+        <p>
+            <a href="{{ recipe.source_url }}" target="_blank" rel="noopener noreferrer">
+                Voir la source d’origine ↗
+            </a>
+        </p>
+    {% endif %}
+</div>

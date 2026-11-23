@@ -1,0 +1,144 @@
+/* Keep the original exercise layout and interactions; align only its palette. */
+body.exercise-page {
+    --bg: var(--fitensis-bg);
+    --card: var(--fitensis-card);
+    --dark: var(--fitensis-bg-soft);
+    --border: var(--fitensis-line);
+    --blue: var(--fitensis-mint);
+    --muted: var(--fitensis-muted);
+    background:
+        radial-gradient(circle at 80% 0%, rgba(130, 196, 168, 0.08), transparent 25%), var(--bg);
+    color: #fff;
+}
+.exercise-page .exercise-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+.exercise-page #createButton {
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 18px;
+    background: var(--fitensis-mint);
+    color: var(--fitensis-on-mint);
+    font:
+        800 14px Arial,
+        Helvetica,
+        sans-serif;
+    cursor: pointer;
+}
+.exercise-page #createButton:hover {
+    background: var(--fitensis-mint-hover);
+}
+.exercise-page .title p {
+    color: var(--fitensis-muted);
+}
+.exercise-page .card {
+    border: 1px solid var(--fitensis-line);
+    background: linear-gradient(145deg, var(--fitensis-raised), var(--fitensis-card));
+}
+.exercise-page .gender button,
+.exercise-page .cat {
+    background: #252d27;
+    color: #d4d8d5;
+}
+.exercise-page .gender button.active,
+.exercise-page .cat.active,
+.exercise-page .cat:hover {
+    background: var(--fitensis-mint);
+    color: var(--fitensis-on-mint);
+}
+.exercise-page .count {
+    background: var(--fitensis-mint);
+    color: var(--fitensis-on-mint);
+}
+.exercise-page .secondary-option,
+.exercise-page .field label {
+    color: #d4d8d5;
+}
+.exercise-page input,
+.exercise-page select,
+.exercise-page textarea {
+    accent-color: var(--fitensis-mint);
+    color-scheme: dark;
+}
+.exercise-page .search,
+.exercise-page .field input,
+.exercise-page .field select,
+.exercise-page .field textarea {
+    border-color: #303b32;
+    background: var(--fitensis-bg);
+    color: #fff;
+}
+.exercise-page .search:focus,
+.exercise-page .field input:focus,
+.exercise-page .field select:focus,
+.exercise-page .field textarea:focus {
+    outline: 1px solid var(--fitensis-mint);
+    border-color: var(--fitensis-mint);
+}
+.exercise-page .body-stage {
+    background: var(--fitensis-card);
+}
+.exercise-page .muscle-svg path {
+    fill: rgba(130, 196, 168, 0.02);
+}
+.exercise-page .muscle-svg path:hover {
+    fill: rgba(130, 196, 168, 0.3);
+    filter: drop-shadow(0 0 4px rgba(130, 196, 168, 0.9));
+}
+.exercise-page .muscle-svg path.active {
+    fill: rgba(130, 196, 168, 0.42);
+    filter: drop-shadow(0 0 5px var(--fitensis-mint));
+}
+.exercise-page .help {
+    background: #194B52;
+    border-left-color: var(--fitensis-mint);
+    color: #d5e5d3;
+}
+.exercise-page .exercise:hover {
+    border-color: var(--fitensis-mint);
+}
+.exercise-page .thumb,
+.exercise-page .media {
+    background: var(--fitensis-bg);
+}
+.exercise-page .play {
+    background: rgba(130, 196, 168, 0.94);
+    color: var(--fitensis-on-mint);
+}
+.exercise-page .info {
+    color: #b6c2b8;
+}
+.exercise-page .badge {
+    background: #223b26;
+    color: #c5ffb9;
+}
+.exercise-page .custom-badge {
+    background: #21562a;
+}
+.exercise-page .modal-card {
+    border: 1px solid #303b32;
+}
+.exercise-page .action {
+    background: var(--fitensis-mint);
+    color: var(--fitensis-on-mint);
+}
+.exercise-page .action:hover {
+    background: var(--fitensis-mint-hover);
+}
+.exercise-page .delete-action {
+    background: #991b1b;
+    color: #fff;
+}
+.exercise-page .delete-action:hover {
+    background: #b52222;
+}
+.exercise-page .secondary-check {
+    background: var(--fitensis-bg-soft);
+}
+.exercise-page .status:not(.error) {
+    background: #194B52;
+    color: #d5e5d3;
+    border: 1px solid #4F8177;
+}

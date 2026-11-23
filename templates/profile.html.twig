@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">VOTRE ESPACE PERSONNEL</span><h1>
+                Mon profil<span class="accent">.</span>
+            </h1>
+        </div>
+    </div>
+    <section class="panel">
+        <form method="post" class="form-grid">
+            <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><label>
+                Nom complet<input name="name" value="{{ gym.user.name }}" required />
+            </label><label>
+                Téléphone<input name="phone" value="{{ gym.user.phone }}" />
+            </label><label>
+                Adresse mail<input type="email" value="{{ gym.user.email }}" disabled /><small>
+                    La salle peut modifier votre adresse.
+                </small>
+            </label><label>
+                Mot de passe actuel<input
+                    type="password"
+                    name="current_password"
+                    autocomplete="current-password"
+                />
+            </label><label>
+                Nouveau mot de passe<input
+                    type="password"
+                    name="password"
+                    minlength="12"
+                    autocomplete="new-password"
+                /><small>12 caractères minimum, laisser vide pour conserver.</small>
+            </label><button>Enregistrer</button>
+        </form>
+    </section>
+    <section class="panel">
+        <h2>Mes abonnements</h2>
+        {% for m in memberships %}
+            <p>
+                <strong>{{ m.plan }}</strong> · {{ m.starts_on|date('d/m/Y') }} → {{
+                    m.ends_on|date('d/m/Y')
+                }} · {{ (m.price_cents / 100)|number_format(2, ',', ' ') }} € · {{ m.ends_on
+                    < ('now'|date('Y-m-d'))
+                    ? 'Expiré'
+                    : m.status }}
+            </p>
+        {% else %}
+            <p class="muted">
+                Aucun abonnement renseigné.
+            </p>
+        {% endfor %}
+    </section>
+{% endblock %}

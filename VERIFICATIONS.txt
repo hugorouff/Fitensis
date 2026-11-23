@@ -1,0 +1,272 @@
+Version corrigée — retour au design et aux recherches de Gym App
+Vérifications du 03/11/2026 — PHP 8.3, Symfony 7.4, SQLite.
+
+RÉUSSI : comparaison des trois pages avec le ZIP original.
+Les blocs CSS intégrés de l’accueil, des exercices et des recettes ont
+exactement les mêmes empreintes SHA-256 que ceux d’origine. Tous les
+composants identifiés par un id dans les pages d’origine sont conservés.
+L’accueil utilise à nouveau la page GYM APP fournie (titre, cartes, outils,
+couleurs et mise en page). La navigation des fonctions personnelles est
+ajoutée ; le tableau de bord clair et sa barre latérale sont retirés.
+
+RÉUSSI : suppression de la page Recherche Internet, du contrôleur,
+du service SerpApi, de la configuration et des liens ajoutés vers cette page.
+La recherche reste intégrée aux exercices et recettes, comme à l’origine.
+
+RÉUSSI : 11 groupes de tests HTTP sur base temporaire : pages, rôles,
+CSRF, inscription, carnet, nutrition, exercices personnels, planning privé,
+performances, duplication, exports et retour de l’accueil d’origine.
+
+RÉUSSI : 27 vérifications des sources simulées : détails et médias conservés,
+cible musculaire, cache, source de secours, panne, traductions, variantes
+d’ingrédients, déduplication, préparation et classement des recettes.
+
+RÉUSSI : migration répétée d’une ancienne base : comptes, mots de passe
+et carnet conservés ; ajout du planning personnel. Suppression de compte
+avec séances et performances vérifiée sur base temporaire.
+
+RÉUSSI : syntaxe PHP, Twig, YAML, JavaScript et conteneur Symfony.
+
+Les récupérations réelles de la version précédente ont confirmé 317 fiches
+sur la source d’origine et 876 sur la source de secours, ainsi que des
+recettes TheMealDB avec leur préparation. Ces services de récupération
+sont conservés. Les traductions et médias dépendent de leurs fournisseurs.
+
+Le calendrier personnel et les performances conservent les fonctions
+ajoutées à la demande, désormais avec le fond sombre et le vert du projet
+original. Aucune fonctionnalité de réservation n’est réintroduite.
+
+Limites : scripts .bat non exécutés sur Windows ; Docker et hébergement
+public non certifiés par les tests locaux. Les services distants peuvent
+être indisponibles ou atteindre leur quota ; les modes de cache et de
+secours sont testés. Aucune donnée réelle utilisée.
+
+RÉUSSI : nouvelle inspection Chromium de l’accueil original restauré,
+du planning personnel sombre et de la saisie d’une performance. Aucun
+débordement global en 390 px ni erreur JavaScript observé sur ce parcours.
+
+MISE À JOUR — navigation commune et palette Exercices :
+Un composant unique génère la même barre sur l’accueil, les exercices,
+les recettes, le calendrier et les autres pages personnelles.
+La palette des exercices est harmonisée via une feuille de thème dédiée
+(fond #090b0a, accent #89ff70) ; le bouton de création reste accessible.
+Tests HTTP ciblés : pages, accueil et égalité de la navigation réussis.
+Chromium : menus et fond de navigation identiques sur quatre pages ;
+vert du bouton confirmé, création d’exercice ouverte, aucun débordement
+global sur exercices/recettes en 390 px, aucune erreur JavaScript observée.
+
+MISE À JOUR — catalogue de recettes élargi :
+790 recettes uniques réellement récupérées sur les 26 lettres de TheMealDB
+lors de l’essai du 03/11/2026. Ce nombre dépend du catalogue de la source.
+Suppression de la limite globale de 20 candidates : classement sur toutes
+les recettes récupérées, affichage de 24 par page et bouton Voir plus.
+Catalogue accessible sans frigo, recherche par nom/ingrédients et conservation
+des filtres. Les valeurs nutritionnelles externes ne sont pas inventées.
+39 vérifications PHP simulées réussies, dont un catalogue de 83 recettes
+parcouru intégralement sans doublons et des recherches françaises.
+Tests HTTP ciblés (pages, calculateurs, navigation commune) réussis, styles
+d’origine et composants conservés.
+Parcours Chromium réussi : 24 puis 48 recettes distinctes sur 790, recherche
+« poulet » donnant 118 correspondances, ouverture du détail et aucun
+débordement global en mobile ni erreur JavaScript observée.
+
+MISE À JOUR — fichiers réindentés :
+PHP, Twig, HTML, JavaScript, CSS, JSON et Python présentés avec quatre
+espaces ; YAML avec deux espaces. Conventions conservées dans .editorconfig.
+Le code tiers du dossier vendor reste inchangé.
+La comparaison du design ignore désormais les espaces, commentaires et
+notations numériques CSS équivalentes ; les règles et valeurs restent
+conformes aux pages sources. Le référentiel alimentaire JSON est identique.
+Validation syntaxique PHP/Twig/YAML/JavaScript et conteneur réussie.
+Les 12 groupes HTTP, les 39 vérifications des sources, la migration et la
+comparaison des règles CSS passent après la réindentation.
+
+MISE À JOUR — assistant IA, Ollama par défaut (04/11/2026) :
+Page intégrée au menu commun, mêmes fond et accent verts que le site.
+Propositions structurées de recettes, séances et conseils ; précisions avec
+historique privé, favoris et ajout explicite au planning. Aucune performance
+réalisée créée par une proposition. Contexte frigo/performances facultatif.
+Schéma et API Ollama /api/chat, modèle qwen3:4b, statut /api/tags ; alternative
+OpenAI Responses facultative, clé uniquement côté serveur et store=false.
+43 vérifications IA simulées réussies : contexte, isolation entre comptes,
+validation, limites, import idempotent, favoris et protocole des deux moteurs.
+13 groupes HTTP réussis, dont affichage échappé des textes du modèle,
+CSRF, propriété de l’historique, import séance et conservation des favoris.
+39 vérifications sources, migration, comparaison CSS d’origine et validation
+PHP/Twig/YAML/conteneur/JavaScript réussies.
+Chromium bureau/mobile : statut d’Ollama absent explicite, cases décochées,
+exemples et nouvelle demande fonctionnels, pas de débordement global.
+Envoi, résultat, rattachement à l’historique et erreur testés dans Chromium
+avec réponses simulées ; aucune erreur JavaScript observée.
+Limite de validation : aucun modèle Ollama réel ni clé API utilisés ici.
+La qualité et le temps de génération réels doivent être vérifiés sur le PC.
+Guide Windows et ACTIVER-IA.bat inclus ; données et .env.local non fournis.
+
+CORRECTIF — réponses lisibles, recettes Internet et portions (04/11/2026) :
+L’introduction est produite par l’application, y compris dans les anciennes
+conversations ; le texte de raisonnement du modèle n’y est jamais réaffiché.
+Validation des champs, tentative de correction rapide du format, effacement
+du résultat précédent pendant une nouvelle demande pour éviter la confusion.
+Les demandes avec muscles et durées explicites sont construites en blocs
+vérifiés. Régression : « 30 min pecs et 1 h bras » -> pecs 30 min/3 exercices
+et biceps-triceps 60 min/6 exercices, même si le modèle propose du dos.
+Blocs facultatifs dans le formulaire pour lever les ambiguïtés ; variantes
+salle/domicile selon matériel. Les exercices restent modifiables.
+Recherche dans le catalogue réel TheMealDB, classement par ingrédients,
+objectif et variété, dix résultats si disponibles ; exclusion des huiles,
+sauces seules, desserts/boissons et des correspondances de simple bouillon.
+Chaque fiche conserve sa provenance ; aucun temps de préparation inventé.
+Portions recalculées avec nombres, décimales, fractions et fourchettes.
+La source ne donne pas les portions : base de 2 signalée comme hypothèse
+modifiable. Les favoris enregistrent la quantité choisie.
+76 vérifications IA déterministes et 7 cas de portions JavaScript réussis.
+13 groupes HTTP, 39 vérifications sources, migration et comparaison CSS OK.
+PHP/Twig/conteneur/JavaScript vérifiés. Chromium : dix cartes, deux blocs,
+3/6 exercices, absence de narration, quantités doublées et champ des favoris
+synchronisé, bureau/mobile sans débordement ni erreur JS.
+Source réelle testée : 790 recettes disponibles et 10 repas sélectionnés ;
+ce nombre dépend du catalogue et de la disponibilité de la source.
+Pas de génération réelle Ollama testée dans cet environnement ; ses sorties
+sont simulées pour les contrôles de robustesse, sa qualité dépend du modèle.
+
+CORRECTIF — exemple haut du corps et seuil arbitraire (04/11/2026) :
+Suppression du rejet imposant un nombre minimal d’exercices selon la durée.
+Les bornes séries/répétitions/repos et le refus des séances vides restent actifs.
+Ajout des groupes haut du corps, bas du corps et full body au parseur et au
+formulaire ; une à six séances reconnues, quantité en chiffres ou en lettres.
+L’exemple « Prépare-moi 3 séances haut du corps de 45 minutes avec des
+haltères. Je reprends progressivement. » produit trois blocs vérifiés de
+45 minutes, sans poulie/machine/banc requis. Ordre/répétitions peuvent varier.
+89 vérifications IA simulées réussies, dont ce parcours complet et l’acceptation
+d’une liste courte, avec rejet maintenu pour les listes vides.
+
+MISE À JOUR — recettes multi-sources, goûts, questionnaire et navigation :
+Les 12 cartes génériques sont désactivées, tableau conservé en commentaire
+(archivedGenericRecipes). Calculs nutritionnels indépendants conservés.
+TheMealDB et Wikibooks Cookbook alimentent la page ; pagination de l’index
+Wikibooks et cache public quotidien. Index, ingrédients et détails inconnus
+signalés, aucun faux ingrédient/macros ajouté. Chargement progressif des
+cartes au défilement, bouton de continuation conservé. Pas d’exhaustivité Web.
+Préférences par compte/navigateur : goûts, exclusions, source et tri.
+Questionnaire en étapes : objectif/niveau, groupe/durée/matériel, goûts et
+portions ; demande préparée modifiable, génération toujours explicite.
+Groupes et exemples issus du même catalogue que la page Exercices ; liens
+vers les fiches, sélection par muscle/matériel, variantes de secours.
+Navigation active verte, aria-current, composant commun sur les pages.
+Sources réelles : 3 801 fiches Wikibooks indexées complètement pendant le test,
+une fiche détaillée extraite en texte ; nombre dépendant de la source.
+89 contrôles IA, 39 contrôles sources et 16 contrôles catalogue fédéré/exercices
+réussis. Les modèles IA et les sources de ces tests unitaires sont simulés.
+Chromium : questionnaire préparant 2 séances jambes de 40 minutes, goûts et
+portions ; cartes génériques absentes, filtres transmis, 24 puis 26 cartes au
+défilement, page active correcte, mobile/bureau et absence d’erreur JS.
+
+MISE À JOUR — 40 recettes IA et affichage complet direct (04/11/2026) :
+La sélection de l’assistant vise 40 recettes correspondant à la demande,
+avec un nombre inférieur annoncé si les critères/source ne suffisent pas.
+Questionnaire et exemples mis à jour à 40 recettes.
+La page Recettes demande all=1 : tous les résultats filtrés sont renvoyés dans
+une seule réponse, sans pagination ni déclenchement par le défilement.
+L’ajout technique au DOM cède la main tous les 100 éléments mais se poursuit
+automatiquement sans action utilisateur. Le détail reste chargé à l’ouverture.
+Test sur catalogue réel/cache source : 4 591 fiches renvoyées, total 4 591,
+has_more=false ; sélection IA de 40 recettes au poulet. Mémoire PHP ~54 Mo.
+89 tests IA simulés, 17 tests catalogue, 39 tests sources et 13 groupes HTTP OK.
+Chromium : 350 cartes simulées rendues sans défilement, all=1 transmis,
+filtres conservés, absence de pagination, mobile/bureau sans erreur JS.
+
+MISE À JOUR — plusieurs idées de séances dans l’assistant (05/11/2026) :
+Cinq alternatives par défaut, choix 1/3/5 dans le formulaire. « Séances par
+proposition » est indépendant et vaut 1 par défaut dans le questionnaire.
+Combinaisons d’exercices variées selon groupe, matériel, durée et catalogue.
+Déduplication ignorant ordre, titre et répétitions ; nombre réel annoncé si
+le catalogue ne permet pas cinq combinaisons. Aucun ajout automatique.
+Chaque séance conserve son index et son formulaire d’ajout au planning ;
+propriété du compte et import idempotent conservés, pas de fausse performance.
+89 vérifications spécifiques aux alternatives et 93 contrôles IA réussis,
+avec réponses de modèle simulées. 14 parcours HTTP réussis, dont affichage de
+cinq idées, présence de chaque formulaire et isolation entre comptes.
+17 contrôles catalogue, 39 contrôles sources et comparaison CSS conservés.
+Twig et conteneur valides. Chromium bureau/mobile : cinq propositions,
+choix de 3 idées, programme séparé, cinquième idée ajoutée au planning,
+aucun débordement ni erreur JavaScript observés.
+Aucune génération réelle Ollama dans l’environnement de préparation.
+
+MISE À JOUR — groupes combinés et affichage repliable (05/11/2026) :
+Questionnaire : cases multiples issues du catalogue, raccourcis Push, Pull,
+bras complets et jambes/fessiers ; un menu de point de départ reste disponible.
+Les groupes sélectionnés constituent une même séance dans la durée totale.
+Blocs mixtes validés côté serveur (1 à 8 groupes, durée 10 à 120 minutes,
+minimum 5 minutes par groupe). Les répétitions de programme sont distinctes.
+La saisie libre avec + et une seule durée reconnaît aussi la combinaison.
+Recettes, favoris et séances IA utilisent des cartes details/summary fermées
+par défaut, accessibles au clic et au clavier. Le catalogue Recettes est
+également repliable ; les détails, portions, favoris et actions restent dans
+la carte ouverte. Ouvrir une carte IA ne relance aucune génération.
+109 vérifications des variantes et 99 contrôles IA simulés réussis, dont
+séance triceps/pectoraux/épaules de 45 minutes, cinq variantes et durée totale.
+14 parcours HTTP, 17 contrôles catalogue, 39 contrôles sources, comparaison
+CSS, syntaxe PHP/JavaScript, Twig et conteneur réussis.
+Chromium : sélection de trois groupes, envoi du bloc mixte, cartes fermées
+initialement, ouverture/fermeture au clic et clavier, portions recalculées,
+carte du catalogue repliable, séance mixte ajoutée au planning, mobile sans
+débordement ni erreur JavaScript observée.
+Les générations Ollama sont simulées dans les tests de préparation.
+
+MISE À JOUR — suivi Excel des performances (05/11/2026) :
+Import XLSX/CSV dans Performances > Importer un Excel. Modèle téléchargeable,
+aperçu avant confirmation, erreurs par ligne, RPE de remplacement explicite,
+doublons ignorés, import atomique et limité au compte connecté. Aucun planning
+ni performances fictives créés. Feuilles Performances et Mesures reconnues.
+Bornes : 5 Mo, 2 000 lignes par import ; XLS/macros/liens externes de classeur
+et formules de saisie refusés. Session privée, aperçu 30 min, token à usage
+unique côté contrôleur, formulaires protégés par CSRF. Index de recherche des
+doublons ajoutés sans modifier les données existantes.
+Export XLSX personnel : Synthese, Performances, Mesures, Progression,
+Graphiques et Mode emploi. Volume/1RM calculés dans le détail, synthèses
+instantanées, courbes charge maximale et volume pour l’exercice sélectionné,
+365 dernières dates dans les graphiques et historique complet dans les données.
+Export Excel limité à 25 000 lignes ; export CSV existant conservé.
+PhpSpreadsheet 5.10.0 et dépendances incluses, plateforme Composer PHP 8.2,
+ZIP/GD/SimpleXML/DOM/XMLReader/XMLWriter requis. Scripts BAT et guide adaptés.
+Symfony reste en 7.4 LTS, paquets correctifs actualisés ; audit Composer sans
+avis de sécurité signalé lors de la vérification de cette livraison.
+34 tests Excel : XLSX/CSV, dates 1900/1904, décimales, pourcentages, charge zéro,
+formules de calcul, deux graphiques dans le ZIP, aperçu sans écriture,
+doublons, comptes, formules d’entrée, formats/tailles/contenus invalides.
+15 groupes HTTP, 99 contrôles IA, 109 contrôles de séances, 17 contrôles du
+catalogue et 39 contrôles sources réussis ; migration/CSS/Twig/conteneur OK.
+Chromium bureau/mobile : modèle téléchargé, import de 2 performances et
+1 mesure, aperçu/confirmation, historique mis à jour, export XLSX téléchargé
+avec deux graphiques de deux points, second import identifié comme doublon.
+Pas de débordement global ni d’erreur JavaScript observés. Les données de test
+sont fictives et ne sont pas incluses dans le modèle ou la base livrée.
+
+CORRECTION — repliement limité à l’assistant IA (05/11/2026) :
+La page Recettes retrouve ses cartes classiques directement visibles (image,
+titre, informations et bouton de détail). Le conteneur details/summary du
+catalogue et son CSS dédié sont retirés. Les cartes de l’assistant IA et ses
+favoris restent repliables. Les fonctions Excel et autres pages sont conservées.
+Chromium vérifie l’absence de cartes repliables dans le catalogue, leurs
+informations visibles et le maintien des ouvertures/fermetures dans l’assistant,
+avec les portions, groupes combinés et ajout au planning. Mobile/bureau sans
+débordement ni erreur JS. Test HTTP ciblé et comparaison du design réussis.
+
+
+05/11/2026 — Tableau de bord et diagrammes Excel
+RÉUSSI : 21 contrôles statistiques : maximum/volume par date, jours distincts,
+regroupement sans distinction de casse, semaines vides, frontière dimanche/lundi,
+mesure quotidienne finale, 1RM absent sans zéro fictif, courbes interrompues,
+point unique/charge nulle, historique vide, période et confidentialité.
+RÉUSSI : 34 contrôles Excel, dont six graphiques natifs, sept feuilles,
+formules, import XLSX/CSV, doublons et isolation entre comptes.
+RÉUSSI : navigateur Chromium sur bureau 1440px et mobile 390px : import réel
+2 performances + 1 mesure, filtres exercice/période/indicateur, points des courbes
+au clavier, maintien de période, téléchargement XLSX et réimport sans doublons.
+Aucun débordement horizontal du document. Six graphiques présents dans le XLSX.
+RÉUSSI : 16 parcours HTTP, 109 contrôles de séances, 99 contrôles IA simulée,
+17 contrôles de catalogue, 39 contrôles de sources simulées ; design original,
+migration, Twig et conteneur Symfony valides.
+Aucun appel Ollama réel pour cette évolution ; graphiques produits localement
+à partir des enregistrements du compte connecté. Les recettes restent des cartes
+ouvertes dans /recipes ; le repli reste réservé aux propositions de l’assistant.

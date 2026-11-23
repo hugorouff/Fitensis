@@ -1,0 +1,1440 @@
+{
+    "MUSCLE_LABELS": {
+        "chest": "Pectoraux",
+        "back": "Dos / Dorsaux",
+        "shoulders": "Épaules",
+        "biceps": "Biceps",
+        "triceps": "Triceps",
+        "forearms": "Avant-bras",
+        "traps": "Trapèzes",
+        "abs": "Abdominaux",
+        "obliques": "Obliques",
+        "lowerback": "Lombaires",
+        "quads": "Quadriceps",
+        "hamstrings": "Ischio-jambiers",
+        "glutes": "Fessiers",
+        "adductors": "Adducteurs",
+        "abductors": "Abducteurs",
+        "calves": "Mollets",
+        "serratus": "Dentelé antérieur",
+        "neck": "Cou",
+        "cardio": "Cardio"
+    },
+    "TARGET_TO_GROUP": {
+        "pectorals": "chest",
+        "chest": "chest",
+        "lats": "back",
+        "upper back": "back",
+        "rhomboids": "back",
+        "teres major": "back",
+        "levator scapulae": "back",
+        "delts": "shoulders",
+        "deltoid": "shoulders",
+        "deltoids": "shoulders",
+        "deltoideus": "shoulders",
+        "anterior deltoid": "shoulders",
+        "anterior deltoids": "shoulders",
+        "posterior deltoid": "shoulders",
+        "posterior deltoids": "shoulders",
+        "rear deltoid": "shoulders",
+        "rear deltoids": "shoulders",
+        "lateral deltoid": "shoulders",
+        "lateral deltoids": "shoulders",
+        "medial deltoid": "shoulders",
+        "rotator cuff": "shoulders",
+        "shoulder": "shoulders",
+        "shoulders": "shoulders",
+        "biceps": "biceps",
+        "biceps brachii": "biceps",
+        "brachialis": "biceps",
+        "triceps": "triceps",
+        "triceps brachii": "triceps",
+        "anconeus": "triceps",
+        "forearm": "forearms",
+        "forearms": "forearms",
+        "forearm flexor": "forearms",
+        "forearm flexors": "forearms",
+        "forearm extensor": "forearms",
+        "forearm extensors": "forearms",
+        "forearm flexors and extensors": "forearms",
+        "brachioradialis": "forearms",
+        "wrist flexor": "forearms",
+        "wrist flexors": "forearms",
+        "wrist extensor": "forearms",
+        "wrist extensors": "forearms",
+        "flexor carpi radialis": "forearms",
+        "flexor carpi ulnaris": "forearms",
+        "extensor carpi radialis": "forearms",
+        "extensor carpi ulnaris": "forearms",
+        "pronator teres": "forearms",
+        "pronator quadratus": "forearms",
+        "supinator": "forearms",
+        "traps": "traps",
+        "trapezius": "traps",
+        "abs": "abs",
+        "rectus abdominis": "abs",
+        "obliques": "obliques",
+        "spine": "lowerback",
+        "erector spinae": "lowerback",
+        "lower back": "lowerback",
+        "quads": "quads",
+        "quadriceps": "quads",
+        "hamstrings": "hamstrings",
+        "glutes": "glutes",
+        "adductors": "adductors",
+        "abductors": "abductors",
+        "abductor": "abductors",
+        "hip abductors": "abductors",
+        "hip abductor": "abductors",
+        "tensor fasciae latae": "abductors",
+        "tensor fascia lata": "abductors",
+        "tfl": "abductors",
+        "gluteus medius": "abductors",
+        "gluteus minimus": "abductors",
+        "calves": "calves",
+        "gastrocnemius": "calves",
+        "soleus": "calves",
+        "serratus anterior": "serratus",
+        "neck": "neck",
+        "sternocleidomastoid": "neck",
+        "cardiovascular system": "cardio"
+    },
+    "FR_TO_MEALDB": {
+        "poulet": "chicken",
+        "blanc de poulet": "chicken breast",
+        "dinde": "turkey",
+        "boeuf": "beef",
+        "bœuf": "beef",
+        "steak": "beef",
+        "porc": "pork",
+        "jambon": "ham",
+        "agneau": "lamb",
+        "saumon": "salmon",
+        "thon": "tuna",
+        "cabillaud": "cod",
+        "crevette": "prawns",
+        "crevettes": "prawns",
+        "oeuf": "egg",
+        "oeufs": "egg",
+        "œuf": "egg",
+        "œufs": "egg",
+        "riz": "rice",
+        "pates": "pasta",
+        "pâtes": "pasta",
+        "spaghetti": "spaghetti",
+        "nouilles": "noodles",
+        "pomme de terre": "potatoes",
+        "pommes de terre": "potatoes",
+        "patate douce": "sweet potatoes",
+        "patates douces": "sweet potatoes",
+        "pain": "bread",
+        "avoine": "oats",
+        "flocons d avoine": "oats",
+        "flocons d'avoine": "oats",
+        "haricot vert": "green beans",
+        "haricots verts": "green beans",
+        "haricot": "beans",
+        "haricots": "beans",
+        "lentille": "lentils",
+        "lentilles": "lentils",
+        "pois chiche": "chickpeas",
+        "pois chiches": "chickpeas",
+        "brocoli": "broccoli",
+        "carotte": "carrots",
+        "carottes": "carrots",
+        "courgette": "courgette",
+        "courgettes": "courgette",
+        "tomate": "tomatoes",
+        "tomates": "tomatoes",
+        "epinards": "spinach",
+        "épinards": "spinach",
+        "poivron": "red pepper",
+        "poivrons": "red pepper",
+        "champignon": "mushrooms",
+        "champignons": "mushrooms",
+        "oignon": "onion",
+        "oignons": "onion",
+        "ail": "garlic",
+        "avocat": "avocado",
+        "mais": "sweetcorn",
+        "maïs": "sweetcorn",
+        "lait": "milk",
+        "creme": "cream",
+        "crème": "cream",
+        "yaourt": "yogurt",
+        "skyr": "yogurt",
+        "fromage": "cheese",
+        "parmesan": "parmesan",
+        "feta": "feta",
+        "mozzarella": "mozzarella",
+        "beurre": "butter",
+        "beurre de cacahuete": "peanut butter",
+        "beurre de cacahuète": "peanut butter",
+        "banane": "banana",
+        "bananes": "banana",
+        "pomme": "apples",
+        "pommes": "apples",
+        "fraise": "strawberries",
+        "fraises": "strawberries",
+        "fruits rouges": "strawberries",
+        "citron": "lemon",
+        "miel": "honey",
+        "chocolat": "chocolate",
+        "noix": "walnuts",
+        "amande": "almonds",
+        "amandes": "almonds",
+        "huile": "olive oil",
+        "huile d olive": "olive oil",
+        "huile d'olive": "olive oil",
+        "curry": "curry powder",
+        "coco": "coconut milk",
+        "lait de coco": "coconut milk"
+    },
+    "EN_TO_FR": {
+        "chicken": "poulet",
+        "chicken breast": "blanc de poulet",
+        "turkey": "dinde",
+        "beef": "bœuf",
+        "beef fillet": "filet de bœuf",
+        "pork": "porc",
+        "ham": "jambon",
+        "parma ham": "jambon de Parme",
+        "lamb": "agneau",
+        "sausages": "saucisses",
+        "sausage": "saucisse",
+        "chorizo": "chorizo",
+        "bacon": "bacon",
+        "black pudding": "boudin noir",
+        "salmon": "saumon",
+        "tuna": "thon",
+        "cod": "cabillaud",
+        "prawns": "crevettes",
+        "shrimp": "crevettes",
+        "egg": "œuf",
+        "eggs": "œufs",
+        "egg yolk": "jaune d'œuf",
+        "egg yolks": "jaunes d'œufs",
+        "beaten egg yolks": "jaunes d'œufs battus",
+        "rice": "riz",
+        "pasta": "pâtes",
+        "spaghetti": "spaghetti",
+        "noodles": "nouilles",
+        "potatoes": "pommes de terre",
+        "potato": "pomme de terre",
+        "new potatoes": "pommes de terre nouvelles",
+        "baby new potatoes": "petites pommes de terre nouvelles",
+        "sweet potatoes": "patates douces",
+        "bread": "pain",
+        "white bread": "pain blanc",
+        "oats": "avoine",
+        "green beans": "haricots verts",
+        "baked beans": "haricots blancs à la sauce tomate",
+        "beans": "haricots",
+        "lentils": "lentilles",
+        "chickpeas": "pois chiches",
+        "broccoli": "brocoli",
+        "carrots": "carottes",
+        "carrot": "carotte",
+        "courgette": "courgette",
+        "tomatoes": "tomates",
+        "tomato": "tomate",
+        "cherry tomatoes": "tomates cerises",
+        "spinach": "épinards",
+        "red pepper": "poivron rouge",
+        "green pepper": "poivron vert",
+        "yellow pepper": "poivron jaune",
+        "mushrooms": "champignons",
+        "mushroom": "champignon",
+        "onion": "oignon",
+        "red onion": "oignon rouge",
+        "red onions": "oignons rouges",
+        "spring onions": "oignons nouveaux",
+        "garlic": "ail",
+        "garlic clove": "gousse d'ail",
+        "garlic cloves": "gousses d'ail",
+        "avocado": "avocat",
+        "sweetcorn": "maïs",
+        "milk": "lait",
+        "cream": "crème",
+        "double cream": "crème épaisse",
+        "yogurt": "yaourt",
+        "greek yogurt": "yaourt grec",
+        "cheese": "fromage",
+        "parmesan": "parmesan",
+        "feta": "feta",
+        "mozzarella": "mozzarella",
+        "butter": "beurre",
+        "peanut butter": "beurre de cacahuète",
+        "banana": "banane",
+        "apples": "pommes",
+        "apple": "pomme",
+        "strawberries": "fraises",
+        "raspberries": "framboises",
+        "blueberries": "myrtilles",
+        "berries": "fruits rouges",
+        "lemon": "citron",
+        "lemon juice": "jus de citron",
+        "honey": "miel",
+        "chocolate": "chocolat",
+        "walnuts": "noix",
+        "almonds": "amandes",
+        "olive oil": "huile d'olive",
+        "extra virgin olive oil": "huile d'olive extra-vierge",
+        "vegetable oil": "huile végétale",
+        "curry powder": "curry",
+        "coconut milk": "lait de coco",
+        "english mustard": "moutarde anglaise",
+        "mustard": "moutarde",
+        "sherry vinegar": "vinaigre de Xérès",
+        "vinegar": "vinaigre",
+        "salt": "sel",
+        "pepper": "poivre",
+        "black pepper": "poivre noir",
+        "parsley": "persil",
+        "thyme": "thym",
+        "rosemary": "romarin",
+        "basil": "basilic",
+        "paprika": "paprika",
+        "flour": "farine",
+        "plain flour": "farine",
+        "sugar": "sucre",
+        "brown sugar": "sucre roux",
+        "puff pastry": "pâte feuilletée",
+        "shortcrust pastry": "pâte brisée",
+        "breadcrumbs": "chapelure"
+    },
+    "CATEGORY_FR": {
+        "beef": "Bœuf",
+        "breakfast": "Petit-déjeuner",
+        "chicken": "Poulet",
+        "dessert": "Dessert",
+        "goat": "Chèvre",
+        "lamb": "Agneau",
+        "miscellaneous": "Divers",
+        "pasta": "Pâtes",
+        "pork": "Porc",
+        "seafood": "Poissons et fruits de mer",
+        "side": "Accompagnement",
+        "starter": "Entrée",
+        "vegan": "Végane",
+        "vegetarian": "Végétarien"
+    },
+    "AREA_FR": {
+        "afghan": "Afghane",
+        "albanian": "Albanaise",
+        "algerian": "Algérienne",
+        "american": "Américaine",
+        "argentine": "Argentine",
+        "armenian": "Arménienne",
+        "australian": "Australienne",
+        "austrian": "Autrichienne",
+        "azerbaijani": "Azerbaïdjanaise",
+        "bangladeshi": "Bangladaise",
+        "belgian": "Belge",
+        "bolivian": "Bolivienne",
+        "bosnian, herzegovinian": "Bosnienne-herzégovinienne",
+        "brazilian": "Brésilienne",
+        "british": "Britannique",
+        "bulgarian": "Bulgare",
+        "cambodian": "Cambodgienne",
+        "canadian": "Canadienne",
+        "chilean": "Chilienne",
+        "chinese": "Chinoise",
+        "colombian": "Colombienne",
+        "croatian": "Croate",
+        "cuban": "Cubaine",
+        "cypriot": "Chypriote",
+        "czech": "Tchèque",
+        "danish": "Danoise",
+        "dutch": "Néerlandaise",
+        "ecuadorean": "Équatorienne",
+        "egyptian": "Égyptienne",
+        "ethiopian": "Éthiopienne",
+        "filipino": "Philippine",
+        "finnish": "Finlandaise",
+        "french": "Française",
+        "german": "Allemande",
+        "ghanaian": "Ghanéenne",
+        "greek": "Grecque",
+        "hungarian": "Hongroise",
+        "icelander": "Islandaise",
+        "indian": "Indienne",
+        "indonesian": "Indonésienne",
+        "iranian": "Iranienne",
+        "iraqi": "Irakienne",
+        "irish": "Irlandaise",
+        "israeli": "Israélienne",
+        "italian": "Italienne",
+        "jamaican": "Jamaïcaine",
+        "japanese": "Japonaise",
+        "kenyan": "Kényane",
+        "lebanese": "Libanaise",
+        "malaysian": "Malaisienne",
+        "mexican": "Mexicaine",
+        "moroccan": "Marocaine",
+        "nepalese": "Népalaise",
+        "new zealander": "Néo-zélandaise",
+        "nigerian": "Nigériane",
+        "norwegian": "Norvégienne",
+        "pakistani": "Pakistanaise",
+        "palestinian": "Palestinienne",
+        "peruvian": "Péruvienne",
+        "polish": "Polonaise",
+        "portuguese": "Portugaise",
+        "romanian": "Roumaine",
+        "russian": "Russe",
+        "serbian": "Serbe",
+        "singaporean": "Singapourienne",
+        "slovak": "Slovaque",
+        "south african": "Sud-africaine",
+        "south korean": "Sud-coréenne",
+        "spanish": "Espagnole",
+        "sri lankan": "Sri-lankaise",
+        "swedish": "Suédoise",
+        "swiss": "Suisse",
+        "taiwanese": "Taïwanaise",
+        "thai": "Thaïlandaise",
+        "tunisian": "Tunisienne",
+        "turkish": "Turque",
+        "ukrainian": "Ukrainienne",
+        "uruguayan": "Uruguayenne",
+        "venezuelan": "Vénézuélienne",
+        "vietnamese": "Vietnamienne",
+        "unknown": "Internationale"
+    },
+    "RECIPE_TITLE_FR": {
+        "english breakfast": "Petit-déjeuner anglais",
+        "full english breakfast": "Petit-déjeuner anglais complet",
+        "beef wellington": "Bœuf Wellington",
+        "chorizo soft-boiled egg salad": "Salade de chorizo et œuf mollet",
+        "chicken handi": "Poulet Handi",
+        "chicken congee": "Congee au poulet",
+        "chicken alfredo primavera": "Poulet Alfredo aux légumes"
+    },
+    "FOOD_DB": {
+        "egg": {
+            "label": "œuf",
+            "unit": "piece",
+            "protein": 6.3,
+            "carbs": 0.4,
+            "fat": 4.8,
+            "aliases": ["oeuf", "oeufs", "œuf", "œufs"]
+        },
+        "egg_white": {
+            "label": "blancs d'œufs",
+            "unit": "g",
+            "protein": 10.9,
+            "carbs": 0.7,
+            "fat": 0.2,
+            "aliases": ["blanc d oeuf", "blancs d oeufs", "oeuf", "œuf"]
+        },
+        "whole_bread": {
+            "label": "pain complet",
+            "unit": "g",
+            "protein": 13.0,
+            "carbs": 41.0,
+            "fat": 4.2,
+            "aliases": ["pain", "pain complet"]
+        },
+        "tomato": {
+            "label": "tomates",
+            "unit": "g",
+            "protein": 0.9,
+            "carbs": 3.9,
+            "fat": 0.2,
+            "aliases": ["tomate", "tomates"]
+        },
+        "skyr": {
+            "label": "skyr",
+            "unit": "g",
+            "protein": 11.0,
+            "carbs": 4.0,
+            "fat": 0.2,
+            "aliases": ["skyr", "yaourt"]
+        },
+        "oats": {
+            "label": "flocons d'avoine",
+            "unit": "g",
+            "protein": 16.9,
+            "carbs": 66.3,
+            "fat": 6.9,
+            "aliases": ["avoine", "flocons d avoine"]
+        },
+        "berries": {
+            "label": "fruits rouges",
+            "unit": "g",
+            "protein": 1.0,
+            "carbs": 12.0,
+            "fat": 0.3,
+            "aliases": ["fruits rouges", "fraise", "fraises"]
+        },
+        "honey": {
+            "label": "miel",
+            "unit": "g",
+            "protein": 0.3,
+            "carbs": 82.4,
+            "fat": 0.0,
+            "aliases": ["miel"]
+        },
+        "banana": {
+            "label": "banane",
+            "unit": "piece",
+            "protein": 1.3,
+            "carbs": 27.0,
+            "fat": 0.3,
+            "aliases": ["banane", "bananes"]
+        },
+        "almonds": {
+            "label": "amandes",
+            "unit": "g",
+            "protein": 21.2,
+            "carbs": 21.6,
+            "fat": 49.9,
+            "aliases": ["amande", "amandes"]
+        },
+        "chicken": {
+            "label": "blanc de poulet cuit",
+            "unit": "g",
+            "protein": 31.0,
+            "carbs": 0.0,
+            "fat": 3.6,
+            "aliases": ["poulet", "blanc de poulet"]
+        },
+        "rice_cooked": {
+            "label": "riz cuit",
+            "unit": "g",
+            "protein": 2.7,
+            "carbs": 28.2,
+            "fat": 0.3,
+            "aliases": ["riz", "riz cuit"]
+        },
+        "vegetables": {
+            "label": "légumes",
+            "unit": "g",
+            "protein": 2.5,
+            "carbs": 9.0,
+            "fat": 0.5,
+            "aliases": ["legumes", "légumes", "brocoli", "haricot vert", "haricots verts"]
+        },
+        "olive_oil": {
+            "label": "huile d'olive",
+            "unit": "g",
+            "protein": 0.0,
+            "carbs": 0.0,
+            "fat": 100.0,
+            "aliases": ["huile", "huile d olive", "huile d'olive"]
+        },
+        "tuna": {
+            "label": "thon au naturel égoutté",
+            "unit": "g",
+            "protein": 25.5,
+            "carbs": 0.0,
+            "fat": 0.8,
+            "aliases": ["thon"]
+        },
+        "pasta_dry": {
+            "label": "pâtes sèches",
+            "unit": "g",
+            "protein": 12.5,
+            "carbs": 72.0,
+            "fat": 1.5,
+            "aliases": ["pates", "pâtes"]
+        },
+        "cucumber": {
+            "label": "concombre",
+            "unit": "g",
+            "protein": 0.7,
+            "carbs": 3.6,
+            "fat": 0.1,
+            "aliases": ["concombre"]
+        },
+        "salmon": {
+            "label": "saumon",
+            "unit": "g",
+            "protein": 20.0,
+            "carbs": 0.0,
+            "fat": 13.0,
+            "aliases": ["saumon"]
+        },
+        "broccoli": {
+            "label": "brocoli",
+            "unit": "g",
+            "protein": 2.4,
+            "carbs": 7.2,
+            "fat": 0.4,
+            "aliases": ["brocoli", "légumes", "legumes"]
+        },
+        "beef5": {
+            "label": "bœuf haché 5 %",
+            "unit": "g",
+            "protein": 21.4,
+            "carbs": 0.0,
+            "fat": 5.0,
+            "aliases": ["boeuf", "bœuf", "steak"]
+        },
+        "cod": {
+            "label": "cabillaud",
+            "unit": "g",
+            "protein": 18.0,
+            "carbs": 0.0,
+            "fat": 0.7,
+            "aliases": ["cabillaud"]
+        },
+        "potato": {
+            "label": "pommes de terre",
+            "unit": "g",
+            "protein": 2.0,
+            "carbs": 17.0,
+            "fat": 0.1,
+            "aliases": ["pomme de terre", "pommes de terre"]
+        },
+        "green_beans": {
+            "label": "haricots verts",
+            "unit": "g",
+            "protein": 1.8,
+            "carbs": 7.0,
+            "fat": 0.2,
+            "aliases": ["haricot vert", "haricots verts", "légumes", "legumes"]
+        },
+        "turkey": {
+            "label": "dinde",
+            "unit": "g",
+            "protein": 29.0,
+            "carbs": 0.0,
+            "fat": 1.5,
+            "aliases": ["dinde"]
+        },
+        "greek_yogurt": {
+            "label": "yaourt grec",
+            "unit": "g",
+            "protein": 9.9,
+            "carbs": 3.9,
+            "fat": 2.0,
+            "aliases": ["yaourt", "yaourt grec", "skyr"]
+        },
+        "milk": {
+            "label": "lait",
+            "unit": "ml",
+            "protein": 3.4,
+            "carbs": 4.8,
+            "fat": 1.6,
+            "aliases": ["lait"]
+        },
+        "whey": {
+            "label": "whey",
+            "unit": "g",
+            "protein": 80.0,
+            "carbs": 8.0,
+            "fat": 6.0,
+            "aliases": ["whey", "proteine", "protéine"]
+        },
+        "peanut_butter": {
+            "label": "beurre de cacahuète",
+            "unit": "g",
+            "protein": 25.0,
+            "carbs": 20.0,
+            "fat": 50.0,
+            "aliases": ["beurre de cacahuete", "beurre de cacahuète"]
+        },
+        "cheese": {
+            "label": "fromage",
+            "unit": "g",
+            "protein": 25.0,
+            "carbs": 1.3,
+            "fat": 33.0,
+            "aliases": ["fromage"]
+        },
+        "tomato_sauce": {
+            "label": "sauce tomate",
+            "unit": "g",
+            "protein": 1.5,
+            "carbs": 7.0,
+            "fat": 0.5,
+            "aliases": ["tomate", "sauce tomate"]
+        },
+        "parmesan": {
+            "label": "parmesan",
+            "unit": "g",
+            "protein": 38.0,
+            "carbs": 4.0,
+            "fat": 29.0,
+            "aliases": ["parmesan", "fromage"]
+        },
+        "coconut_milk": {
+            "label": "lait de coco",
+            "unit": "ml",
+            "protein": 2.0,
+            "carbs": 3.0,
+            "fat": 20.0,
+            "aliases": ["lait de coco", "coco"]
+        },
+        "rice_cake": {
+            "label": "galette de riz",
+            "unit": "piece",
+            "protein": 0.7,
+            "carbs": 7.3,
+            "fat": 0.3,
+            "aliases": ["galette de riz", "riz"]
+        }
+    },
+    "MEAL_TEMPLATES": [
+        {
+            "id": "breakfast_omelette",
+            "slot": "breakfast",
+            "goals": ["cut", "maintain"],
+            "name": "Omelette protéinée et pain complet",
+            "emoji": "🍳",
+            "ingredients": [
+                {
+                    "food": "egg",
+                    "base": 2,
+                    "min": 1,
+                    "max": 4,
+                    "step": 1
+                },
+                {
+                    "food": "egg_white",
+                    "base": 150,
+                    "min": 50,
+                    "max": 300,
+                    "step": 10
+                },
+                {
+                    "food": "whole_bread",
+                    "base": 80,
+                    "min": 40,
+                    "max": 160,
+                    "step": 10
+                },
+                {
+                    "food": "tomato",
+                    "base": 150,
+                    "min": 150,
+                    "max": 150,
+                    "step": 0
+                }
+            ]
+        },
+        {
+            "id": "breakfast_skyr",
+            "slot": "breakfast",
+            "goals": ["cut", "maintain"],
+            "name": "Bol de skyr, avoine et fruits rouges",
+            "emoji": "🥣",
+            "ingredients": [
+                {
+                    "food": "skyr",
+                    "base": 300,
+                    "min": 200,
+                    "max": 500,
+                    "step": 25
+                },
+                {
+                    "food": "oats",
+                    "base": 40,
+                    "min": 20,
+                    "max": 100,
+                    "step": 10
+                },
+                {
+                    "food": "berries",
+                    "base": 100,
+                    "min": 100,
+                    "max": 100,
+                    "step": 0
+                },
+                {
+                    "food": "honey",
+                    "base": 10,
+                    "min": 0,
+                    "max": 30,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "breakfast_pancakes",
+            "slot": "breakfast",
+            "goals": ["maintain", "bulk"],
+            "name": "Pancakes avoine et banane",
+            "emoji": "🥞",
+            "ingredients": [
+                {
+                    "food": "oats",
+                    "base": 80,
+                    "min": 40,
+                    "max": 140,
+                    "step": 10
+                },
+                {
+                    "food": "banana",
+                    "base": 1,
+                    "min": 1,
+                    "max": 2,
+                    "step": 1
+                },
+                {
+                    "food": "egg",
+                    "base": 2,
+                    "min": 1,
+                    "max": 3,
+                    "step": 1
+                },
+                {
+                    "food": "skyr",
+                    "base": 100,
+                    "min": 50,
+                    "max": 250,
+                    "step": 25
+                },
+                {
+                    "food": "peanut_butter",
+                    "base": 10,
+                    "min": 0,
+                    "max": 35,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "breakfast_porridge",
+            "slot": "breakfast",
+            "goals": ["bulk"],
+            "name": "Porridge banane et beurre de cacahuète",
+            "emoji": "🥜",
+            "ingredients": [
+                {
+                    "food": "oats",
+                    "base": 100,
+                    "min": 60,
+                    "max": 150,
+                    "step": 10
+                },
+                {
+                    "food": "milk",
+                    "base": 300,
+                    "min": 200,
+                    "max": 500,
+                    "step": 50
+                },
+                {
+                    "food": "banana",
+                    "base": 1,
+                    "min": 1,
+                    "max": 2,
+                    "step": 1
+                },
+                {
+                    "food": "peanut_butter",
+                    "base": 25,
+                    "min": 10,
+                    "max": 45,
+                    "step": 5
+                },
+                {
+                    "food": "whey",
+                    "base": 20,
+                    "min": 0,
+                    "max": 40,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "lunch_chicken_rice",
+            "slot": "lunch",
+            "goals": ["cut", "maintain", "bulk"],
+            "name": "Poulet, riz et légumes",
+            "emoji": "🍚",
+            "ingredients": [
+                {
+                    "food": "chicken",
+                    "base": 170,
+                    "min": 110,
+                    "max": 260,
+                    "step": 10
+                },
+                {
+                    "food": "rice_cooked",
+                    "base": 200,
+                    "min": 100,
+                    "max": 400,
+                    "step": 10
+                },
+                {
+                    "food": "vegetables",
+                    "base": 250,
+                    "min": 250,
+                    "max": 250,
+                    "step": 0
+                },
+                {
+                    "food": "olive_oil",
+                    "base": 5,
+                    "min": 0,
+                    "max": 20,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "lunch_tuna_pasta",
+            "slot": "lunch",
+            "goals": ["cut", "maintain"],
+            "name": "Salade de pâtes au thon",
+            "emoji": "🐟",
+            "ingredients": [
+                {
+                    "food": "pasta_dry",
+                    "base": 100,
+                    "min": 60,
+                    "max": 180,
+                    "step": 10
+                },
+                {
+                    "food": "tuna",
+                    "base": 140,
+                    "min": 100,
+                    "max": 220,
+                    "step": 10
+                },
+                {
+                    "food": "tomato",
+                    "base": 100,
+                    "min": 100,
+                    "max": 100,
+                    "step": 0
+                },
+                {
+                    "food": "cucumber",
+                    "base": 100,
+                    "min": 100,
+                    "max": 100,
+                    "step": 0
+                },
+                {
+                    "food": "olive_oil",
+                    "base": 10,
+                    "min": 0,
+                    "max": 20,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "lunch_salmon_rice",
+            "slot": "lunch",
+            "goals": ["maintain"],
+            "name": "Saumon, riz et brocoli",
+            "emoji": "🐟",
+            "ingredients": [
+                {
+                    "food": "salmon",
+                    "base": 160,
+                    "min": 110,
+                    "max": 230,
+                    "step": 10
+                },
+                {
+                    "food": "rice_cooked",
+                    "base": 190,
+                    "min": 100,
+                    "max": 380,
+                    "step": 10
+                },
+                {
+                    "food": "broccoli",
+                    "base": 200,
+                    "min": 200,
+                    "max": 200,
+                    "step": 0
+                }
+            ]
+        },
+        {
+            "id": "lunch_beef_rice",
+            "slot": "lunch",
+            "goals": ["maintain", "bulk"],
+            "name": "Bœuf maigre, riz et légumes",
+            "emoji": "🥩",
+            "ingredients": [
+                {
+                    "food": "beef5",
+                    "base": 170,
+                    "min": 120,
+                    "max": 250,
+                    "step": 10
+                },
+                {
+                    "food": "rice_cooked",
+                    "base": 220,
+                    "min": 120,
+                    "max": 420,
+                    "step": 10
+                },
+                {
+                    "food": "vegetables",
+                    "base": 200,
+                    "min": 200,
+                    "max": 200,
+                    "step": 0
+                },
+                {
+                    "food": "olive_oil",
+                    "base": 5,
+                    "min": 0,
+                    "max": 15,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "snack_skyr",
+            "slot": "snack",
+            "goals": ["cut", "maintain"],
+            "name": "Skyr, banane et amandes",
+            "emoji": "🍌",
+            "ingredients": [
+                {
+                    "food": "skyr",
+                    "base": 250,
+                    "min": 150,
+                    "max": 400,
+                    "step": 25
+                },
+                {
+                    "food": "banana",
+                    "base": 1,
+                    "min": 1,
+                    "max": 1,
+                    "step": 0
+                },
+                {
+                    "food": "almonds",
+                    "base": 15,
+                    "min": 0,
+                    "max": 40,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "snack_tuna",
+            "slot": "snack",
+            "goals": ["cut"],
+            "name": "Thon et galettes de riz",
+            "emoji": "🥫",
+            "ingredients": [
+                {
+                    "food": "tuna",
+                    "base": 120,
+                    "min": 90,
+                    "max": 200,
+                    "step": 10
+                },
+                {
+                    "food": "rice_cake",
+                    "base": 4,
+                    "min": 2,
+                    "max": 8,
+                    "step": 1
+                },
+                {
+                    "food": "tomato",
+                    "base": 100,
+                    "min": 100,
+                    "max": 100,
+                    "step": 0
+                }
+            ]
+        },
+        {
+            "id": "snack_yogurt",
+            "slot": "snack",
+            "goals": ["maintain"],
+            "name": "Yaourt grec, banane et amandes",
+            "emoji": "🥣",
+            "ingredients": [
+                {
+                    "food": "greek_yogurt",
+                    "base": 250,
+                    "min": 150,
+                    "max": 400,
+                    "step": 25
+                },
+                {
+                    "food": "banana",
+                    "base": 1,
+                    "min": 1,
+                    "max": 1,
+                    "step": 0
+                },
+                {
+                    "food": "almonds",
+                    "base": 20,
+                    "min": 5,
+                    "max": 40,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "snack_shake",
+            "slot": "snack",
+            "goals": ["maintain", "bulk"],
+            "name": "Shake banane, lait et avoine",
+            "emoji": "🥤",
+            "ingredients": [
+                {
+                    "food": "milk",
+                    "base": 300,
+                    "min": 200,
+                    "max": 500,
+                    "step": 50
+                },
+                {
+                    "food": "banana",
+                    "base": 1,
+                    "min": 1,
+                    "max": 1,
+                    "step": 0
+                },
+                {
+                    "food": "oats",
+                    "base": 50,
+                    "min": 20,
+                    "max": 100,
+                    "step": 10
+                },
+                {
+                    "food": "whey",
+                    "base": 25,
+                    "min": 10,
+                    "max": 40,
+                    "step": 5
+                },
+                {
+                    "food": "peanut_butter",
+                    "base": 15,
+                    "min": 0,
+                    "max": 35,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "dinner_cod",
+            "slot": "dinner",
+            "goals": ["cut"],
+            "name": "Cabillaud, pommes de terre et haricots verts",
+            "emoji": "🐟",
+            "ingredients": [
+                {
+                    "food": "cod",
+                    "base": 180,
+                    "min": 120,
+                    "max": 280,
+                    "step": 10
+                },
+                {
+                    "food": "potato",
+                    "base": 300,
+                    "min": 180,
+                    "max": 550,
+                    "step": 25
+                },
+                {
+                    "food": "green_beans",
+                    "base": 200,
+                    "min": 200,
+                    "max": 200,
+                    "step": 0
+                },
+                {
+                    "food": "olive_oil",
+                    "base": 5,
+                    "min": 0,
+                    "max": 20,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "dinner_turkey",
+            "slot": "dinner",
+            "goals": ["cut", "maintain"],
+            "name": "Dinde, pommes de terre et légumes",
+            "emoji": "🍗",
+            "ingredients": [
+                {
+                    "food": "turkey",
+                    "base": 180,
+                    "min": 110,
+                    "max": 260,
+                    "step": 10
+                },
+                {
+                    "food": "potato",
+                    "base": 320,
+                    "min": 180,
+                    "max": 550,
+                    "step": 25
+                },
+                {
+                    "food": "vegetables",
+                    "base": 200,
+                    "min": 200,
+                    "max": 200,
+                    "step": 0
+                },
+                {
+                    "food": "olive_oil",
+                    "base": 5,
+                    "min": 0,
+                    "max": 20,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "dinner_omelette",
+            "slot": "dinner",
+            "goals": ["maintain"],
+            "name": "Omelette, riz et légumes",
+            "emoji": "🍳",
+            "ingredients": [
+                {
+                    "food": "egg",
+                    "base": 3,
+                    "min": 2,
+                    "max": 4,
+                    "step": 1
+                },
+                {
+                    "food": "rice_cooked",
+                    "base": 180,
+                    "min": 100,
+                    "max": 350,
+                    "step": 10
+                },
+                {
+                    "food": "vegetables",
+                    "base": 250,
+                    "min": 250,
+                    "max": 250,
+                    "step": 0
+                },
+                {
+                    "food": "cheese",
+                    "base": 30,
+                    "min": 0,
+                    "max": 50,
+                    "step": 5
+                }
+            ]
+        },
+        {
+            "id": "dinner_salmon",
+            "slot": "dinner",
+            "goals": ["maintain", "bulk"],
+            "name": "Saumon et pommes de terre",
+            "emoji": "🐟",
+            "ingredients": [
+                {
+                    "food": "salmon",
+                    "base": 170,
+                    "min": 110,
+                    "max": 240,
+                    "step": 10
+                },
+                {
+                    "food": "potato",
+                    "base": 350,
+                    "min": 200,
+                    "max": 600,
+                    "step": 25
+                },
+                {
+                    "food": "vegetables",
+                    "base": 200,
+                    "min": 200,
+                    "max": 200,
+                    "step": 0
+                },
+                {
+                    "food": "greek_yogurt",
+                    "base": 60,
+                    "min": 60,
+                    "max": 60,
+                    "step": 0
+                }
+            ]
+        },
+        {
+            "id": "dinner_bolognese",
+            "slot": "dinner",
+            "goals": ["bulk"],
+            "name": "Pâtes bolognaise",
+            "emoji": "🍝",
+            "ingredients": [
+                {
+                    "food": "pasta_dry",
+                    "base": 130,
+                    "min": 80,
+                    "max": 200,
+                    "step": 10
+                },
+                {
+                    "food": "beef5",
+                    "base": 170,
+                    "min": 110,
+                    "max": 250,
+                    "step": 10
+                },
+                {
+                    "food": "tomato_sauce",
+                    "base": 200,
+                    "min": 200,
+                    "max": 200,
+                    "step": 0
+                },
+                {
+                    "food": "parmesan",
+                    "base": 20,
+                    "min": 0,
+                    "max": 40,
+                    "step": 5
+                },
+                {
+                    "food": "olive_oil",
+                    "base": 5,
+                    "min": 0,
+                    "max": 15,
+                    "step": 5
+                }
+            ]
+        }
+    ],
+    "SLOT_RATIOS": {
+        "breakfast": 0.25,
+        "lunch": 0.3,
+        "snack": 0.15,
+        "dinner": 0.3
+    },
+    "SLOT_LABELS": {
+        "breakfast": "Petit-déjeuner",
+        "lunch": "Déjeuner",
+        "snack": "Collation",
+        "dinner": "Dîner"
+    },
+    "GENERIC_SEARCH_TERMS": {
+        "legumes": ["broccoli", "spinach", "carrots", "courgette", "red pepper", "green beans"],
+        "légumes": ["broccoli", "spinach", "carrots", "courgette", "red pepper", "green beans"],
+        "fruits rouges": ["strawberries", "raspberries", "blueberries"]
+    },
+    "EXERCISE_PHRASES_FR": [
+        ["romanian deadlift", "soulevé de terre roumain"],
+        ["stiff leg deadlift", "soulevé de terre jambes tendues"],
+        ["straight leg deadlift", "soulevé de terre jambes tendues"],
+        ["bench press", "développé couché"],
+        ["incline press", "développé incliné"],
+        ["decline press", "développé décliné"],
+        ["chest press", "presse à pectoraux"],
+        ["shoulder press", "développé épaules"],
+        ["military press", "développé militaire"],
+        ["overhead press", "développé au-dessus de la tête"],
+        ["close grip", "prise serrée"],
+        ["wide grip", "prise large"],
+        ["neutral grip", "prise neutre"],
+        ["reverse grip", "prise inversée"],
+        ["single arm", "unilatéral"],
+        ["single-arm", "unilatéral"],
+        ["one arm", "unilatéral"],
+        ["one-arm", "unilatéral"],
+        ["bent over", "buste penché"],
+        ["bent-over", "buste penché"],
+        ["lat pulldown", "tirage vertical"],
+        ["pull down", "tirage vertical"],
+        ["pulldown", "tirage vertical"],
+        ["pull-up", "traction pronation"],
+        ["pull up", "traction pronation"],
+        ["chin-up", "traction supination"],
+        ["chin up", "traction supination"],
+        ["seated row", "rowing assis"],
+        ["upright row", "tirage menton"],
+        ["t-bar row", "rowing T-bar"],
+        ["rear delt fly", "oiseau pour deltoïdes postérieurs"],
+        ["reverse fly", "oiseau inversé"],
+        ["lateral raise", "élévation latérale"],
+        ["front raise", "élévation frontale"],
+        ["calf raise", "élévation mollets"],
+        ["leg extension", "extension de jambes"],
+        ["leg curl", "curl ischio-jambiers"],
+        ["hamstring curl", "curl ischio-jambiers"],
+        ["hip thrust", "hip thrust"],
+        ["glute bridge", "pont fessier"],
+        ["back extension", "extension lombaire"],
+        ["triceps extension", "extension triceps"],
+        ["tricep extension", "extension triceps"],
+        ["triceps pushdown", "pushdown triceps"],
+        ["tricep pushdown", "pushdown triceps"],
+        ["preacher curl", "curl pupitre"],
+        ["hammer curl", "curl marteau"],
+        ["concentration curl", "curl concentration"],
+        ["wrist curl", "flexion des poignets"],
+        ["wrist extension", "extension des poignets"],
+        ["face pull", "face pull"],
+        ["pec deck", "pec deck"],
+        ["chest fly", "écarté pectoraux"],
+        ["cable fly", "écarté à la poulie"],
+        ["reverse crunch", "crunch inversé"],
+        ["hanging leg raise", "relevé de jambes suspendu"],
+        ["leg raise", "relevé de jambes"],
+        ["side plank", "gainage latéral"],
+        ["plank", "gainage"],
+        ["bulgarian split squat", "squat bulgare"],
+        ["split squat", "squat fendu"],
+        ["hack squat", "hack squat"],
+        ["front squat", "squat avant"],
+        ["back squat", "squat arrière"],
+        ["goblet squat", "goblet squat"],
+        ["sumo squat", "squat sumo"],
+        ["hip abduction", "abduction de hanche"],
+        ["hip abductor", "abducteurs de hanche"],
+        ["abductor machine", "machine à abducteurs"],
+        ["hip adduction", "adduction de hanche"],
+        ["adductor machine", "machine à adducteurs"]
+    ],
+    "EXERCISE_WORDS_FR": {
+        "barbell": "barre",
+        "dumbbell": "haltère",
+        "dumbbells": "haltères",
+        "cable": "poulie",
+        "machine": "machine",
+        "seated": "assis",
+        "standing": "debout",
+        "lying": "allongé",
+        "incline": "incliné",
+        "decline": "décliné",
+        "reverse": "inversé",
+        "alternating": "alterné",
+        "alternate": "alterné",
+        "assisted": "assisté",
+        "weighted": "lesté",
+        "kneeling": "à genoux",
+        "squat": "squat",
+        "deadlift": "soulevé de terre",
+        "row": "rowing",
+        "curl": "curl",
+        "extension": "extension",
+        "press": "développé",
+        "fly": "écarté",
+        "raise": "élévation",
+        "lunge": "fente",
+        "crunch": "crunch",
+        "push-up": "pompes",
+        "pushup": "pompes",
+        "dip": "dips",
+        "dips": "dips"
+    }
+}

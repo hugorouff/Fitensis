@@ -1,0 +1,1682 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <script>
+            {
+                const uid = "__USER__";
+                const get = Storage.prototype.getItem,
+                    set = Storage.prototype.setItem,
+                    remove = Storage.prototype.removeItem;
+                const key = (k) => (String(k).startsWith("gymapp") ? "user-" + uid + "-" + k : k);
+                Storage.prototype.getItem = function (k) {
+                    return get.call(this, key(k));
+                };
+                Storage.prototype.setItem = function (k, v) {
+                    return set.call(this, key(k), v);
+                };
+                Storage.prototype.removeItem = function (k) {
+                    return remove.call(this, key(k));
+                };
+            }
+        </script>
+        <meta name="csrf-token" content="__CSRF__" />
+        <script>
+            const originalFetch = window.fetch;
+            window.fetch = (url, options = {}) => {
+                if (
+                    typeof url === "string" &&
+                    url.startsWith("/api/") &&
+                    options.method &&
+                    !["GET", "HEAD"].includes(options.method.toUpperCase())
+                ) {
+                    options.headers = {
+                        ...options.headers,
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+                    };
+                }
+                return originalFetch(url, options);
+            };
+        </script>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fitensis - Exercices</title>
+
+        <style>
+            :root {
+                --bg: #0f172a;
+                --card: #1e293b;
+                --dark: #0b1733;
+                --border: #334155;
+                --blue: #2563eb;
+                --muted: #94a3b8;
+                --red: #ef4444;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                background: var(--bg);
+                color: white;
+            }
+
+            header {
+                padding: 18px 24px;
+                background: #111827;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .header-inner {
+                max-width: 1500px;
+                margin: auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+
+            .header-inner h1 {
+                margin: 0;
+            }
+
+            .header-actions {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .header-actions a,
+            .header-actions button {
+                border: 0;
+                text-decoration: none;
+                color: white;
+                background: var(--blue);
+                border-radius: 9px;
+                padding: 11px 16px;
+                cursor: pointer;
+                font-weight: 700;
+                font-size: 14px;
+            }
+
+            .container {
+                max-width: 1500px;
+                margin: auto;
+                padding: 25px 20px 50px;
+            }
+
+            .title {
+                text-align: center;
+                margin-bottom: 25px;
+            }
+
+            .title h2 {
+                margin: 0 0 8px;
+                font-size: 32px;
+            }
+
+            .title p {
+                margin: 0;
+                color: #93c5fd;
+            }
+
+            .layout {
+                display: grid;
+                grid-template-columns: minmax(560px, 0.95fr) minmax(560px, 1.35fr);
+                gap: 25px;
+                align-items: start;
+            }
+
+            .card {
+                background: var(--card);
+                border-radius: 18px;
+                padding: 22px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            }
+
+            .body-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin-bottom: 12px;
+            }
+
+            .body-head h2 {
+                margin: 0;
+            }
+
+            .gender {
+                display: flex;
+                gap: 8px;
+            }
+
+            .gender button {
+                border: 0;
+                border-radius: 9px;
+                background: #334155;
+                color: white;
+                padding: 10px 15px;
+                cursor: pointer;
+                font-weight: 700;
+            }
+
+            .gender button.active {
+                background: var(--blue);
+            }
+
+            .body-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 18px;
+            }
+
+            .body-view {
+                text-align: center;
+            }
+
+            .body-view h3 {
+                margin: 8px 0 10px;
+            }
+
+            .body-stage {
+                position: relative;
+                width: 100%;
+                max-width: 320px;
+                aspect-ratio: 2 / 3;
+                margin: auto;
+                border-radius: 16px;
+                overflow: hidden;
+                background: #eef2f7;
+            }
+
+            .body-stage img {
+                width: 100%;
+                height: 100%;
+                display: block;
+                object-fit: cover;
+            }
+
+            .muscle-svg {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+            }
+
+            .muscle-svg path {
+                pointer-events: auto;
+                fill: rgba(239, 68, 68, 0.02);
+                stroke: rgba(255, 255, 255, 0);
+                stroke-width: 0.8;
+                cursor: pointer;
+                transition:
+                    fill 0.16s ease,
+                    stroke 0.16s ease,
+                    filter 0.16s ease;
+            }
+
+            .muscle-svg path:hover {
+                fill: rgba(239, 68, 68, 0.3);
+                stroke: rgba(255, 255, 255, 0.95);
+                filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.9));
+            }
+
+            .muscle-svg path.active {
+                fill: rgba(239, 68, 68, 0.42);
+                stroke: #fff;
+                filter: drop-shadow(0 0 5px rgba(239, 68, 68, 1));
+            }
+
+            .help {
+                background: #172554;
+                border-left: 4px solid #3b82f6;
+                padding: 14px;
+                border-radius: 9px;
+                margin-bottom: 16px;
+            }
+
+            .categories {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 16px;
+            }
+
+            .cat {
+                border: 0;
+                border-radius: 999px;
+                padding: 9px 13px;
+                background: #334155;
+                color: white;
+                cursor: pointer;
+            }
+
+            .cat.active,
+            .cat:hover {
+                background: var(--blue);
+            }
+
+            .secondary-option {
+                display: flex;
+                gap: 9px;
+                align-items: center;
+                margin: 12px 0 16px;
+                color: #cbd5e1;
+            }
+
+            .secondary-option input {
+                width: auto;
+            }
+
+            .search {
+                width: 100%;
+                background: var(--bg);
+                color: white;
+                border: 1px solid #475569;
+                border-radius: 10px;
+                padding: 13px;
+                font-size: 16px;
+                margin-bottom: 15px;
+            }
+
+            .list-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 12px;
+                margin-bottom: 15px;
+            }
+
+            .list-head h2 {
+                margin: 0;
+            }
+
+            .count {
+                border-radius: 999px;
+                padding: 6px 11px;
+                background: var(--blue);
+                font-size: 13px;
+            }
+
+            .status {
+                display: none;
+                padding: 12px;
+                border-radius: 10px;
+                margin-bottom: 15px;
+            }
+
+            .status.error {
+                display: block;
+                background: #7f1d1d;
+            }
+
+            .exercise-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+                gap: 14px;
+            }
+
+            .exercise {
+                background: var(--dark);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                overflow: hidden;
+                cursor: pointer;
+                transition:
+                    transform 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .exercise:hover {
+                transform: translateY(-2px);
+                border-color: #3b82f6;
+            }
+
+            .thumb {
+                position: relative;
+                height: 150px;
+                background: #111827;
+            }
+
+            .thumb img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+
+            .thumb-fallback {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--muted);
+                text-align: center;
+                padding: 12px;
+            }
+
+            .play {
+                position: absolute;
+                right: 10px;
+                bottom: 10px;
+                width: 34px;
+                height: 34px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: rgba(37, 99, 235, 0.94);
+            }
+
+            .content {
+                padding: 13px;
+            }
+
+            .name {
+                font-weight: 800;
+                margin-bottom: 7px;
+            }
+
+            .info {
+                color: #bfdbfe;
+                font-size: 13px;
+                line-height: 1.4;
+            }
+
+            .badges {
+                display: flex;
+                gap: 6px;
+                flex-wrap: wrap;
+                margin-top: 9px;
+            }
+
+            .badge {
+                border-radius: 999px;
+                padding: 4px 7px;
+                font-size: 11px;
+                background: #1e3a8a;
+            }
+
+            .custom-badge {
+                background: #166534;
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.82);
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            .modal-card {
+                position: relative;
+                width: min(1050px, 96vw);
+                max-height: 92vh;
+                overflow: auto;
+                background: var(--card);
+                border-radius: 18px;
+                padding: 22px;
+            }
+
+            .close {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                border: 0;
+                background: transparent;
+                color: white;
+                font-size: 30px;
+                cursor: pointer;
+            }
+
+            .media-grid {
+                display: grid;
+                grid-template-columns: 1fr 1.2fr;
+                gap: 15px;
+            }
+
+            .media {
+                border-radius: 12px;
+                overflow: hidden;
+                background: #111827;
+                min-height: 230px;
+            }
+
+            .media img,
+            .media video {
+                width: 100%;
+                height: 100%;
+                min-height: 230px;
+                max-height: 420px;
+                object-fit: contain;
+                display: block;
+            }
+
+            .media-empty {
+                min-height: 230px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: var(--muted);
+            }
+
+            .details {
+                line-height: 1.5;
+                margin-top: 16px;
+            }
+
+            .action {
+                width: 100%;
+                border: 0;
+                border-radius: 9px;
+                padding: 13px;
+                background: var(--blue);
+                color: white;
+                cursor: pointer;
+                font-weight: 800;
+                margin-top: 14px;
+            }
+
+            .delete-action {
+                background: #991b1b;
+            }
+
+            .form-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .field {
+                margin-bottom: 12px;
+            }
+
+            .field label {
+                display: block;
+                margin-bottom: 6px;
+                color: #d1d5db;
+            }
+
+            .field input,
+            .field select,
+            .field textarea {
+                width: 100%;
+                background: var(--bg);
+                color: white;
+                border: 1px solid #475569;
+                border-radius: 9px;
+                padding: 11px;
+                font: inherit;
+            }
+
+            .field textarea {
+                min-height: 100px;
+                resize: vertical;
+            }
+
+            .secondary-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+
+            .secondary-check {
+                display: flex;
+                gap: 7px;
+                align-items: center;
+                background: #0f172a;
+                border-radius: 8px;
+                padding: 8px;
+                font-size: 13px;
+            }
+
+            .secondary-check input {
+                width: auto;
+            }
+
+            @media (max-width: 1180px) {
+                .layout {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @media (max-width: 720px) {
+                .body-grid,
+                .media-grid,
+                .form-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .secondary-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+        </style>
+        <link rel="icon" href="/assets/datensis-light.png" />
+        <link rel="stylesheet" href="/assets/continuity.css" />
+        <link rel="stylesheet" href="/assets/exercises-theme.css" />
+    </head>
+
+    <body class="exercise-page">
+        __NAV__
+        <div class="container flash-container">__FLASHES__</div>
+
+        <main class="container">
+            <div class="exercise-toolbar">
+                <button id="createButton" type="button">＋ Créer un exercice</button>
+            </div>
+            <div class="title">
+                <h2>Carte musculaire interactive</h2>
+                <p>
+                    Clique directement sur le muscle du corps, ou utilise les boutons. Les
+                    abducteurs sont situés sur l'extérieur des hanches et des cuisses.
+                </p>
+            </div>
+
+            <div class="layout">
+                <section class="card">
+                    <div class="body-head">
+                        <h2>Corps humain</h2>
+
+                        <div class="gender">
+                            <button id="maleButton" class="active" type="button">Homme</button>
+                            <button id="femaleButton" type="button">Femme</button>
+                        </div>
+                    </div>
+
+                    <div class="body-grid">
+                        <div class="body-view">
+                            <h3>AVANT</h3>
+
+                            <div class="body-stage">
+                                <img id="frontImage" alt="Corps humain de face" />
+
+                                <svg
+                                    class="muscle-svg"
+                                    viewBox="0 0 100 150"
+                                    preserveAspectRatio="none"
+                                >
+                                    <!-- épaules : zones recalées sur l'image anatomique -->
+                                    <path
+                                        data-muscle="shoulders"
+                                        d="M31 27 C27 27 24 30 24 34 C24 38 27 40 31 39 C34 37 35 32 33 29 Z"
+                                    />
+                                    <path
+                                        data-muscle="shoulders"
+                                        d="M69 27 C73 27 76 30 76 34 C76 38 73 40 69 39 C66 37 65 32 67 29 Z"
+                                    />
+
+                                    <!-- pectoraux -->
+                                    <path
+                                        data-muscle="chest"
+                                        d="M31 33 C36 30 45 30 49 34 L49 44 C43 47 34 45 30 40 Z"
+                                    />
+                                    <path
+                                        data-muscle="chest"
+                                        d="M69 33 C64 30 55 30 51 34 L51 44 C57 47 66 45 70 40 Z"
+                                    />
+
+                                    <!-- biceps : recalés sur le haut du bras -->
+                                    <path
+                                        data-muscle="biceps"
+                                        d="M28 38 C25 42 24 49 25 56 C26 60 29 60 31 56 C32 50 32 43 30 39 Z"
+                                    />
+                                    <path
+                                        data-muscle="biceps"
+                                        d="M72 38 C75 42 76 49 75 56 C74 60 71 60 69 56 C68 50 68 43 70 39 Z"
+                                    />
+
+                                    <!-- avant-bras : recalés sur radius/ulna -->
+                                    <path
+                                        data-muscle="forearms"
+                                        d="M25 55 C22 61 20 70 21 78 C22 83 25 84 27 80 C29 72 30 63 29 57 Z"
+                                    />
+                                    <path
+                                        data-muscle="forearms"
+                                        d="M75 55 C78 61 80 70 79 78 C78 83 75 84 73 80 C71 72 70 63 71 57 Z"
+                                    />
+
+                                    <!-- abdos -->
+                                    <path
+                                        data-muscle="abs"
+                                        d="M42 46 C46 44 54 44 58 46 L57 72 C54 76 46 76 43 72 Z"
+                                    />
+
+                                    <!-- obliques -->
+                                    <path
+                                        data-muscle="obliques"
+                                        d="M34 47 C38 46 41 48 42 52 L41 72 C38 72 35 68 34 62 Z"
+                                    />
+                                    <path
+                                        data-muscle="obliques"
+                                        d="M66 47 C62 46 59 48 58 52 L59 72 C62 72 65 68 66 62 Z"
+                                    />
+
+                                    <!-- adducteurs -->
+                                    <path
+                                        data-muscle="adductors"
+                                        d="M44 78 C47 77 49 78 50 82 L48 108 C45 104 43 94 43 84 Z"
+                                    />
+                                    <path
+                                        data-muscle="adductors"
+                                        d="M56 78 C53 77 51 78 50 82 L52 108 C55 104 57 94 57 84 Z"
+                                    />
+
+                                    <!-- abducteurs : côtés externes des hanches / cuisses -->
+                                    <path
+                                        data-muscle="abductors"
+                                        d="M29 76 C33 74 36 78 36 84 L34 100 C31 105 28 100 27 93 Z"
+                                    />
+                                    <path
+                                        data-muscle="abductors"
+                                        d="M71 76 C67 74 64 78 64 84 L66 100 C69 105 72 100 73 93 Z"
+                                    />
+
+                                    <!-- quadriceps -->
+                                    <path
+                                        data-muscle="quads"
+                                        d="M34 78 C39 76 44 79 45 84 L43 111 C39 117 33 111 32 102 Z"
+                                    />
+                                    <path
+                                        data-muscle="quads"
+                                        d="M66 78 C61 76 56 79 55 84 L57 111 C61 117 67 111 68 102 Z"
+                                    />
+
+                                    <!-- mollets -->
+                                    <path
+                                        data-muscle="calves"
+                                        d="M34 112 C38 110 42 114 42 121 L40 140 C37 144 33 139 32 132 Z"
+                                    />
+                                    <path
+                                        data-muscle="calves"
+                                        d="M66 112 C62 110 58 114 58 121 L60 140 C63 144 67 139 68 132 Z"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="body-view">
+                            <h3>ARRIÈRE</h3>
+
+                            <div class="body-stage">
+                                <img id="backImage" alt="Corps humain de dos" />
+
+                                <svg
+                                    class="muscle-svg"
+                                    viewBox="0 0 100 150"
+                                    preserveAspectRatio="none"
+                                >
+                                    <!-- trapèzes -->
+                                    <path
+                                        data-muscle="traps"
+                                        d="M38 24 C44 21 56 21 62 24 L68 37 C60 42 40 42 32 37 Z"
+                                    />
+
+                                    <!-- épaules arrière : recalées sur les deltoïdes postérieurs -->
+                                    <path
+                                        data-muscle="shoulders"
+                                        d="M31 27 C27 27 24 30 24 34 C24 38 27 40 31 39 C34 37 35 32 33 29 Z"
+                                    />
+                                    <path
+                                        data-muscle="shoulders"
+                                        d="M69 27 C73 27 76 30 76 34 C76 38 73 40 69 39 C66 37 65 32 67 29 Z"
+                                    />
+
+                                    <!-- dorsaux -->
+                                    <path
+                                        data-muscle="back"
+                                        d="M33 39 C39 40 44 43 50 45 C56 43 61 40 67 39 L65 65 C60 72 55 75 50 75 C45 75 40 72 35 65 Z"
+                                    />
+
+                                    <!-- triceps : recalés sur l'arrière du haut du bras -->
+                                    <path
+                                        data-muscle="triceps"
+                                        d="M28 38 C25 42 24 49 25 57 C26 61 29 61 31 57 C32 50 32 43 30 39 Z"
+                                    />
+                                    <path
+                                        data-muscle="triceps"
+                                        d="M72 38 C75 42 76 49 75 57 C74 61 71 61 69 57 C68 50 68 43 70 39 Z"
+                                    />
+
+                                    <!-- avant-bras arrière : permet aussi de cliquer depuis la vue de dos -->
+                                    <path
+                                        data-muscle="forearms"
+                                        d="M25 56 C22 62 20 71 21 79 C22 84 25 84 27 80 C29 72 30 64 29 58 Z"
+                                    />
+                                    <path
+                                        data-muscle="forearms"
+                                        d="M75 56 C78 62 80 71 79 79 C78 84 75 84 73 80 C71 72 70 64 71 58 Z"
+                                    />
+
+                                    <!-- lombaires -->
+                                    <path
+                                        data-muscle="lowerback"
+                                        d="M40 66 C44 64 56 64 60 66 L59 79 C55 82 45 82 41 79 Z"
+                                    />
+
+                                    <!-- fessiers -->
+                                    <path
+                                        data-muscle="glutes"
+                                        d="M37 78 C43 75 49 79 50 85 L48 96 C43 100 37 96 36 90 Z"
+                                    />
+                                    <path
+                                        data-muscle="glutes"
+                                        d="M63 78 C57 75 51 79 50 85 L52 96 C57 100 63 96 64 90 Z"
+                                    />
+
+                                    <!-- abducteurs : moyen fessier / côtés externes -->
+                                    <path
+                                        data-muscle="abductors"
+                                        d="M29 78 C34 75 38 79 38 85 L36 96 C32 101 28 96 27 89 Z"
+                                    />
+                                    <path
+                                        data-muscle="abductors"
+                                        d="M71 78 C66 75 62 79 62 85 L64 96 C68 101 72 96 73 89 Z"
+                                    />
+
+                                    <!-- ischios -->
+                                    <path
+                                        data-muscle="hamstrings"
+                                        d="M35 95 C40 94 45 98 45 104 L42 122 C39 128 34 123 33 116 Z"
+                                    />
+                                    <path
+                                        data-muscle="hamstrings"
+                                        d="M65 95 C60 94 55 98 55 104 L58 122 C61 128 66 123 67 116 Z"
+                                    />
+
+                                    <!-- mollets -->
+                                    <path
+                                        data-muscle="calves"
+                                        d="M34 120 C39 118 43 122 42 130 L40 143 C36 147 32 141 32 134 Z"
+                                    />
+                                    <path
+                                        data-muscle="calves"
+                                        d="M66 120 C61 118 57 122 58 130 L60 143 C64 147 68 141 68 134 Z"
+                                    />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="help">
+                        👆 Clique sur la forme d'un muscle du corps ou choisis le groupe ci-dessous.
+                    </div>
+
+                    <div id="categories" class="categories"></div>
+
+                    <label class="secondary-option">
+                        <input id="includeSecondary" type="checkbox" checked />
+                        Inclure les exercices où le muscle est travaillé en secondaire
+                    </label>
+
+                    <input
+                        id="search"
+                        class="search"
+                        type="search"
+                        placeholder="🔎 Rechercher un exercice..."
+                    />
+
+                    <div class="list-head">
+                        <h2 id="selectedMuscle">Tous les exercices</h2>
+                        <span id="count" class="count">0 exercice</span>
+                    </div>
+
+                    <div id="status" class="status"></div>
+                    <div id="exerciseGrid" class="exercise-grid"></div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Détails -->
+        <div id="detailModal" class="modal">
+            <div class="modal-card">
+                <button class="close" type="button" data-close="detailModal">×</button>
+
+                <h2 id="detailName"></h2>
+
+                <div class="media-grid">
+                    <div class="media">
+                        <img id="detailImage" alt="" />
+                        <div id="detailImageEmpty" class="media-empty" style="display: none">
+                            Image indisponible
+                        </div>
+                    </div>
+
+                    <div class="media">
+                        <video
+                            id="detailVideo"
+                            controls
+                            playsinline
+                            preload="metadata"
+                            style="display: none"
+                        ></video>
+                        <div id="detailVideoEmpty" class="media-empty">Vidéo indisponible</div>
+                    </div>
+                </div>
+
+                <div id="detailText" class="details"></div>
+
+                <button id="useExercise" type="button" class="action">
+                    💪 Utiliser cet exercice
+                </button>
+                <button
+                    id="deleteCustom"
+                    type="button"
+                    class="action delete-action"
+                    style="display: none"
+                >
+                    🗑 Supprimer cet exercice personnalisé
+                </button>
+            </div>
+        </div>
+
+        <!-- Création -->
+        <div id="createModal" class="modal">
+            <div class="modal-card">
+                <button class="close" type="button" data-close="createModal">×</button>
+
+                <h2>Créer un exercice</h2>
+
+                <form id="createForm">
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Titre</label>
+                            <input id="createName" required placeholder="Ex. Presse convergente" />
+                        </div>
+
+                        <div class="field">
+                            <label>Muscle principal</label>
+                            <select id="createPrimary" required></select>
+                        </div>
+
+                        <div class="field">
+                            <label>Équipement</label>
+                            <input id="createEquipment" placeholder="Machine, barre, haltères..." />
+                        </div>
+
+                        <div class="field">
+                            <label>Difficulté</label>
+                            <select id="createDifficulty">
+                                <option value="beginner">Débutant</option>
+                                <option value="intermediate" selected>Intermédiaire</option>
+                                <option value="advanced">Avancé</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Muscles secondaires</label>
+                        <div id="secondaryChoices" class="secondary-grid"></div>
+                    </div>
+
+                    <div class="field">
+                        <label>Description</label>
+                        <textarea
+                            id="createDescription"
+                            placeholder="Décris l'exercice, son exécution, les consignes..."
+                        ></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label>URL de l'image</label>
+                        <input id="createImage" type="url" placeholder="https://..." />
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>URL vidéo homme</label>
+                            <input id="createMaleVideo" type="url" placeholder="https://...mp4" />
+                        </div>
+
+                        <div class="field">
+                            <label>URL vidéo femme</label>
+                            <input id="createFemaleVideo" type="url" placeholder="https://...mp4" />
+                        </div>
+                    </div>
+
+                    <button class="action" type="submit">Enregistrer l'exercice</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            const BODY_IMAGES = {
+                male: {
+                    front: "https://raw.githubusercontent.com/Jsplice/MuscleMap/main/packages/assets/bodies/male-front.webp",
+                    back: "https://raw.githubusercontent.com/Jsplice/MuscleMap/main/packages/assets/bodies/male-back.webp",
+                },
+                female: {
+                    front: "https://raw.githubusercontent.com/Jsplice/MuscleMap/main/packages/assets/bodies/female-front.webp",
+                    back: "https://raw.githubusercontent.com/Jsplice/MuscleMap/main/packages/assets/bodies/female-back.webp",
+                },
+            };
+
+            const muscles = {
+                chest: "Pectoraux",
+                back: "Dos / Dorsaux",
+                shoulders: "Épaules",
+                biceps: "Biceps",
+                triceps: "Triceps",
+                forearms: "Avant-bras",
+                traps: "Trapèzes",
+                abs: "Abdominaux",
+                obliques: "Obliques",
+                lowerback: "Lombaires",
+                quads: "Quadriceps",
+                hamstrings: "Ischio-jambiers",
+                glutes: "Fessiers",
+                adductors: "Adducteurs",
+                abductors: "Abducteurs",
+                calves: "Mollets",
+                serratus: "Dentelé antérieur",
+                neck: "Cou",
+            };
+
+            const equipmentFr = {
+                "body weight": "Poids du corps",
+                barbell: "Barre",
+                dumbbell: "Haltères",
+                dumbbells: "Haltères",
+                cable: "Poulie",
+                band: "Élastique",
+                "resistance band": "Élastique",
+                "leverage machine": "Machine guidée",
+                machine: "Machine",
+                "smith machine": "Smith machine",
+                kettlebell: "Kettlebell",
+                "medicine ball": "Médecine-ball",
+                "ez barbell": "Barre EZ",
+                assisted: "Machine assistée",
+                rope: "Corde",
+                plate: "Disque",
+                "stability ball": "Swiss ball",
+                "bosu ball": "BOSU",
+                "trap bar": "Trap bar",
+                "sled machine": "Machine à traîneau",
+            };
+
+            const difficultyFr = {
+                beginner: "Débutant",
+                intermediate: "Intermédiaire",
+                advanced: "Avancé",
+            };
+
+            // Les remplacements longs passent avant les mots simples.
+            const exercisePhraseFr = [
+                ["romanian deadlift", "soulevé de terre roumain"],
+                ["stiff leg deadlift", "soulevé de terre jambes tendues"],
+                ["straight leg deadlift", "soulevé de terre jambes tendues"],
+                ["bench press", "développé couché"],
+                ["incline press", "développé incliné"],
+                ["decline press", "développé décliné"],
+                ["chest press", "presse à pectoraux"],
+                ["shoulder press", "développé épaules"],
+                ["military press", "développé militaire"],
+                ["overhead press", "développé au-dessus de la tête"],
+                ["close grip", "prise serrée"],
+                ["wide grip", "prise large"],
+                ["neutral grip", "prise neutre"],
+                ["reverse grip", "prise inversée"],
+                ["single arm", "unilatéral"],
+                ["single-arm", "unilatéral"],
+                ["one arm", "unilatéral"],
+                ["one-arm", "unilatéral"],
+                ["bent over", "buste penché"],
+                ["bent-over", "buste penché"],
+                ["lat pulldown", "tirage vertical"],
+                ["pull down", "tirage vertical"],
+                ["pulldown", "tirage vertical"],
+                ["pull-up", "traction pronation"],
+                ["pull up", "traction pronation"],
+                ["chin-up", "traction supination"],
+                ["chin up", "traction supination"],
+                ["seated row", "rowing assis"],
+                ["upright row", "tirage menton"],
+                ["t-bar row", "rowing T-bar"],
+                ["rear delt fly", "oiseau pour deltoïdes postérieurs"],
+                ["reverse fly", "oiseau inversé"],
+                ["lateral raise", "élévation latérale"],
+                ["front raise", "élévation frontale"],
+                ["calf raise", "élévation mollets"],
+                ["leg extension", "extension de jambes"],
+                ["leg curl", "curl ischio-jambiers"],
+                ["hamstring curl", "curl ischio-jambiers"],
+                ["hip thrust", "hip thrust"],
+                ["glute bridge", "pont fessier"],
+                ["back extension", "extension lombaire"],
+                ["triceps extension", "extension triceps"],
+                ["tricep extension", "extension triceps"],
+                ["triceps pushdown", "pushdown triceps"],
+                ["tricep pushdown", "pushdown triceps"],
+                ["preacher curl", "curl pupitre"],
+                ["hammer curl", "curl marteau"],
+                ["concentration curl", "curl concentration"],
+                ["wrist curl", "flexion des poignets"],
+                ["wrist extension", "extension des poignets"],
+                ["face pull", "face pull"],
+                ["pec deck", "pec deck"],
+                ["chest fly", "écarté pectoraux"],
+                ["cable fly", "écarté à la poulie"],
+                ["reverse crunch", "crunch inversé"],
+                ["hanging leg raise", "relevé de jambes suspendu"],
+                ["leg raise", "relevé de jambes"],
+                ["side plank", "gainage latéral"],
+                ["plank", "gainage"],
+                ["bulgarian split squat", "squat bulgare"],
+                ["split squat", "squat fendu"],
+                ["hack squat", "hack squat"],
+                ["front squat", "squat avant"],
+                ["back squat", "squat arrière"],
+                ["goblet squat", "goblet squat"],
+                ["sumo squat", "squat sumo"],
+                ["hip abduction", "abduction de hanche"],
+                ["hip abductor", "abducteurs de hanche"],
+                ["abductor machine", "machine à abducteurs"],
+                ["hip adduction", "adduction de hanche"],
+                ["adductor machine", "machine à adducteurs"],
+            ];
+
+            const exerciseWordFr = {
+                barbell: "barre",
+                dumbbell: "haltère",
+                dumbbells: "haltères",
+                cable: "poulie",
+                machine: "machine",
+                seated: "assis",
+                standing: "debout",
+                lying: "allongé",
+                incline: "incliné",
+                decline: "décliné",
+                reverse: "inversé",
+                alternating: "alterné",
+                alternate: "alterné",
+                assisted: "assisté",
+                weighted: "lesté",
+                kneeling: "à genoux",
+                squat: "squat",
+                deadlift: "soulevé de terre",
+                row: "rowing",
+                curl: "curl",
+                extension: "extension",
+                press: "développé",
+                fly: "écarté",
+                raise: "élévation",
+                lunge: "fente",
+                crunch: "crunch",
+                "push-up": "pompes",
+                pushup: "pompes",
+                dip: "dips",
+                dips: "dips",
+            };
+
+            function equipmentLabel(value) {
+                const raw = String(value || "").trim();
+                return equipmentFr[raw.toLowerCase()] || raw || "Équipement non renseigné";
+            }
+
+            function difficultyLabel(value) {
+                const raw = String(value || "").trim();
+                return difficultyFr[raw.toLowerCase()] || raw || "Non renseignée";
+            }
+
+            function frenchExerciseName(name) {
+                if (!name) return "Exercice";
+
+                let result = String(name).toLowerCase();
+
+                for (const [english, french] of exercisePhraseFr) {
+                    result = result.split(english).join(french);
+                }
+
+                result = result
+                    .split(/\s+/)
+                    .map((word) => exerciseWordFr[word] || word)
+                    .join(" ")
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                return result.charAt(0).toUpperCase() + result.slice(1);
+            }
+
+            function frenchDescription(exercise) {
+                if (exercise.shortDescription) {
+                    return exercise.shortDescription;
+                }
+
+                const principal = muscles[exercise.primaryGroup] || "le groupe musculaire ciblé";
+                const secondaries = (exercise.secondaryGroups || [])
+                    .map((group) => muscles[group] || group)
+                    .filter(Boolean);
+
+                let text = `Exercice de musculation ciblant principalement ${principal}`;
+
+                if (secondaries.length) {
+                    text += `, avec une participation secondaire de ${secondaries.join(", ")}`;
+                }
+
+                text += `. Équipement : ${equipmentLabel(exercise.equipment)}.`;
+                return text;
+            }
+
+            let gender = "male";
+            let currentMuscle = null;
+            let selectedExercise = null;
+            let searchTimer = null;
+
+            const categoryBox = document.getElementById("categories");
+            const grid = document.getElementById("exerciseGrid");
+            const status = document.getElementById("status");
+
+            function esc(value) {
+                return String(value ?? "")
+                    .replaceAll("&", "&amp;")
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")
+                    .replaceAll("'", "&#039;");
+            }
+
+            function showStatus(message) {
+                status.className = "status error";
+                status.textContent = message;
+            }
+
+            function clearStatus() {
+                status.className = "status";
+                status.textContent = "";
+            }
+
+            function setGender(value) {
+                gender = value;
+                document.getElementById("maleButton").classList.toggle("active", value === "male");
+                document
+                    .getElementById("femaleButton")
+                    .classList.toggle("active", value === "female");
+
+                document.getElementById("frontImage").src = BODY_IMAGES[value].front;
+                document.getElementById("backImage").src = BODY_IMAGES[value].back;
+            }
+
+            function setMuscle(value) {
+                currentMuscle = value;
+
+                document.getElementById("selectedMuscle").textContent = value
+                    ? muscles[value]
+                    : "Tous les exercices";
+
+                document.querySelectorAll(".cat").forEach((button) => {
+                    button.classList.toggle("active", button.dataset.muscle === value);
+                });
+
+                document.querySelectorAll(".muscle-svg path").forEach((path) => {
+                    path.classList.toggle("active", path.dataset.muscle === value);
+                });
+            }
+
+            Object.entries(muscles).forEach(([key, label]) => {
+                const button = document.createElement("button");
+                button.className = "cat";
+                button.type = "button";
+                button.dataset.muscle = key;
+                button.textContent = label;
+
+                button.addEventListener("click", () => {
+                    setMuscle(key);
+                    loadExercises();
+                });
+
+                categoryBox.appendChild(button);
+            });
+
+            document.querySelectorAll(".muscle-svg path").forEach((path) => {
+                path.addEventListener("click", () => {
+                    setMuscle(path.dataset.muscle);
+                    loadExercises();
+                });
+            });
+
+            function imageFor(exercise) {
+                const thumbs = exercise.thumbnails || {};
+
+                return gender === "female"
+                    ? thumbs.female || thumbs.male || ""
+                    : thumbs.male || thumbs.female || "";
+            }
+
+            function videoFor(exercise) {
+                const videos = exercise.videos || {};
+
+                return gender === "female"
+                    ? videos.female || videos.male || ""
+                    : videos.male || videos.female || "";
+            }
+
+            async function loadExercises() {
+                clearStatus();
+                grid.innerHTML = `<div class="thumb-fallback">Chargement...</div>`;
+
+                const params = new URLSearchParams({
+                    limit: "400",
+                    include_secondary: document.getElementById("includeSecondary").checked
+                        ? "true"
+                        : "false",
+                });
+
+                if (currentMuscle) {
+                    params.set("muscle", currentMuscle);
+                }
+
+                const search = document.getElementById("search").value.trim();
+                if (search) {
+                    params.set("search", search);
+                }
+
+                try {
+                    const response = await fetch(`/api/exercises?${params}`);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const payload = await response.json();
+                    document.getElementById("count").textContent =
+                        `${payload.total} exercice${payload.total > 1 ? "s" : ""}`;
+
+                    render(payload.data || []);
+                    const meta = payload.source_status;
+                    if (meta) {
+                        status.style.display = "block";
+                        status.textContent =
+                            "Source : " +
+                            meta.source +
+                            (meta.stale
+                                ? " · dernière version enregistrée (source indisponible)"
+                                : meta.status === "degraded"
+                                  ? " · mode de secours local"
+                                  : meta.cached
+                                    ? " · données en cache"
+                                    : " · données récupérées sur Internet");
+                    }
+                } catch (error) {
+                    grid.innerHTML = "";
+                    document.getElementById("count").textContent = "0 exercice";
+                    showStatus(`Impossible de charger les exercices : ${error.message}`);
+                }
+            }
+
+            function render(items) {
+                grid.innerHTML = "";
+
+                if (!items.length) {
+                    grid.innerHTML = `<div class="thumb-fallback">Aucun exercice trouvé.</div>`;
+                    return;
+                }
+
+                for (const exercise of items) {
+                    const card = document.createElement("article");
+                    card.className = "exercise";
+
+                    const image = imageFor(exercise);
+                    const video = videoFor(exercise);
+                    const primary =
+                        muscles[exercise.primaryGroup] || exercise.target || "Non classé";
+
+                    card.innerHTML = `
+                <div class="thumb">
+                    ${
+                        image
+                            ? `<img src="${esc(image)}" alt="${esc(exercise.name)}" loading="lazy"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                           <div class="thumb-fallback" style="display:none;">Image indisponible</div>`
+                            : `<div class="thumb-fallback">Image indisponible</div>`
+                    }
+                    ${video ? `<div class="play">▶</div>` : ""}
+                </div>
+
+                <div class="content">
+                    <div class="name">${esc(exercise.name_fr || frenchExerciseName(exercise.name))}</div>
+
+                    <div class="info">
+                        ${esc(equipmentLabel(exercise.equipment))}
+                        <br>
+                        Principal : ${esc(primary)}
+                    </div>
+
+                    <div class="badges">
+                        ${exercise.difficulty ? `<span class="badge">${esc(difficultyLabel(exercise.difficulty))}</span>` : ""}
+                        ${exercise.source === "custom" ? `<span class="badge custom-badge">Personnalisé</span>` : ""}
+                    </div>
+                </div>
+            `;
+
+                    card.addEventListener("click", () => openDetails(exercise));
+                    grid.appendChild(card);
+                }
+            }
+
+            function listHtml(title, values) {
+                if (!Array.isArray(values) || !values.length) return "";
+
+                return `
+            <h3>${esc(title)}</h3>
+            <ul>
+                ${values.map((value) => `<li>${esc(value)}</li>`).join("")}
+            </ul>
+        `;
+            }
+
+            let detailRequest = 0;
+            function openDetails(exercise, loaded = false) {
+                const requestId = ++detailRequest;
+                selectedExercise = exercise;
+
+                document.getElementById("detailName").textContent =
+                    exercise.name_fr || frenchExerciseName(exercise.name);
+
+                const image = imageFor(exercise);
+                const imageEl = document.getElementById("detailImage");
+                const imageEmpty = document.getElementById("detailImageEmpty");
+
+                imageEmpty.style.display = "none";
+
+                if (image) {
+                    imageEl.style.display = "block";
+                    imageEl.src = image;
+                    imageEl.onerror = () => {
+                        imageEl.style.display = "none";
+                        imageEmpty.style.display = "flex";
+                    };
+                } else {
+                    imageEl.style.display = "none";
+                    imageEmpty.style.display = "flex";
+                }
+
+                const videoUrl = videoFor(exercise);
+                const video = document.getElementById("detailVideo");
+                const videoEmpty = document.getElementById("detailVideoEmpty");
+
+                video.pause();
+
+                if (videoUrl) {
+                    video.src = videoUrl;
+                    video.style.display = "block";
+                    videoEmpty.style.display = "none";
+                } else {
+                    video.removeAttribute("src");
+                    video.style.display = "none";
+                    videoEmpty.style.display = "flex";
+                }
+
+                const primary = muscles[exercise.primaryGroup] || exercise.target || "Non classé";
+
+                const secondary = (exercise.secondaryGroups || [])
+                    .map((group) => muscles[group] || group)
+                    .join(", ");
+
+                document.getElementById("detailText").innerHTML = `
+            <p><strong>Muscle principal :</strong> ${esc(primary)}</p>
+            <p><strong>Muscles secondaires :</strong> ${esc(secondary || "Aucun")}</p>
+            <p><strong>Équipement :</strong> ${esc(equipmentLabel(exercise.equipment))}</p>
+            <p><strong>Difficulté :</strong> ${esc(difficultyLabel(exercise.difficulty))}</p>
+            <p><strong>Description :</strong> ${esc(frenchDescription(exercise))}</p>
+            ${true ? listHtml("Étapes", exercise.steps) : ""}
+            ${true ? listHtml("Conseils", exercise.formCues) : ""}
+            ${true ? listHtml("Erreurs fréquentes", exercise.commonMistakes) : ""}
+            ${
+                exercise.breathing
+                    ? `<p><strong>Respiration :</strong> ${esc(exercise.breathing)}</p>`
+                    : ""
+            }
+        `;
+
+                document.getElementById("deleteCustom").style.display =
+                    exercise.source === "custom" ? "block" : "none";
+
+                document.getElementById("detailModal").style.display = "flex";
+                const detailBox = document.getElementById("detailText");
+                const links = document.createElement("div");
+                links.style.cssText = "display:flex;gap:12px;flex-wrap:wrap;margin:18px 0";
+                for (const [title, url] of [
+                    [
+                        "Préparer une séance",
+                        "/calendrier?muscle=" +
+                            encodeURIComponent(exercise.primaryGroup || "") +
+                            "&exercise=" +
+                            encodeURIComponent(
+                                exercise.name_fr || frenchExerciseName(exercise.name),
+                            ),
+                    ],
+                    [
+                        "Noter ma séance",
+                        "/espace/workouts?exercise=" +
+                            encodeURIComponent(
+                                exercise.name_fr || frenchExerciseName(exercise.name),
+                            ),
+                    ],
+                ]) {
+                    const a = document.createElement("a");
+                    a.textContent = title + " ↗";
+                    a.href = url;
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                    a.style.color = "#bfffaf";
+                    links.appendChild(a);
+                }
+                detailBox.appendChild(links);
+                if (exercise.description_original) {
+                    const original = document.createElement("details");
+                    const summary = document.createElement("summary");
+                    summary.textContent = "Texte original";
+                    const paragraph = document.createElement("p");
+                    paragraph.textContent = [
+                        exercise.name,
+                        exercise.description_original,
+                        ...(exercise.steps_original || []),
+                        ...(exercise.formCues_original || []),
+                        ...(exercise.commonMistakes_original || []),
+                        exercise.breathing_original || "",
+                    ].join("\n");
+                    paragraph.style.whiteSpace = "pre-line";
+                    original.append(summary, paragraph);
+                    detailBox.appendChild(original);
+                }
+                const note = document.createElement("p");
+                note.style.cssText = "font-size:12px;color:#a8baad";
+                note.textContent =
+                    exercise.source === "remote"
+                        ? loaded
+                            ? "Source : " +
+                              (exercise.source_name || "Internet") +
+                              " · Traduction automatique, texte source conservé si indisponible."
+                            : "Chargement des consignes détaillées et de leur traduction…"
+                        : "Fiche personnelle ou catalogue local";
+                detailBox.appendChild(note);
+                if (exercise.source === "remote" && !loaded) {
+                    fetch("/api/exercises/" + encodeURIComponent(exercise.id) + "/details")
+                        .then((r) => {
+                            if (!r.ok) throw new Error();
+                            return r.json();
+                        })
+                        .then((payload) => {
+                            if (
+                                requestId === detailRequest &&
+                                document.getElementById("detailModal").style.display === "flex"
+                            )
+                                openDetails(payload.data, true);
+                        })
+                        .catch(() => {
+                            if (requestId === detailRequest)
+                                note.textContent =
+                                    "Traduction indisponible : les consignes de la source restent affichées.";
+                        });
+                }
+            }
+
+            function closeModal(id) {
+                if (id === "detailModal") detailRequest++;
+                const modal = document.getElementById(id);
+
+                if (id === "detailModal") {
+                    document.getElementById("detailVideo").pause();
+                }
+
+                modal.style.display = "none";
+            }
+
+            document.querySelectorAll("[data-close]").forEach((button) => {
+                button.addEventListener("click", () => closeModal(button.dataset.close));
+            });
+
+            document.querySelectorAll(".modal").forEach((modal) => {
+                modal.addEventListener("click", (event) => {
+                    if (event.target === modal) {
+                        closeModal(modal.id);
+                    }
+                });
+            });
+
+            document.getElementById("useExercise").addEventListener("click", () => {
+                if (!selectedExercise) return;
+
+                window.location.href = `/?exercise=${encodeURIComponent(selectedExercise.name_fr || frenchExerciseName(selectedExercise.name))}`;
+            });
+
+            document.getElementById("deleteCustom").addEventListener("click", async () => {
+                if (!selectedExercise?.customId) return;
+
+                if (!confirm("Supprimer cet exercice personnalisé ?")) return;
+
+                const response = await fetch(`/api/custom-exercises/${selectedExercise.customId}`, {
+                    method: "DELETE",
+                });
+
+                if (!response.ok) {
+                    alert("Impossible de supprimer l'exercice.");
+                    return;
+                }
+
+                closeModal("detailModal");
+                await loadExercises();
+            });
+
+            document.getElementById("maleButton").addEventListener("click", () => {
+                setGender("male");
+                loadExercises();
+            });
+
+            document.getElementById("femaleButton").addEventListener("click", () => {
+                setGender("female");
+                loadExercises();
+            });
+
+            document.getElementById("includeSecondary").addEventListener("change", loadExercises);
+
+            document.getElementById("search").addEventListener("input", () => {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(loadExercises, 250);
+            });
+
+            // Création d'exercice
+            const primary = document.getElementById("createPrimary");
+            const secondaryChoices = document.getElementById("secondaryChoices");
+
+            Object.entries(muscles).forEach(([key, label]) => {
+                const option = document.createElement("option");
+                option.value = key;
+                option.textContent = label;
+                primary.appendChild(option);
+
+                const row = document.createElement("label");
+                row.className = "secondary-check";
+                row.innerHTML = `
+            <input type="checkbox" value="${key}">
+            ${esc(label)}
+        `;
+                secondaryChoices.appendChild(row);
+            });
+
+            document.getElementById("createButton").addEventListener("click", () => {
+                document.getElementById("createModal").style.display = "flex";
+            });
+
+            document.getElementById("createForm").addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const secondaryMuscles = Array.from(
+                    secondaryChoices.querySelectorAll("input:checked"),
+                ).map((input) => input.value);
+
+                const payload = {
+                    name: document.getElementById("createName").value.trim(),
+                    primary_muscle: document.getElementById("createPrimary").value,
+                    secondary_muscles: secondaryMuscles,
+                    equipment:
+                        document.getElementById("createEquipment").value.trim() || "Non renseigné",
+                    difficulty: document.getElementById("createDifficulty").value,
+                    description: document.getElementById("createDescription").value.trim(),
+                    image_url: document.getElementById("createImage").value.trim(),
+                    male_video_url: document.getElementById("createMaleVideo").value.trim(),
+                    female_video_url: document.getElementById("createFemaleVideo").value.trim(),
+                };
+
+                const response = await fetch("/api/custom-exercises", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.detail || "Erreur lors de la création.");
+                    return;
+                }
+
+                event.target.reset();
+                closeModal("createModal");
+
+                setMuscle(payload.primary_muscle);
+                await loadExercises();
+
+                alert("Exercice créé et sauvegardé.");
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    closeModal("detailModal");
+                    closeModal("createModal");
+                }
+            });
+
+            setGender("male");
+            loadExercises();
+            const requestedExercise = new URLSearchParams(location.search).get("exercise");
+            if (requestedExercise)
+                fetch("/api/exercises/" + encodeURIComponent(requestedExercise) + "/details")
+                    .then((response) => {
+                        if (!response.ok) throw new Error();
+                        return response.json();
+                    })
+                    .then((payload) => openDetails(payload.data || payload))
+                    .catch(() => {
+                        document.getElementById("search").value = requestedExercise;
+                        loadExercises();
+                    });
+        </script>
+    </body>
+</html>

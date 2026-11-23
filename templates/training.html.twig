@@ -1,0 +1,319 @@
+{% extends 'base.html.twig' %}
+{% block title %}
+    {{ session.title }} · Gym
+{% endblock %}
+{% block body %}
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">
+                {{ session.starts_at|date('d/m/Y · H:i') }} · {{ session.duration_minutes }} MIN
+            </span><h1>{{ session.title }}<span class="accent">.</span></h1>
+            <div class="muscle-pills">
+                {% for muscle in session.muscle_ids %}
+                    <span class="pill">{{ muscles[muscle]|default(muscle) }}</span>
+                {% endfor %}
+            </div>
+        </div><a
+            class="button secondary"
+            href="/calendrier?date={{ session.starts_at|date('Y-m-d') }}"
+        >
+            ← Mon planning
+        </a>
+    </div>
+    <div class="panel">
+        <div class="section-head">
+            <div>
+                <span class="pill {{ session.status == 'completed' ? 'confirmed' : '' }}">
+                    {{
+                        {
+                            planned: 'À faire',
+                            completed: 'Terminée ✓',
+                            skipped: 'Reportée / non faite'
+                        }[session.status]
+                    }}
+                </span><p>
+                    {{ logs|length }} performance{{ (logs|length) > 1 ? 's' : '' }} notée{{ (logs|length)
+                        > 1
+                        ? 's'
+                        : '' }} · <strong>{{ volume }} kg</strong> de volume enregistré
+                </p>
+            </div>
+            <div class="actions">
+                <form method="post" action="/entrainements/{{ session.id }}/etat">
+                    <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                    <input
+                        type="hidden"
+                        name="status"
+                        value="{{ session.status == 'completed' ? 'planned' : 'completed' }}"
+                    /><button>
+                        {{ session.status == 'completed'
+                            ? 'Remettre à faire'
+                            : 'Terminer ma séance ✓' }}
+                    </button>
+                </form><a
+                    class="button secondary"
+                    href="/calendrier?date={{ session.starts_at|date('Y-m-d') }}&edit={{
+                    session.id
+                    }}#planifier"
+                >
+                    Modifier
+                </a>
+            </div>
+        </div>
+        {% if session.notes %}
+            <p class="muted pre-line">
+                {{ session.notes }}
+            </p>
+        {% endif %}
+        <div class="actions">
+            <form method="post" action="/entrainements/{{ session.id }}/dupliquer">
+                <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><button
+                    class="link"
+                >
+                    Reprendre cette séance la semaine prochaine →
+                </button>
+            </form>
+            <form method="post" action="/entrainements/{{ session.id }}/etat">
+                <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                <input type="hidden" name="status" value="skipped" /><button class="link">
+                    Marquer non faite
+                </button>
+            </form>
+        </div>
+    </div>
+    <section class="panel">
+        <div class="section-head">
+            <h2>Mes exercices prévus</h2><a href="/exercises">Explorer les exercices ↗</a>
+        </div>
+        <p class="muted">
+            Les valeurs prévues servent de repère. Enregistre les séries réellement effectuées pour
+            alimenter ton suivi.
+        </p>
+        {% for item in items %}
+            <article class="training-exercise">
+                <div class="section-head">
+                    <div>
+                        <h3>{{ item.exercise }}</h3>
+                        <p class="muted">
+                            Prévu : {{ item.sets }} × {{ item.reps }} à {{ item.weight }} kg{% if
+                                item.previous %}
+                                <br />Dernière performance hors de cette séance : {{
+                                    item.previous.sets
+                                }} × {{ item.previous.reps }} à {{ item.previous.weight }} kg ({{
+                                    item.previous.date|date('d/m/Y')
+                                }})
+                            {% endif %}
+                        </p>
+                    </div><a href="/performances?exercise={{ item.exercise|url_encode }}">
+                        Historique ↗
+                    </a>
+                </div>
+                <form
+                    method="post"
+                    action="/entrainements/{{ session.id }}/performances"
+                    class="form-grid compact-grid"
+                >
+                    <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                    <input type="hidden" name="exercise" value="{{ item.exercise }}" /><label>
+                        Séries réalisées<input
+                            name="sets"
+                            type="number"
+                            min="1"
+                            max="50"
+                            value="{{ item.sets }}"
+                            required
+                        />
+                    </label><label>
+                        Répétitions par série<input
+                            name="reps"
+                            type="number"
+                            min="1"
+                            max="200"
+                            value="{{ item.reps }}"
+                            required
+                        />
+                    </label><label>
+                        Charge réelle (kg)<input
+                            name="weight"
+                            type="number"
+                            min="0"
+                            max="1000"
+                            step="0.5"
+                            value="{{ item.weight }}"
+                            required
+                        />
+                    </label><label>
+                        Effort (RPE /10)<input
+                            name="rpe"
+                            type="number"
+                            min="1"
+                            max="10"
+                            step="0.5"
+                            value="7"
+                            required
+                        />
+                    </label><label>
+                        Notes<input name="notes" placeholder="Sensations, technique…" />
+                    </label><button>Noter ma performance</button>
+                </form>
+                <form
+                    method="post"
+                    action="/entrainements/{{ session.id }}/exercices/{{ item.id }}/supprimer"
+                >
+                    <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><button
+                        class="link small"
+                    >
+                        Retirer du programme de la séance
+                    </button>
+                </form>
+            </article>
+        {% else %}
+            <p class="empty">
+                Ajoute ton premier exercice ci-dessous.
+            </p>
+        {% endfor %}
+        <details {{ items is empty or exercise ? 'open' : '' }}>
+            <summary>
+                + Ajouter un exercice à cette séance
+            </summary>
+            <form
+                method="post"
+                action="/entrainements/{{ session.id }}/exercices"
+                class="form-grid"
+            >
+                <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><label
+                    class="wide"
+                >
+                    Exercice<input
+                        name="exercise"
+                        class="exercise-autocomplete"
+                        list="exercise-suggestions"
+                        value="{{ exercise }}"
+                        maxlength="250"
+                        required
+                        placeholder="Rechercher ou saisir un nom"
+                    />
+                    <datalist id="exercise-suggestions"></datalist>
+                </label><label>
+                    Séries prévues<input
+                        name="sets"
+                        type="number"
+                        min="1"
+                        max="50"
+                        value="3"
+                        required
+                    />
+                </label><label>
+                    Répétitions prévues<input
+                        name="reps"
+                        type="number"
+                        min="1"
+                        max="200"
+                        value="10"
+                        required
+                    />
+                </label><label>
+                    Charge prévue (kg)<input
+                        name="weight"
+                        type="number"
+                        min="0"
+                        max="1000"
+                        step="0.5"
+                        value="0"
+                        required
+                    />
+                </label><button>Ajouter</button>
+            </form>
+        </details>
+    </section>
+    <section class="panel">
+        <h2>Ce que j’ai réalisé</h2>
+        {% for log in logs %}
+            <details class="performance-entry">
+                <summary>
+                    {{ log.exercise }} · {{ log.sets }} × {{ log.reps }} à {{ log.weight }} kg · {{ log.sets
+                        * log.reps
+                        * log.weight }} kg de volume
+                </summary>
+                <form
+                    method="post"
+                    action="/entrainements/{{ session.id }}/performances"
+                    class="form-grid"
+                >
+                    <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                    <input type="hidden" name="log_id" value="{{ log.id }}" /><label>
+                        Exercice<input name="exercise" value="{{ log.exercise }}" required />
+                    </label><label>
+                        Séries<input
+                            name="sets"
+                            type="number"
+                            min="1"
+                            max="50"
+                            value="{{ log.sets }}"
+                            required
+                        />
+                    </label><label>
+                        Répétitions<input
+                            name="reps"
+                            type="number"
+                            min="1"
+                            max="200"
+                            value="{{ log.reps }}"
+                            required
+                        />
+                    </label><label>
+                        Charge (kg)<input
+                            name="weight"
+                            type="number"
+                            min="0"
+                            max="1000"
+                            step="0.5"
+                            value="{{ log.weight }}"
+                            required
+                        />
+                    </label><label>
+                        RPE<input
+                            name="rpe"
+                            type="number"
+                            min="1"
+                            max="10"
+                            step="0.5"
+                            value="{{ log.rpe }}"
+                            required
+                        />
+                    </label><label>
+                        Notes<input name="notes" value="{{ log.notes }}" />
+                    </label><button>Corriger</button>
+                </form>
+                <form
+                    method="post"
+                    action="/entrainements/{{ session.id }}/performances/{{ log.id }}/supprimer"
+                    data-confirm="Supprimer cette performance ?"
+                >
+                    <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><button
+                        class="link danger"
+                    >
+                        Supprimer cette performance
+                    </button>
+                </form>
+            </details>
+        {% else %}
+            <p class="muted">
+                Aucune performance notée. Les exercices prévus ne sont pas comptés comme réalisés.
+            </p>
+        {% endfor %}
+    </section>
+    <div class="actions">
+        <a class="button" href="/performances">Suivre ma progression →</a><form
+            method="post"
+            action="/entrainements/{{ session.id }}/supprimer"
+            data-confirm="Supprimer cette séance du planning ? Les performances resteront dans ton carnet."
+        >
+            <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><button
+                class="secondary danger"
+            >
+                Supprimer du planning
+            </button>
+        </form>
+    </div>
+{% endblock %}

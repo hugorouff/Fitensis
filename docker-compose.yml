@@ -1,0 +1,14 @@
+services:
+  gym:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - gym_data:/app/var
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      APP_SECRET: ${APP_SECRET:?Definissez APP_SECRET dans votre environnement}
+      DATABASE_URL: sqlite:////app/var/gym.db
+volumes:
+  gym_data:

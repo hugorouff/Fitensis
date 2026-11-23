@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>
+            Connexion · Fitensis
+        </title>
+        <link rel="icon" href="/assets/datensis-light.png" />
+        <link rel="stylesheet" href="/assets/app.css" />
+    </head>
+    <body class="login">
+        <div class="login-visual">
+            <span class="auth-brand"><span class="datensis-mark" aria-hidden="true"></span> Fitensis</span><h1>Chaque séance<br />compte.</h1>
+            <p>
+                Un espace pour organiser vos entraînements<br />et avancer à votre rythme.
+            </p>
+            <div class="orb"></div>
+        </div>
+        <section class="login-form">
+            <span class="eyebrow">BIENVENUE AU CLUB</span><h2>On s’y remet ?</h2>
+            <p class="muted">
+                Connectez-vous à votre espace.
+            </p>
+            {% if error %}
+                <div class="flash error">
+                    {{ error }}
+                </div>
+            {% endif %}
+            <form method="post">
+                <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><label>
+                    Adresse mail<input type="email" name="email" autocomplete="username" required />
+                </label><label>
+                    Mot de passe<input
+                        type="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                    />
+                </label><button>Se connecter →</button>
+            </form>
+            <p class="muted">
+                Pas encore de compte ? <a href="/inscription"><strong>Créer mon compte</strong></a>
+            </p>
+        </section>
+    </body>
+</html>

@@ -1,0 +1,3970 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <script>
+            {
+                const uid = "__USER__";
+                const get = Storage.prototype.getItem,
+                    set = Storage.prototype.setItem,
+                    remove = Storage.prototype.removeItem;
+                const key = (k) => (String(k).startsWith("gymapp") ? "user-" + uid + "-" + k : k);
+                Storage.prototype.getItem = function (k) {
+                    return get.call(this, key(k));
+                };
+                Storage.prototype.setItem = function (k, v) {
+                    return set.call(this, key(k), v);
+                };
+                Storage.prototype.removeItem = function (k) {
+                    return remove.call(this, key(k));
+                };
+            }
+        </script>
+        <meta name="csrf-token" content="__CSRF__" />
+        <script>
+            const originalFetch = window.fetch;
+            window.fetch = (url, options = {}) => {
+                if (
+                    typeof url === "string" &&
+                    url.startsWith("/api/") &&
+                    options.method &&
+                    !["GET", "HEAD"].includes(options.method.toUpperCase())
+                ) {
+                    options.headers = {
+                        ...options.headers,
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+                    };
+                }
+                return originalFetch(url, options);
+            };
+        </script>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fitensis - Recettes</title>
+
+        <style>
+            :root {
+                --bg: var(--fitensis-bg);
+                --card: var(--fitensis-card);
+                --card2: var(--fitensis-bg-soft);
+                --line: #293029;
+                --text: #fff;
+                --muted: var(--fitensis-muted);
+                --green: var(--fitensis-mint);
+                --green-soft: rgba(130, 196, 168, 0.12);
+                --green-border: rgba(130, 196, 168, 0.25);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                background:
+                    radial-gradient(circle at 85% 0%, rgba(130, 196, 168, 0.08), transparent 25%),
+                    var(--bg);
+                color: var(--text);
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .container {
+                width: min(1240px, calc(100% - 40px));
+                margin: auto;
+            }
+
+            .header {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+                background: rgba(9, 11, 10, 0.88);
+                backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            }
+
+            .header-inner {
+                min-height: 76px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                font-size: 25px;
+                font-weight: 900;
+                letter-spacing: 1.6px;
+            }
+
+            .dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: var(--green);
+                box-shadow: 0 0 18px rgba(130, 196, 168, 0.8);
+            }
+
+            .nav {
+                display: flex;
+                gap: 14px;
+                align-items: center;
+            }
+
+            .nav a {
+                color: #d3d8d4;
+                font-weight: 800;
+                font-size: 14px;
+            }
+
+            .nav a:hover {
+                color: var(--green);
+            }
+
+            .back {
+                background: var(--green);
+                color: var(--fitensis-on-mint) !important;
+                padding: 11px 17px;
+                border-radius: 999px;
+            }
+
+            .hero {
+                padding: 68px 0 38px;
+            }
+
+            .hero-badge {
+                display: inline-block;
+                background: var(--green-soft);
+                border: 1px solid var(--green-border);
+                color: #caffc0;
+                border-radius: 999px;
+                padding: 9px 13px;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                font-size: 11px;
+                font-weight: 900;
+                margin-bottom: 18px;
+            }
+
+            .hero h1 {
+                margin: 0;
+                font-size: clamp(42px, 7vw, 78px);
+                line-height: 0.95;
+                text-transform: uppercase;
+                letter-spacing: -1.5px;
+            }
+
+            .hero h1 span {
+                color: var(--green);
+            }
+
+            .hero p {
+                max-width: 750px;
+                color: var(--muted);
+                line-height: 1.7;
+                font-size: 17px;
+                margin: 20px 0 0;
+            }
+
+            .filters {
+                margin-top: 35px;
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .filter {
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: var(--fitensis-bg-soft);
+                color: #fff;
+                border-radius: 999px;
+                padding: 12px 18px;
+                cursor: pointer;
+                font-weight: 900;
+                transition: 0.2s;
+            }
+
+            .filter:hover,
+            .filter.active {
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+                border-color: var(--green);
+            }
+
+            .search-wrap {
+                margin: 25px 0;
+            }
+
+            .search {
+                width: 100%;
+                height: 56px;
+                border-radius: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: var(--fitensis-bg);
+                color: #fff;
+                padding: 0 18px;
+                font-size: 16px;
+                outline: none;
+            }
+
+            .search:focus {
+                border-color: var(--green-border);
+                box-shadow: 0 0 0 3px var(--green-soft);
+            }
+
+            .section-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: end;
+                gap: 18px;
+                margin: 28px 0 18px;
+            }
+
+            .section-head h2 {
+                margin: 0;
+                font-size: 28px;
+                text-transform: uppercase;
+            }
+
+            .section-head p {
+                margin: 6px 0 0;
+                color: var(--muted);
+            }
+
+            .count {
+                color: #caffc0;
+                border: 1px solid var(--green-border);
+                background: var(--green-soft);
+                border-radius: 999px;
+                padding: 8px 12px;
+                font-size: 12px;
+                font-weight: 900;
+                white-space: nowrap;
+            }
+
+            .recipes {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 18px;
+                padding-bottom: 60px;
+            }
+
+            .recipe {
+                background: linear-gradient(180deg, var(--fitensis-card), var(--fitensis-bg-soft));
+                border: 1px solid rgba(255, 255, 255, 0.07);
+                border-radius: 24px;
+                overflow: hidden;
+                transition: 0.2s;
+            }
+
+            .recipe:hover {
+                transform: translateY(-3px);
+                border-color: var(--green-border);
+            }
+
+            .image {
+                min-height: 185px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 62px;
+                background:
+                    radial-gradient(
+                        circle at top right,
+                        rgba(130, 196, 168, 0.12),
+                        transparent 38%
+                    ),
+                    var(--fitensis-bg-soft);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+
+            .recipe-body {
+                padding: 20px;
+            }
+
+            .goal {
+                display: inline-block;
+                margin-bottom: 12px;
+                padding: 7px 10px;
+                border-radius: 999px;
+                background: var(--green-soft);
+                color: #caffc0;
+                font-size: 10px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 0.7px;
+            }
+
+            .recipe h3 {
+                margin: 0 0 9px;
+                font-size: 22px;
+                line-height: 1.15;
+            }
+
+            .desc {
+                color: var(--muted);
+                line-height: 1.6;
+                font-size: 14px;
+                min-height: 66px;
+            }
+
+            .macros {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 7px;
+                margin: 16px 0;
+            }
+
+            .macro {
+                background: var(--fitensis-bg);
+                border-radius: 12px;
+                padding: 10px 7px;
+                text-align: center;
+            }
+
+            .macro small {
+                display: block;
+                color: #737d75;
+                font-size: 9px;
+                text-transform: uppercase;
+                font-weight: 900;
+                letter-spacing: 0.4px;
+                margin-bottom: 4px;
+            }
+
+            .macro strong {
+                font-size: 13px;
+            }
+
+            .details-btn {
+                width: 100%;
+                height: 46px;
+                border: 0;
+                border-radius: 999px;
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+                font-weight: 900;
+                cursor: pointer;
+            }
+
+            .details-btn:hover {
+                background: var(--fitensis-mint-hover);
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                inset: 0;
+                padding: 20px;
+                background: rgba(0, 0, 0, 0.82);
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal-card {
+                width: min(720px, 96vw);
+                max-height: 90vh;
+                overflow: auto;
+                background: var(--fitensis-card);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 24px;
+                padding: 24px;
+                position: relative;
+            }
+
+            .close {
+                position: absolute;
+                right: 14px;
+                top: 10px;
+                border: 0;
+                color: #fff;
+                background: none;
+                font-size: 30px;
+                cursor: pointer;
+            }
+
+            .modal-card h2 {
+                margin: 0 40px 10px 0;
+                font-size: 30px;
+            }
+
+            .modal-card h3 {
+                color: var(--green);
+                margin-top: 24px;
+                text-transform: uppercase;
+                font-size: 14px;
+                letter-spacing: 0.5px;
+            }
+
+            .modal-card ul,
+            .modal-card ol {
+                padding-left: 22px;
+                line-height: 1.7;
+                color: #d8ded9;
+            }
+
+            .note {
+                margin: 0 0 60px;
+                color: #737d75;
+                font-size: 12px;
+                line-height: 1.6;
+                text-align: center;
+            }
+
+            @media (max-width: 1024px) {
+                .recipes {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 700px) {
+                .container {
+                    width: min(100% - 24px, 1240px);
+                }
+                .recipes {
+                    grid-template-columns: 1fr;
+                }
+                .nav a:not(.back) {
+                    display: none;
+                }
+                .macros {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
+            .pantry-section {
+                margin: 22px 0 28px;
+                padding: 24px;
+                background:
+                    radial-gradient(
+                        circle at top right,
+                        rgba(130, 196, 168, 0.09),
+                        transparent 35%
+                    ),
+                    linear-gradient(180deg, var(--fitensis-card), var(--fitensis-bg-soft));
+                border: 1px solid var(--green-border);
+                border-radius: 24px;
+            }
+
+            .pantry-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 18px;
+                flex-wrap: wrap;
+                margin-bottom: 18px;
+            }
+
+            .pantry-head h2 {
+                margin: 0 0 7px;
+                font-size: 25px;
+                text-transform: uppercase;
+            }
+
+            .pantry-head p {
+                margin: 0;
+                color: var(--muted);
+                line-height: 1.6;
+                max-width: 720px;
+            }
+
+            .pantry-input-row {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+
+            .pantry-input {
+                width: 100%;
+                height: 52px;
+                border-radius: 14px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: var(--fitensis-bg);
+                color: #fff;
+                padding: 0 16px;
+                font-size: 15px;
+                outline: none;
+            }
+
+            .pantry-input:focus {
+                border-color: var(--green-border);
+                box-shadow: 0 0 0 3px var(--green-soft);
+            }
+
+            .pantry-add {
+                border: 0;
+                border-radius: 999px;
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+                font-weight: 900;
+                padding: 0 20px;
+                cursor: pointer;
+            }
+
+            .pantry-add:hover {
+                background: var(--fitensis-mint-hover);
+            }
+
+            .pantry-actions {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin: 12px 0;
+            }
+
+            .pantry-action {
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: var(--fitensis-bg-soft);
+                color: #fff;
+                border-radius: 999px;
+                padding: 10px 15px;
+                font-weight: 800;
+                cursor: pointer;
+            }
+
+            .pantry-action.primary {
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+                border-color: var(--green);
+            }
+
+            .pantry-action:hover {
+                border-color: var(--green-border);
+            }
+
+            .pantry-tags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                min-height: 38px;
+                margin-top: 12px;
+            }
+
+            .pantry-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 11px;
+                border-radius: 999px;
+                background: var(--green-soft);
+                border: 1px solid var(--green-border);
+                color: #d7ffd0;
+                font-size: 12px;
+                font-weight: 800;
+            }
+
+            .pantry-tag button {
+                border: 0;
+                background: none;
+                color: #fff;
+                cursor: pointer;
+                padding: 0;
+                font-size: 14px;
+                line-height: 1;
+            }
+
+            .pantry-empty {
+                color: #748077;
+                font-size: 13px;
+                padding: 7px 0;
+            }
+
+            .quick-ingredients {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 7px;
+                margin-top: 14px;
+            }
+
+            .quick-ingredients button {
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                background: var(--fitensis-bg);
+                color: #cbd2cc;
+                border-radius: 999px;
+                padding: 8px 11px;
+                font-size: 11px;
+                cursor: pointer;
+            }
+
+            .quick-ingredients button:hover {
+                color: var(--fitensis-on-mint);
+                background: var(--green);
+                border-color: var(--green);
+            }
+
+            .match-box {
+                margin-top: 14px;
+                padding: 13px;
+                border-radius: 14px;
+                background: var(--fitensis-bg);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+            }
+
+            .match-row {
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+                align-items: center;
+                font-size: 12px;
+                color: #d8ded9;
+                margin-bottom: 8px;
+            }
+
+            .match-progress {
+                width: 100%;
+                height: 7px;
+                background: #222923;
+                border-radius: 999px;
+                overflow: hidden;
+            }
+
+            .match-progress span {
+                display: block;
+                height: 100%;
+                background: var(--green);
+                border-radius: 999px;
+            }
+
+            .missing {
+                margin-top: 9px;
+                color: #8f9b91;
+                font-size: 11px;
+                line-height: 1.5;
+            }
+
+            .suggestion-banner {
+                display: none;
+                margin: 0 0 20px;
+                padding: 15px 17px;
+                border-radius: 16px;
+                background: var(--green-soft);
+                border: 1px solid var(--green-border);
+                color: #ddffd7;
+                line-height: 1.5;
+                font-size: 13px;
+            }
+
+            .suggestion-banner strong {
+                color: var(--green);
+            }
+
+            @media (max-width: 700px) {
+                .pantry-input-row {
+                    grid-template-columns: 1fr;
+                }
+
+                .pantry-add {
+                    height: 48px;
+                }
+            }
+
+            .internet-section {
+                margin: 0 0 32px;
+                display: none;
+            }
+
+            .internet-head {
+                display: flex;
+                justify-content: space-between;
+                gap: 18px;
+                align-items: end;
+                margin-bottom: 16px;
+            }
+
+            .internet-head h2 {
+                margin: 0 0 6px;
+                font-size: 28px;
+                text-transform: uppercase;
+            }
+
+            .internet-head p {
+                margin: 0;
+                color: var(--muted);
+                line-height: 1.5;
+            }
+
+            .internet-source {
+                white-space: nowrap;
+                border: 1px solid var(--green-border);
+                background: var(--green-soft);
+                color: #d5ffcd;
+                border-radius: 999px;
+                padding: 8px 12px;
+                font-size: 11px;
+                font-weight: 900;
+            }
+
+            .internet-loading {
+                padding: 20px;
+                border-radius: 16px;
+                border: 1px solid var(--green-border);
+                background: var(--green-soft);
+                color: #d9ffd2;
+            }
+
+            .web-recipe .image {
+                padding: 0;
+                overflow: hidden;
+            }
+
+            .web-recipe .image img {
+                width: 100%;
+                height: 185px;
+                object-fit: cover;
+                display: block;
+            }
+
+            .web-badge {
+                display: inline-block;
+                margin-left: 6px;
+                padding: 5px 8px;
+                border-radius: 999px;
+                background: #16381b;
+                color: #a9ff9a;
+                font-size: 9px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+            }
+
+            .source-link {
+                display: inline-flex;
+                margin-top: 10px;
+                color: #bfffaf;
+                font-size: 12px;
+                font-weight: 900;
+            }
+
+            .source-link:hover {
+                color: var(--green);
+            }
+
+            .owned-ingredients {
+                margin-top: 12px;
+            }
+
+            .owned-title {
+                margin-bottom: 8px;
+                color: #aeb8b0;
+                font-size: 11px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 0.7px;
+            }
+
+            .owned-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 7px;
+            }
+
+            .owned-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 9px;
+                border-radius: 999px;
+                background: rgba(130, 196, 168, 0.15);
+                border: 1px solid rgba(130, 196, 168, 0.38);
+                color: #cfffca;
+                font-size: 11px;
+                font-weight: 900;
+                box-shadow: 0 0 12px rgba(130, 196, 168, 0.05);
+            }
+
+            .owned-chip::before {
+                content: "✓";
+                color: var(--green);
+                font-weight: 900;
+            }
+
+            .ingredient-line {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                margin: 7px 0;
+                padding: 9px 11px;
+                border-radius: 11px;
+                border: 1px solid transparent;
+            }
+
+            .ingredient-line.owned {
+                background: rgba(130, 196, 168, 0.12);
+                border-color: rgba(130, 196, 168, 0.28);
+                color: #ddffd7;
+            }
+
+            .ingredient-line.missing {
+                background: rgba(255, 255, 255, 0.025);
+                color: #c7cec8;
+            }
+
+            .ingredient-status {
+                flex: 0 0 auto;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: 900;
+                margin-top: 1px;
+            }
+
+            .ingredient-line.owned .ingredient-status {
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+            }
+
+            .ingredient-line.missing .ingredient-status {
+                background: #2a2f2b;
+                color: #98a099;
+            }
+
+            .ingredient-text strong {
+                color: inherit;
+            }
+
+            .legend {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin: 10px 0 16px;
+                font-size: 11px;
+                color: #9aa39c;
+            }
+
+            .legend span {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .legend-dot {
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                display: inline-block;
+            }
+
+            .legend-dot.have {
+                background: var(--green);
+                box-shadow: 0 0 8px rgba(130, 196, 168, 0.35);
+            }
+
+            .legend-dot.need {
+                background: #444b45;
+            }
+
+            .daily-planner {
+                margin: 0 0 30px;
+                padding: 26px;
+                border-radius: 26px;
+                border: 1px solid var(--green-border);
+                background:
+                    radial-gradient(circle at top right, rgba(130, 196, 168, 0.1), transparent 36%),
+                    linear-gradient(180deg, var(--fitensis-card), var(--fitensis-bg-soft));
+            }
+
+            .daily-planner-head {
+                display: flex;
+                justify-content: space-between;
+                gap: 18px;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                margin-bottom: 20px;
+            }
+
+            .daily-planner-head h2 {
+                margin: 0 0 8px;
+                font-size: 28px;
+                text-transform: uppercase;
+            }
+
+            .daily-planner-head p {
+                margin: 0;
+                max-width: 760px;
+                color: var(--muted);
+                line-height: 1.6;
+            }
+
+            .daily-goals {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-bottom: 16px;
+            }
+
+            .daily-goal {
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: var(--fitensis-bg);
+                color: #fff;
+                border-radius: 999px;
+                padding: 10px 15px;
+                cursor: pointer;
+                font-weight: 900;
+            }
+
+            .daily-goal.active {
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+                border-color: var(--green);
+            }
+
+            .daily-controls {
+                display: grid;
+                grid-template-columns: minmax(180px, 260px) auto auto;
+                gap: 10px;
+                align-items: end;
+            }
+
+            .daily-field label {
+                display: block;
+                margin-bottom: 7px;
+                color: #dce3dd;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                font-weight: 900;
+            }
+
+            .daily-field input {
+                width: 100%;
+                height: 50px;
+                border-radius: 14px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: var(--fitensis-bg);
+                color: #fff;
+                padding: 0 15px;
+                font-size: 17px;
+                outline: none;
+            }
+
+            .daily-field input:focus {
+                border-color: var(--green-border);
+                box-shadow: 0 0 0 3px var(--green-soft);
+            }
+
+            .daily-btn {
+                min-height: 50px;
+                border-radius: 999px;
+                border: 1px solid var(--green-border);
+                padding: 0 18px;
+                cursor: pointer;
+                font-weight: 900;
+                background: #101510;
+                color: #dfffd9;
+            }
+
+            .daily-btn.primary {
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+                border-color: var(--green);
+            }
+
+            .daily-btn:hover {
+                transform: translateY(-1px);
+            }
+
+            .saved-calorie-note {
+                margin-top: 12px;
+                color: #93a197;
+                font-size: 12px;
+                line-height: 1.5;
+            }
+
+            .daily-result {
+                display: none;
+                margin-top: 24px;
+            }
+
+            .daily-summary {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+                margin-bottom: 16px;
+            }
+
+            .daily-stat {
+                background: var(--fitensis-bg);
+                border: 1px solid rgba(255, 255, 255, 0.07);
+                border-radius: 16px;
+                padding: 14px;
+                text-align: center;
+            }
+
+            .daily-stat span {
+                display: block;
+                color: #849087;
+                font-size: 10px;
+                text-transform: uppercase;
+                font-weight: 900;
+                letter-spacing: 0.6px;
+                margin-bottom: 5px;
+            }
+
+            .daily-stat strong {
+                font-size: 20px;
+            }
+
+            .daily-stat.highlight strong {
+                color: var(--green);
+            }
+
+            .daily-meals {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 13px;
+            }
+
+            .daily-meal {
+                background: #0c100d;
+                border: 1px solid rgba(255, 255, 255, 0.07);
+                border-radius: 20px;
+                padding: 18px;
+            }
+
+            .daily-meal-top {
+                display: flex;
+                gap: 13px;
+                align-items: flex-start;
+            }
+
+            .daily-emoji {
+                width: 48px;
+                height: 48px;
+                flex: 0 0 48px;
+                display: grid;
+                place-items: center;
+                border-radius: 14px;
+                background: var(--green-soft);
+                font-size: 24px;
+            }
+
+            .daily-slot {
+                color: var(--green);
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                font-weight: 900;
+                margin-bottom: 4px;
+            }
+
+            .daily-meal h3 {
+                margin: 0;
+                font-size: 18px;
+            }
+
+            .daily-meal-macros {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 7px;
+                margin: 13px 0;
+            }
+
+            .daily-macro {
+                padding: 6px 8px;
+                border-radius: 999px;
+                background: #151a16;
+                color: #cbd4cd;
+                font-size: 10px;
+                font-weight: 800;
+            }
+
+            .daily-ingredients {
+                margin: 10px 0 0;
+                padding-left: 18px;
+                color: #aeb8b0;
+                line-height: 1.55;
+                font-size: 12px;
+            }
+
+            .daily-portion {
+                margin-top: 12px;
+                color: #90a094;
+                font-size: 11px;
+            }
+
+            .daily-pantry {
+                margin-top: 10px;
+                color: #c9ffc0;
+                font-size: 11px;
+            }
+
+            .daily-bottom {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-top: 16px;
+            }
+
+            .daily-warning {
+                margin-top: 14px;
+                color: #758078;
+                font-size: 11px;
+                line-height: 1.5;
+            }
+
+            @media (max-width: 800px) {
+                .daily-controls {
+                    grid-template-columns: 1fr;
+                }
+
+                .daily-summary {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+
+                .daily-meals {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .daily-target-summary {
+                margin: -4px 0 16px;
+                padding: 13px 15px;
+                border-radius: 14px;
+                background: rgba(130, 196, 168, 0.07);
+                border: 1px solid rgba(130, 196, 168, 0.15);
+                color: #b8c5bb;
+                font-size: 12px;
+                line-height: 1.55;
+            }
+
+            .daily-target-summary strong {
+                color: #dfffd9;
+            }
+
+            @media (min-width: 801px) {
+                .daily-controls {
+                    grid-template-columns: minmax(170px, 230px) minmax(150px, 200px) auto auto;
+                }
+            }
+
+            .daily-stat small {
+                display: block;
+                margin-top: 5px;
+                font-size: 10px;
+                font-weight: 900;
+            }
+
+            .daily-stat small.good {
+                color: var(--green);
+            }
+
+            .daily-stat small.warn {
+                color: #ffbf69;
+            }
+
+            .daily-target-summary {
+                line-height: 1.65;
+            }
+
+            .daily-distribution {
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+                margin: 10px 0 2px;
+                padding: 8px 10px;
+                border-radius: 10px;
+                font-size: 10px;
+                font-weight: 800;
+            }
+
+            .daily-distribution.ok {
+                color: #cfffca;
+                background: rgba(130, 196, 168, 0.07);
+                border: 1px solid rgba(130, 196, 168, 0.16);
+            }
+
+            .daily-distribution.warning {
+                color: #ffd19a;
+                background: rgba(255, 177, 74, 0.07);
+                border: 1px solid rgba(255, 177, 74, 0.18);
+            }
+
+            .calc-profile {
+                padding: 22px;
+                border-radius: 20px;
+                border: 1px solid rgba(130, 196, 168, 0.24);
+                background: #0b100c;
+                margin: 0 0 24px;
+            }
+            .calc-profile h3 {
+                font-size: 20px;
+                margin: 0 0 7px;
+            }
+            .calc-profile p {
+                font-size: 13px;
+                color: #9ea99f;
+                line-height: 1.6;
+                margin: 0 0 15px;
+            }
+            .calc-fields {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(110px, 1fr));
+                gap: 10px;
+                align-items: end;
+            }
+            .calc-fields label {
+                font-size: 11px;
+                color: #c2cfc4;
+                font-weight: 800;
+                display: block;
+                margin-bottom: 8px;
+            }
+            .calc-fields input,
+            .calc-fields select {
+                width: 100%;
+                height: 48px;
+                background: #0c110d;
+                border: 1px solid #3a4c3b;
+                border-radius: 11px;
+                color: #fff;
+                font-size: 14px;
+                padding: 0 11px;
+            }
+            .daily-controls {
+                grid-template-columns: repeat(3, minmax(130px, 1fr)) auto auto;
+            }
+            .daily-field select {
+                width: 100%;
+                height: 50px;
+                background: var(--fitensis-bg);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 14px;
+                padding: 0 10px;
+            }
+            .profile-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+                margin-top: 13px;
+            }
+            .profile-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 9px;
+                margin-top: 16px;
+            }
+            .profile-card {
+                background: #111b12;
+                border: 1px solid #344d35;
+                border-radius: 15px;
+                padding: 15px;
+                text-align: left;
+                color: #e5ffe0;
+                cursor: pointer;
+            }
+            .profile-card:hover {
+                border-color: var(--green);
+                background: #192519;
+            }
+            .profile-card strong {
+                display: block;
+                color: var(--green);
+                font-size: 24px;
+                margin: 5px 0;
+            }
+            .profile-card small {
+                color: #b3c8b5;
+                display: block;
+                line-height: 1.5;
+            }
+            .profile-meta {
+                font-size: 12px;
+                color: #a7c6a7;
+                margin-top: 10px;
+                line-height: 1.6;
+            }
+            .online-menu {
+                margin-top: 24px;
+                padding-top: 19px;
+                border-top: 1px solid #2d3c30;
+            }
+            .online-menu h3 {
+                font-size: 21px;
+                margin: 0 0 7px;
+            }
+            .online-menu p {
+                font-size: 12px;
+                color: #9ba69e;
+                line-height: 1.6;
+                margin: 0 0 14px;
+            }
+            .online-menu-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .online-meal {
+                border: 1px solid #324033;
+                background: #0d120e;
+                border-radius: 16px;
+                overflow: hidden;
+            }
+            .online-meal img {
+                width: 100%;
+                height: 125px;
+                object-fit: cover;
+                display: block;
+            }
+            .online-meal-content {
+                padding: 13px;
+            }
+            .online-meal-content .kind {
+                font-size: 10px;
+                text-transform: uppercase;
+                font-weight: 900;
+                color: var(--green);
+                letter-spacing: 0.3px;
+            }
+            .online-meal-content h4 {
+                font-size: 15px;
+                margin: 8px 0;
+            }
+            .online-meal-content p {
+                font-size: 11px;
+                margin: 0 0 10px;
+            }
+            .online-meal-content a {
+                color: var(--green);
+                font-weight: 800;
+                font-size: 12px;
+            }
+            .nutrition-alert {
+                font-size: 12px;
+                color: #ffc88a;
+                border: 1px solid #71502a;
+                border-radius: 11px;
+                background: #20170c;
+                padding: 11px;
+                margin: 10px 0;
+            }
+            @media (max-width: 920px) {
+                .calc-fields {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+                .online-menu-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+            @media (max-width: 600px) {
+                .calc-fields,
+                .profile-grid,
+                .online-menu-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            @media (max-width: 1040px) {
+                .daily-controls {
+                    grid-template-columns: repeat(3, minmax(120px, 1fr));
+                }
+            }
+            @media (max-width: 800px) {
+                .daily-controls {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* Séparation explicite entre objectif enregistré et estimation automatique */
+            .daily-mode-switch {
+                display: flex;
+                gap: 9px;
+                align-items: center;
+                flex-wrap: wrap;
+                margin: 0 0 17px;
+            }
+            .daily-mode-choice {
+                border: 1px solid rgba(130, 196, 168, 0.23);
+                border-radius: 999px;
+                background: #111812;
+                color: #d7e5d7;
+                padding: 11px 17px;
+                font-size: 13px;
+                font-weight: 900;
+                cursor: pointer;
+            }
+            .daily-mode-choice.active {
+                background: var(--green);
+                border-color: var(--green);
+                color: var(--fitensis-on-mint);
+            }
+            .daily-mode-explainer {
+                font-size: 12px;
+                color: #b9c8b8;
+                line-height: 1.5;
+                flex-basis: 100%;
+                margin: 4px 0 0;
+            }
+            .daily-manual-banner {
+                border: 1px solid rgba(130, 196, 168, 0.25);
+                background: rgba(130, 196, 168, 0.07);
+                border-radius: 13px;
+                padding: 12px 14px;
+                line-height: 1.6;
+                margin: 13px 0 18px;
+                font-size: 13px;
+                color: #c9dfca;
+            }
+            .daily-manual-banner strong {
+                color: var(--green);
+            }
+            @media (max-width: 680px) {
+                .daily-mode-switch .daily-mode-choice {
+                    flex: 1 1 100%;
+                }
+            }
+
+            .weight-trend {
+                margin: 18px 0 0;
+                padding: 17px;
+                border-radius: 18px;
+                background: #101711;
+                border: 1px solid rgba(130, 196, 168, 0.2);
+            }
+            .weight-trend summary {
+                cursor: pointer;
+                font-weight: 900;
+                font-size: 15px;
+                color: #b9ffa8;
+            }
+            .weight-trend p {
+                font-size: 12px;
+                color: #a6b5a9;
+                line-height: 1.65;
+                margin: 12px 0;
+            }
+            .weight-trend-fields {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 10px;
+                margin: 14px 0;
+            }
+            .weight-trend-fields label {
+                display: block;
+                font-size: 11px;
+                color: #b8c6bd;
+                margin-bottom: 6px;
+            }
+            .weight-trend-fields input {
+                width: 100%;
+                min-width: 0;
+                border-radius: 12px;
+                padding: 12px;
+                background: #080e0a;
+                border: 1px solid #2a3b2d;
+                color: #fff;
+            }
+            .weight-trend .trend-actions {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .weight-trend .trend-actions button {
+                padding: 12px 16px;
+                border-radius: 99px;
+                cursor: pointer;
+                background: var(--green);
+                color: #0b120a;
+                border: 0;
+                font-weight: 900;
+            }
+            .weight-trend .trend-actions button.secondary {
+                border: 1px solid rgba(130, 196, 168, 0.38);
+                color: #c5ffc0;
+                background: #142015;
+            }
+            .weight-trend .trend-actions button[disabled] {
+                opacity: 0.5;
+                cursor: default;
+            }
+            .trend-status {
+                font-size: 12px;
+                color: #d0e5d3;
+                line-height: 1.6;
+                margin-top: 12px;
+                min-height: 14px;
+            }
+            .daily-web-link {
+                display: block;
+                margin-top: 13px;
+                padding: 9px 14px;
+                border: 1px solid rgba(130, 196, 168, 0.32);
+                border-radius: 99px;
+                color: #c7ffb9;
+                background: #121c14;
+                font-weight: 800;
+                font-size: 12px;
+                cursor: pointer;
+                text-align: center;
+            }
+            .daily-web-link:hover {
+                background: rgba(130, 196, 168, 0.14);
+            }
+            @media (max-width: 800px) {
+                .weight-trend-fields {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+            @media (max-width: 520px) {
+                .weight-trend-fields {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+        <link rel="icon" href="/assets/datensis-light.png" />
+        <link rel="stylesheet" href="/assets/continuity.css" />
+    </head>
+
+    <body>
+        __NAV__
+        <div class="container flash-container">__FLASHES__</div>
+
+        <main class="container">
+            <section class="hero">
+                <div class="hero-badge">Nutrition sportive</div>
+                <h1>Mange selon ton <span>objectif.</span></h1>
+
+                <p>
+                    Choisis ton objectif et retrouve des idées de repas simples. Les calories et
+                    macros indiquées sont des estimations par portion.
+                </p>
+
+                <div class="filters">
+                    <button class="filter active" data-goal="all">Toutes</button>
+                    <button class="filter" data-goal="cut">🔥 Sèche</button>
+                    <button class="filter" data-goal="maintain">⚖️ Maintien</button>
+                    <button class="filter" data-goal="bulk">💪 Prise de masse</button>
+                </div>
+            </section>
+
+            <section class="daily-planner" id="dailyPlanner">
+                <div class="daily-planner-head">
+                    <div>
+                        <h2>🍽️ Mon menu de la journée</h2>
+                        <p>
+                            Choisis ton objectif et ton nombre de calories. Les quantités sont
+                            recalculées directement, et les calories sont mieux réparties entre les
+                            quatre repas.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="calc-profile">
+                    <h3>01 / Calculer mes besoins</h3>
+                    <p>
+                        Indique ton poids, ta taille, ton activité, puis
+                        <strong>ton poids et ta date cible</strong>. Le déficit sera proposé pour
+                        ton calendrier, sans garantir la date. Tu peux modifier les calories et les
+                        protéines indépendamment.
+                    </p>
+                    <div class="calc-fields">
+                        <div>
+                            <label for="profileSex">Sexe (formule)</label
+                            ><select id="profileSex">
+                                <option value="male">Homme</option>
+                                <option value="female">Femme</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="profileAge">Âge (années)</label
+                            ><input
+                                id="profileAge"
+                                type="number"
+                                min="18"
+                                max="100"
+                                placeholder="21"
+                            />
+                        </div>
+                        <div>
+                            <label for="profileWeight">Poids (kg)</label
+                            ><input
+                                id="profileWeight"
+                                type="number"
+                                min="35"
+                                max="250"
+                                step="0.1"
+                                placeholder="92"
+                            />
+                        </div>
+                        <div>
+                            <label for="profileHeight">Taille (cm)</label
+                            ><input
+                                id="profileHeight"
+                                type="number"
+                                min="120"
+                                max="230"
+                                placeholder="183"
+                            />
+                        </div>
+                        <div>
+                            <label for="profileActivity">Activité totale (hors salle incluse)</label
+                            ><select id="profileActivity">
+                                <option value="1.2">Sédentaire</option>
+                                <option value="1.375">Légère</option>
+                                <option value="1.55" selected>Modérée</option>
+                                <option value="1.725">Très active</option>
+                                <option value="1.9">Extrême</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="profileTargetWeight">Poids souhaité en sèche (kg)</label
+                            ><input
+                                id="profileTargetWeight"
+                                type="number"
+                                min="35"
+                                max="250"
+                                step="0.1"
+                                value="85"
+                            />
+                        </div>
+                        <div>
+                            <label for="profileTargetDate">Date souhaitée</label
+                            ><input id="profileTargetDate" type="date" value="2026-12-31" />
+                        </div>
+                        <div>
+                            <label for="profileProtein">Protéines de sèche (g/kg)</label
+                            ><select id="profileProtein">
+                                <option value="1.6">1,6 g/kg</option>
+                                <option value="1.8" selected>1,8 g/kg</option>
+                                <option value="2.0">2,0 g/kg</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p style="font-size: 11px; margin-top: 10px">
+                        Le coefficient d'activité inclut toute la journée : une séance à la salle ne
+                        signifie pas forcément « très actif ».
+                    </p>
+                    <div class="profile-actions">
+                        <button id="calculateProfile" class="daily-btn primary" type="button">
+                            Calculer mes besoins</button
+                        ><span id="profileStatus" style="font-size: 12px; color: #b5c9b8"></span>
+                    </div>
+                    <div id="profileResults" class="profile-grid"></div>
+                    <div id="profileTrajectory" class="profile-meta" role="status"></div>
+
+                    <details class="weight-trend" id="weightTrendBox">
+                        <summary>Calibrer mon maintien avec mon poids réel (optionnel)</summary>
+                        <p>
+                            Le chiffre 3 410 kcal vient du niveau « Très actif », pas d'une mesure.
+                            Si tu notes vraiment tes apports et tes moyennes de poids pendant 10 à
+                            90 jours, tu peux estimer ton maintien à partir de ton évolution. Les
+                            premières semaines restent incertaines (eau, glycogène).
+                        </p>
+                        <div class="weight-trend-fields">
+                            <div>
+                                <label for="trendCalories"
+                                    >Calories <b>réellement consommées</b> en moyenne / jour</label
+                                ><input
+                                    id="trendCalories"
+                                    type="number"
+                                    min="1200"
+                                    max="6000"
+                                    placeholder="Ex. 2300"
+                                />
+                            </div>
+                            <div>
+                                <label for="trendStartWeight">Poids moyen au début (kg)</label
+                                ><input
+                                    id="trendStartWeight"
+                                    type="number"
+                                    min="35"
+                                    max="250"
+                                    step="0.1"
+                                    placeholder="Ex. 92,5"
+                                />
+                            </div>
+                            <div>
+                                <label for="trendEndWeight">Poids moyen à la fin (kg)</label
+                                ><input
+                                    id="trendEndWeight"
+                                    type="number"
+                                    min="35"
+                                    max="250"
+                                    step="0.1"
+                                    placeholder="Ex. 92"
+                                />
+                            </div>
+                            <div>
+                                <label for="trendDays">Durée entre les deux moyennes (jours)</label
+                                ><input id="trendDays" type="number" min="10" max="90" value="14" />
+                            </div>
+                        </div>
+                        <div class="trend-actions">
+                            <button type="button" id="calculateWeightTrend">
+                                Estimer depuis mes pesées
+                            </button>
+                            <button type="button" id="applyWeightTrend" class="secondary" disabled>
+                                Utiliser ce maintien estimé
+                            </button>
+                        </div>
+                        <div id="weightTrendStatus" class="trend-status" role="status"></div>
+                    </details>
+                </div>
+
+                <div class="daily-manual-banner">
+                    <strong id="dailyManualBannerText"
+                        >🎯 Ta cible personnelle de sèche : 2 300 kcal/jour</strong
+                    >
+                    par défaut, avec 1,8 g de protéines/kg. Ce sont des réglages personnalisables,
+                    indépendants des estimations calculées à partir de l’activité.
+                </div>
+
+                <div class="daily-goals">
+                    <button class="daily-goal" data-daily-goal="cut" type="button">🔥 Sèche</button>
+                    <button class="daily-goal active" data-daily-goal="maintain" type="button">
+                        ⚖️ Maintien
+                    </button>
+                    <button class="daily-goal" data-daily-goal="bulk" type="button">
+                        💪 Prise de masse
+                    </button>
+                </div>
+
+                <div class="daily-mode-switch" aria-label="Méthode de choix des calories">
+                    <button
+                        class="daily-mode-choice active"
+                        id="dailyModeCustom"
+                        type="button"
+                        aria-pressed="true"
+                    >
+                        🎯 Mon objectif personnalisé
+                    </button>
+                    <button
+                        class="daily-mode-choice"
+                        id="dailyModeAuto"
+                        type="button"
+                        aria-pressed="false"
+                    >
+                        📊 Estimation automatique
+                    </button>
+                    <p class="daily-mode-explainer" id="dailyModeDescription">
+                        Ton objectif est conservé, même si tu changes de régime ou recalcules tes
+                        besoins.
+                    </p>
+                </div>
+
+                <div class="daily-controls">
+                    <div class="daily-field">
+                        <label for="dailyCalories">Calories par jour</label>
+                        <input
+                            id="dailyCalories"
+                            type="number"
+                            min="1200"
+                            max="6000"
+                            step="50"
+                            placeholder="Ex. 2600"
+                        />
+                    </div>
+
+                    <div class="daily-field">
+                        <label for="dailyWeight">Ton poids (kg)</label>
+                        <input
+                            id="dailyWeight"
+                            type="number"
+                            min="40"
+                            max="250"
+                            step="0.1"
+                            placeholder="Ex. 92"
+                        />
+                    </div>
+                    <div class="daily-field">
+                        <label for="dailyProtein">Protéines (g/kg)</label>
+                        <select id="dailyProtein" aria-label="Protéines par kilo">
+                            <option value="1.6">1,6 g/kg</option>
+                            <option value="1.8" selected>1,8 g/kg</option>
+                            <option value="2.0">2,0 g/kg</option>
+                        </select>
+                    </div>
+
+                    <button
+                        id="useSavedCalories"
+                        class="daily-btn"
+                        type="button"
+                        title="Passe explicitement en mode estimation automatique, sans effacer ton objectif personnalisé"
+                    >
+                        Appliquer l’estimation
+                    </button>
+
+                    <button id="generateDailyMenu" class="daily-btn primary" type="button">
+                        Générer ma journée
+                    </button>
+                </div>
+
+                <div id="savedCalorieNote" class="saved-calorie-note" role="status">
+                    Objectif personnalisé de sèche : 2 300 kcal/jour. Toute modification sera
+                    sauvegardée.
+                </div>
+                <div id="dailyGoalWarning" class="profile-meta" role="status"></div>
+
+                <div id="dailyResult" class="daily-result">
+                    <div id="dailySummary" class="daily-summary"></div>
+                    <div id="dailyTargetSummary" class="daily-target-summary"></div>
+                    <div id="dailyMeals" class="daily-meals"></div>
+
+                    <div class="daily-bottom">
+                        <button id="regenerateDailyMenu" class="daily-btn primary" type="button">
+                            ↻ Changer le menu
+                        </button>
+                    </div>
+
+                    <div class="daily-warning">
+                        Les valeurs nutritionnelles restent des estimations. Pèse les aliments et
+                        utilise les informations nutritionnelles de tes produits pour un suivi
+                        précis.
+                    </div>
+                    <section id="dailyInternet" class="online-menu">
+                        <h3>02 / Inspirations de recettes sur Internet</h3>
+                        <p>
+                            Recettes réellement récupérées depuis TheMealDB selon tes courses et ton
+                            objectif. Elles servent d'alternatives :
+                            <strong
+                                >les valeurs nutritionnelles de ces recettes ne sont pas vérifiées
+                                et ne sont pas comptées dans le total du menu</strong
+                            >.
+                        </p>
+                        <div id="dailyInternetStatus" class="profile-meta">
+                            Recherche disponible à la génération du menu.
+                        </div>
+                        <div id="dailyInternetCards" class="online-menu-grid"></div>
+                    </section>
+                </div>
+            </section>
+
+            <section class="pantry-section">
+                <div class="pantry-head">
+                    <div>
+                        <h2>🛒 Mes courses / mon frigo</h2>
+                        <p>
+                            Ajoute les aliments que tu as chez toi. Fitensis classera les recettes
+                            selon le nombre d’ingrédients déjà disponibles et te dira ce qu’il te
+                            manque.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="pantry-input-row">
+                    <input
+                        id="pantryInput"
+                        class="pantry-input"
+                        placeholder="Ex. poulet, riz, œufs, skyr, banane..."
+                    />
+                    <button id="addPantry" class="pantry-add" type="button">Ajouter</button>
+                </div>
+
+                <div class="pantry-actions">
+                    <button id="findRecipes" class="pantry-action primary" type="button">
+                        ✨ Proposer des recettes
+                    </button>
+                    <button id="showAllAgain" class="pantry-action" type="button">
+                        Voir toutes les recettes
+                    </button>
+                    <button id="clearPantry" class="pantry-action" type="button">
+                        Vider mes courses
+                    </button>
+                </div>
+
+                <div id="pantryTags" class="pantry-tags"></div>
+
+                <div class="quick-ingredients">
+                    <button type="button" data-quick="poulet">+ Poulet</button>
+                    <button type="button" data-quick="riz">+ Riz</button>
+                    <button type="button" data-quick="pâtes">+ Pâtes</button>
+                    <button type="button" data-quick="œufs">+ Œufs</button>
+                    <button type="button" data-quick="skyr">+ Skyr</button>
+                    <button type="button" data-quick="avoine">+ Avoine</button>
+                    <button type="button" data-quick="banane">+ Banane</button>
+                    <button type="button" data-quick="saumon">+ Saumon</button>
+                    <button type="button" data-quick="thon">+ Thon</button>
+                    <button type="button" data-quick="pommes de terre">+ Pommes de terre</button>
+                    <button type="button" data-quick="légumes">+ Légumes</button>
+                    <button type="button" data-quick="lait">+ Lait</button>
+                </div>
+            </section>
+
+            <div id="suggestionBanner" class="suggestion-banner"></div>
+
+            <div class="search-wrap">
+                <input
+                    id="search"
+                    class="search"
+                    placeholder="Rechercher : poulet, avoine, riz, saumon..."
+                />
+            </div>
+
+            <section class="pantry-section taste-settings" aria-label="Mes goûts et mon tri">
+                <h2>Mes goûts</h2>
+                <div class="pantry-input-row">
+                    <input
+                        id="tasteLikes"
+                        class="pantry-input"
+                        placeholder="J’aime : poulet, curry, tomates… (virgules)"
+                    />
+                    <input
+                        id="tasteExclude"
+                        class="pantry-input"
+                        placeholder="Exclure : champignons, porc… (virgules)"
+                    />
+                </div>
+                <div class="pantry-input-row">
+                    <select id="recipeSource" class="pantry-input">
+                        <option value="all">Toutes les sources</option>
+                        <option value="themealdb">TheMealDB</option>
+                        <option value="wikibooks">Wikibooks</option>
+                    </select>
+                    <select id="recipeSort" class="pantry-input">
+                        <option value="relevance">Mes goûts et mon objectif</option>
+                        <option value="name">Nom A → Z</option>
+                        <option value="pantry">Ingrédients déjà disponibles</option>
+                    </select>
+                    <button id="applyTastes" class="pantry-action primary" type="button">
+                        Appliquer mes goûts
+                    </button>
+                </div>
+                <p>
+                    Le catalogue des sources prises en charge est parcouru. Textes Wikibooks sous CC
+                    BY-SA, attribution et licence sur la fiche source. Les fiches s’affichent
+                    progressivement au défilement. Les exclusions masquent aussi les fiches dont les
+                    ingrédients ne sont pas connus ; elles ne constituent pas une vérification
+                    d’allergènes.
+                </p>
+            </section>
+
+            <section id="internetSection" class="internet-section">
+                <div class="internet-head">
+                    <div>
+                        <h2 id="internetTitle">Recettes trouvées sur Internet</h2>
+                        <p id="internetSubtitle">
+                            Résultats trouvés à partir de tes courses. Le tri par objectif est
+                            indicatif car la source ne fournit pas les macros.
+                        </p>
+                    </div>
+                    <div class="internet-source">Sources : TheMealDB · Wikibooks</div>
+                </div>
+
+                <div id="internetRecipes" class="recipes"></div>
+                <div style="text-align: center; margin-top: 24px">
+                    <button
+                        id="internetMore"
+                        class="pantry-action primary"
+                        type="button"
+                        style="display: none"
+                    >
+                        Voir plus de recettes
+                    </button>
+                </div>
+            </section>
+
+            <div class="section-head">
+                <div>
+                    <h2 id="title" style="display: none">Anciennes recettes désactivées</h2>
+                    <p id="subtitle" style="display: none">
+                        Des idées adaptées à différents objectifs.
+                    </p>
+                </div>
+                <div id="count" class="count" style="display: none">0 recette</div>
+            </div>
+
+            <section id="recipes" class="recipes" style="display: none"></section>
+
+            <p class="note">
+                Les valeurs sont indicatives et dépendent des marques, quantités exactes et modes de
+                cuisson. Adapte les portions à tes besoins caloriques personnels.
+            </p>
+        </main>
+
+        <div id="modal" class="modal">
+            <div class="modal-card">
+                <button class="close" onclick="closeModal()">×</button>
+                <h2 id="modalTitle"></h2>
+                <div id="modalContent"></div>
+            </div>
+        </div>
+
+        <script>
+            // Anciennes recettes génériques conservées à titre d’archive, hors affichage.
+            const recipes = [];
+            /*
+            const archivedGenericRecipes = [
+                {
+                    id: 1,
+                    goal: 'cut',
+                    icon: '🥗',
+                    name: 'Bol de poulet, riz et légumes',
+                    description: 'Un repas riche en protéines, rassasiant et facile à préparer.',
+                    kcal: 510,
+                    protein: 48,
+                    carbs: 55,
+                    fat: 10,
+                    ingredients: [
+                        '150 g de blanc de poulet',
+                        '120 g de riz cuit',
+                        '200 g de légumes',
+                        "5 g d'huile d'olive",
+                        'Épices, sel, poivre',
+                    ],
+                    steps: [
+                        'Cuire le poulet avec les épices.',
+                        'Cuire ou réchauffer le riz.',
+                        'Faire revenir ou cuire à la vapeur les légumes.',
+                        "Assembler le tout et ajouter l'huile d'olive.",
+                    ],
+                },
+                {
+                    id: 2,
+                    goal: 'cut',
+                    icon: '🍳',
+                    name: 'Omelette protéinée aux légumes',
+                    description: 'Beaucoup de protéines pour un volume alimentaire élevé.',
+                    kcal: 390,
+                    protein: 42,
+                    carbs: 14,
+                    fat: 18,
+                    ingredients: [
+                        '2 œufs entiers',
+                        "200 g de blancs d'œufs",
+                        'Champignons',
+                        'Poivrons',
+                        'Épinards',
+                        '30 g de fromage allégé',
+                    ],
+                    steps: [
+                        'Faire revenir les légumes.',
+                        "Ajouter les œufs et blancs d'œufs battus.",
+                        'Cuire à feu moyen.',
+                        'Ajouter le fromage en fin de cuisson.',
+                    ],
+                },
+                {
+                    id: 3,
+                    goal: 'cut',
+                    icon: '🐟',
+                    name: 'Cabillaud, pommes de terre & haricots verts',
+                    description: 'Repas volumineux avec poisson maigre et féculent rassasiant.',
+                    kcal: 465,
+                    protein: 43,
+                    carbs: 58,
+                    fat: 7,
+                    ingredients: [
+                        '180 g de cabillaud',
+                        '300 g de pommes de terre',
+                        '200 g de haricots verts',
+                        "5 g d'huile d'olive",
+                        'Citron et herbes',
+                    ],
+                    steps: [
+                        'Cuire les pommes de terre.',
+                        'Cuire le cabillaud au four ou à la poêle.',
+                        'Cuire les haricots verts.',
+                        'Assaisonner avec citron et herbes.',
+                    ],
+                },
+                {
+                    id: 4,
+                    goal: 'cut',
+                    icon: '🥣',
+                    name: 'Bol de skyr aux fruits rouges',
+                    description:
+                        'Petit-déjeuner ou collation riche en protéines et modérée en calories.',
+                    kcal: 360,
+                    protein: 35,
+                    carbs: 46,
+                    fat: 5,
+                    ingredients: [
+                        '300 g de skyr',
+                        '100 g de fruits rouges',
+                        "30 g de flocons d'avoine",
+                        '10 g de miel',
+                        'Cannelle',
+                    ],
+                    steps: [
+                        'Verser le skyr dans un bol.',
+                        "Ajouter les fruits rouges et les flocons d'avoine.",
+                        'Ajouter le miel et la cannelle.',
+                    ],
+                },
+
+                {
+                    id: 5,
+                    goal: 'maintain',
+                    icon: '🍝',
+                    name: 'Pâtes poulet sauce tomate',
+                    description: 'Un classique équilibré entre protéines, glucides et lipides.',
+                    kcal: 690,
+                    protein: 52,
+                    carbs: 84,
+                    fat: 15,
+                    ingredients: [
+                        '160 g de poulet',
+                        '100 g de pâtes sèches',
+                        '150 g de sauce tomate',
+                        '10 g de parmesan',
+                        "5 g d'huile d'olive",
+                    ],
+                    steps: [
+                        'Cuire les pâtes.',
+                        'Cuire le poulet puis le découper.',
+                        'Réchauffer la sauce tomate.',
+                        'Assembler et ajouter le parmesan.',
+                    ],
+                },
+                {
+                    id: 6,
+                    goal: 'maintain',
+                    icon: '🐟',
+                    name: 'Saumon, riz & brocoli',
+                    description: 'Protéines, glucides et bons lipides dans un repas simple.',
+                    kcal: 720,
+                    protein: 45,
+                    carbs: 69,
+                    fat: 27,
+                    ingredients: [
+                        '160 g de saumon',
+                        '180 g de riz cuit',
+                        '200 g de brocoli',
+                        'Sauce soja légère',
+                        'Citron',
+                    ],
+                    steps: [
+                        'Cuire le saumon.',
+                        'Cuire le riz.',
+                        'Cuire le brocoli à la vapeur.',
+                        'Assembler et assaisonner.',
+                    ],
+                },
+                {
+                    id: 7,
+                    goal: 'maintain',
+                    icon: '🌯',
+                    name: 'Galettes roulées au bœuf et crudités',
+                    description: 'Repas pratique avec une bonne répartition des macros.',
+                    kcal: 650,
+                    protein: 43,
+                    carbs: 60,
+                    fat: 23,
+                    ingredients: [
+                        '2 tortillas complètes',
+                        '150 g de steak haché 5 %',
+                        'Salade',
+                        'Tomate',
+                        'Oignon',
+                        '40 g de fromage',
+                        'Sauce yaourt',
+                    ],
+                    steps: [
+                        'Cuire le steak haché.',
+                        'Préparer les crudités.',
+                        'Garnir les tortillas.',
+                        'Ajouter fromage et sauce puis rouler.',
+                    ],
+                },
+                {
+                    id: 8,
+                    goal: 'maintain',
+                    icon: '🥞',
+                    name: 'Pancakes avoine & banane',
+                    description: 'Petit-déjeuner complet avec glucides et protéines.',
+                    kcal: 610,
+                    protein: 36,
+                    carbs: 83,
+                    fat: 15,
+                    ingredients: [
+                        "80 g de flocons d'avoine",
+                        '1 banane',
+                        '2 œufs',
+                        '100 g de skyr',
+                        '10 g de beurre de cacahuète',
+                    ],
+                    steps: [
+                        'Mixer avoine, banane et œufs.',
+                        'Cuire les pancakes dans une poêle antiadhésive.',
+                        'Servir avec skyr et beurre de cacahuète.',
+                    ],
+                },
+
+                {
+                    id: 9,
+                    goal: 'bulk',
+                    icon: '🍚',
+                    name: 'Poulet curry coco & riz',
+                    description: 'Un repas dense en calories et facile à augmenter en quantité.',
+                    kcal: 920,
+                    protein: 58,
+                    carbs: 112,
+                    fat: 27,
+                    ingredients: [
+                        '180 g de poulet',
+                        '130 g de riz sec',
+                        '100 ml de lait de coco',
+                        'Légumes',
+                        'Curry',
+                        "5 g d'huile",
+                    ],
+                    steps: [
+                        'Cuire le riz.',
+                        'Faire revenir le poulet.',
+                        'Ajouter légumes, curry et lait de coco.',
+                        'Laisser mijoter puis servir avec le riz.',
+                    ],
+                },
+                {
+                    id: 10,
+                    goal: 'bulk',
+                    icon: '🥜',
+                    name: 'Bol d’avoine chaud pour prise de masse',
+                    description:
+                        'Petit-déjeuner très énergétique sans nécessiter un énorme volume alimentaire.',
+                    kcal: 850,
+                    protein: 39,
+                    carbs: 108,
+                    fat: 29,
+                    ingredients: [
+                        "100 g de flocons d'avoine",
+                        '300 ml de lait',
+                        '1 banane',
+                        '30 g de beurre de cacahuète',
+                        '20 g de whey',
+                        '15 g de miel',
+                    ],
+                    steps: [
+                        'Cuire les flocons avec le lait.',
+                        'Ajouter la whey hors du feu.',
+                        'Ajouter banane, beurre de cacahuète et miel.',
+                    ],
+                },
+                {
+                    id: 11,
+                    goal: 'bulk',
+                    icon: '🍝',
+                    name: 'Pâtes bolognaise haute calorie',
+                    description: 'Idéal pour augmenter facilement glucides, protéines et calories.',
+                    kcal: 1030,
+                    protein: 61,
+                    carbs: 125,
+                    fat: 31,
+                    ingredients: [
+                        '140 g de pâtes sèches',
+                        '180 g de bœuf haché 5 %',
+                        '200 g de sauce tomate',
+                        '20 g de parmesan',
+                        "10 g d'huile d'olive",
+                    ],
+                    steps: [
+                        'Cuire les pâtes.',
+                        'Cuire le bœuf.',
+                        'Ajouter la sauce tomate.',
+                        'Assembler puis ajouter huile et parmesan.',
+                    ],
+                },
+                {
+                    id: 12,
+                    goal: 'bulk',
+                    icon: '🥤',
+                    name: 'Boisson calorique banane et avoine',
+                    description:
+                        'Une option liquide pratique quand il devient difficile de manger davantage.',
+                    kcal: 780,
+                    protein: 42,
+                    carbs: 94,
+                    fat: 27,
+                    ingredients: [
+                        '400 ml de lait',
+                        '1 banane',
+                        "60 g de flocons d'avoine",
+                        '30 g de beurre de cacahuète',
+                        '30 g de whey',
+                        '10 g de miel',
+                    ],
+                    steps: [
+                        'Mettre tous les ingrédients dans un blender.',
+                        "Mixer jusqu'à obtenir une texture homogène.",
+                        'Ajuster la quantité de lait selon la texture souhaitée.',
+                    ],
+                },
+            ];
+            */
+
+            const goalNames = {
+                all: "Toutes les recettes",
+                cut: "Recettes de sèche",
+                maintain: "Recettes de maintien",
+                bulk: "Recettes de prise de masse",
+            };
+
+            const subtitles = {
+                all: "Des idées adaptées à différents objectifs.",
+                cut: "Des repas riches en protéines et modérés en calories.",
+                maintain: "Des repas équilibrés pour stabiliser ton apport énergétique.",
+                bulk: "Des repas plus denses en calories pour faciliter la prise de masse.",
+            };
+
+            let currentGoal = "all";
+            let pantryMode = false;
+            let pantry = [];
+
+            const ingredientAliases = {
+                oeuf: ["œuf", "oeuf", "œufs", "oeufs"],
+                oeufs: ["œuf", "oeuf", "œufs", "oeufs"],
+                avoine: ["avoine", "flocons d'avoine", "flocon d'avoine"],
+                "pomme de terre": ["pomme de terre", "pommes de terre"],
+                "pommes de terre": ["pomme de terre", "pommes de terre"],
+                legumes: [
+                    "légumes",
+                    "legumes",
+                    "brocoli",
+                    "haricots verts",
+                    "épinards",
+                    "poivrons",
+                    "champignons",
+                ],
+                légumes: [
+                    "légumes",
+                    "legumes",
+                    "brocoli",
+                    "haricots verts",
+                    "épinards",
+                    "poivrons",
+                    "champignons",
+                ],
+                poulet: ["poulet", "blanc de poulet"],
+                riz: ["riz"],
+                pates: ["pâtes", "pates"],
+                pâtes: ["pâtes", "pates"],
+                boeuf: ["bœuf", "boeuf", "steak haché"],
+                bœuf: ["bœuf", "boeuf", "steak haché"],
+                yaourt: ["yaourt", "skyr"],
+                skyr: ["skyr", "yaourt"],
+                lait: ["lait"],
+                banane: ["banane"],
+                saumon: ["saumon"],
+                cabillaud: ["cabillaud"],
+                thon: ["thon"],
+                fromage: ["fromage", "parmesan"],
+                tomate: ["tomate", "sauce tomate"],
+                huile: ["huile", "huile d'olive"],
+                "beurre de cacahuete": ["beurre de cacahuète", "beurre de cacahuete"],
+                "beurre de cacahuète": ["beurre de cacahuète", "beurre de cacahuete"],
+                whey: ["whey"],
+                miel: ["miel"],
+            };
+
+            function goalLabel(goal) {
+                return (
+                    {
+                        cut: "Sèche",
+                        maintain: "Maintien",
+                        bulk: "Prise de masse",
+                    }[goal] || goal
+                );
+            }
+
+            function setGoal(goal) {
+                currentGoal = goal;
+                // La catégorie affichée dans le catalogue Internet et le générateur
+                // de menus pointent désormais vers le même objectif.
+                if (["cut", "maintain", "bulk"].includes(goal)) {
+                    dailyGoal = goal;
+                    updateDailyGoalButtons();
+                    // Chaque objectif garde son mode et ses calories propres.
+                    getGoalPreferences();
+                    applySavedCalories(false);
+                    showGoalCalorieWarning();
+                }
+
+                document.querySelectorAll(".filter").forEach((btn) => {
+                    btn.classList.toggle("active", btn.dataset.goal === goal);
+                });
+
+                document.getElementById("title").textContent = goalNames[goal];
+                document.getElementById("subtitle").textContent = subtitles[goal];
+
+                render();
+
+                if (pantryMode) {
+                    updateSuggestionBanner();
+                }
+
+                scheduleInternetRecipes();
+            }
+
+            function normalizeIngredient(value) {
+                return String(value || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/[0-9]+ ?(g|ml|kg|cl|l)\b/g, "")
+                    .replace(/[^\p{L}\s]/gu, " ")
+                    .replace(/\s+/g, " ")
+                    .trim();
+            }
+
+            function ingredientTerms(value) {
+                const normalized = normalizeIngredient(value);
+
+                let result = [normalized];
+
+                Object.entries(ingredientAliases).forEach(([key, aliases]) => {
+                    const normKey = normalizeIngredient(key);
+                    const normAliases = aliases.map(normalizeIngredient);
+
+                    if (
+                        normalized.includes(normKey) ||
+                        normAliases.some((alias) => normalized.includes(alias))
+                    ) {
+                        result.push(normKey, ...normAliases);
+                    }
+                });
+
+                return [...new Set(result.filter(Boolean))];
+            }
+
+            function pantryHasIngredient(recipeIngredient) {
+                if (!pantry.length) return false;
+
+                const recipeTerms = ingredientTerms(recipeIngredient);
+
+                return pantry.some((item) => {
+                    const pantryTerms = ingredientTerms(item);
+
+                    return recipeTerms.some((recipeTerm) =>
+                        pantryTerms.some(
+                            (pantryTerm) =>
+                                recipeTerm.includes(pantryTerm) || pantryTerm.includes(recipeTerm),
+                        ),
+                    );
+                });
+            }
+
+            function getMatch(recipe) {
+                const ingredients = recipe.ingredients || [];
+
+                if (!ingredients.length) {
+                    return {
+                        owned: 0,
+                        total: 0,
+                        ratio: 0,
+                        missing: [],
+                    };
+                }
+
+                let owned = 0;
+                const missing = [];
+
+                ingredients.forEach((ingredient) => {
+                    if (pantryHasIngredient(ingredient)) {
+                        owned++;
+                    } else {
+                        missing.push(ingredient);
+                    }
+                });
+
+                return {
+                    owned,
+                    total: ingredients.length,
+                    ratio: owned / ingredients.length,
+                    missing,
+                };
+            }
+
+            function render() {
+                const query = document.getElementById("search").value.toLowerCase().trim();
+
+                let filtered = recipes.filter((recipe) => {
+                    const goalOk = currentGoal === "all" || recipe.goal === currentGoal;
+                    const text =
+                        `${recipe.name} ${recipe.description} ${recipe.ingredients.join(" ")}`.toLowerCase();
+                    return goalOk && (!query || text.includes(query));
+                });
+
+                if (pantryMode && pantry.length) {
+                    filtered = filtered
+                        .map((recipe) => ({
+                            ...recipe,
+                            _match: getMatch(recipe),
+                        }))
+                        .filter((recipe) => recipe._match.owned > 0)
+                        .sort((a, b) => {
+                            if (b._match.ratio !== a._match.ratio) {
+                                return b._match.ratio - a._match.ratio;
+                            }
+
+                            return b._match.owned - a._match.owned;
+                        });
+                }
+
+                document.getElementById("count").textContent =
+                    `${filtered.length} recette${filtered.length > 1 ? "s" : ""}`;
+
+                const box = document.getElementById("recipes");
+                box.innerHTML = "";
+
+                if (!filtered.length) {
+                    box.innerHTML = `
+      <div style="color:#9da59f;padding:25px;">
+        ${
+            pantryMode
+                ? "Aucune recette de la base ne correspond encore à tes courses. Ajoute d'autres aliments ou affiche toutes les recettes."
+                : "Aucune recette trouvée."
+        }
+      </div>
+    `;
+                    return;
+                }
+
+                filtered.forEach((recipe) => {
+                    const card = document.createElement("article");
+                    card.className = "recipe";
+
+                    const match =
+                        pantryMode && pantry.length ? recipe._match || getMatch(recipe) : null;
+
+                    const matchHtml = match
+                        ? `
+        <div class="match-box">
+          <div class="match-row">
+            <strong>${match.owned}/${match.total} ingrédients disponibles</strong>
+            <span>${Math.round(match.ratio * 100)} %</span>
+          </div>
+
+          <div class="match-progress">
+            <span style="width:${Math.round(match.ratio * 100)}%"></span>
+          </div>
+
+          ${
+              match.missing.length
+                  ? `<div class="missing"><strong>À acheter :</strong> ${match.missing.slice(0, 3).join(", ")}${match.missing.length > 3 ? "…" : ""}</div>`
+                  : `<div class="missing" style="color:#bfffaf;"><strong>Tu as tout ce qu’il faut.</strong></div>`
+          }
+        </div>
+      `
+                        : "";
+
+                    card.innerHTML = `
+      <div class="image">${recipe.icon}</div>
+
+      <div class="recipe-body">
+        <div class="goal">${goalLabel(recipe.goal)}</div>
+        <h3>${recipe.name}</h3>
+        <div class="desc">${recipe.description}</div>
+
+        <div class="macros">
+          <div class="macro">
+            <small>Calories ≈</small>
+            <strong>${recipe.kcal}</strong>
+          </div>
+          <div class="macro">
+            <small>Protéines ≈</small>
+            <strong>${recipe.protein} g</strong>
+          </div>
+          <div class="macro">
+            <small>Glucides ≈</small>
+            <strong>${recipe.carbs} g</strong>
+          </div>
+          <div class="macro">
+            <small>Lipides ≈</small>
+            <strong>${recipe.fat} g</strong>
+          </div>
+        </div>
+
+        ${matchHtml}
+
+        <button class="details-btn" onclick="openRecipe(${recipe.id})">
+          Voir la recette
+        </button>
+      </div>
+    `;
+
+                    box.appendChild(card);
+                });
+            }
+
+            function openRecipe(id) {
+                const recipe = recipes.find((r) => r.id === id);
+                if (!recipe) return;
+
+                document.getElementById("modalTitle").textContent = recipe.name;
+
+                document.getElementById("modalContent").innerHTML = `
+    <div class="goal">${goalLabel(recipe.goal)}</div>
+
+    <div class="macros" style="margin-top:18px;">
+      <div class="macro"><small>Calories</small><strong>${recipe.kcal}</strong></div>
+      <div class="macro"><small>Protéines</small><strong>${recipe.protein} g</strong></div>
+      <div class="macro"><small>Glucides</small><strong>${recipe.carbs} g</strong></div>
+      <div class="macro"><small>Lipides</small><strong>${recipe.fat} g</strong></div>
+    </div>
+
+    <h3>Ingrédients</h3>
+    <ul>
+      ${recipe.ingredients.map((i) => `<li>${i}</li>`).join("")}
+    </ul>
+
+    <h3>Préparation</h3>
+    <ol>
+      ${recipe.steps.map((s) => `<li>${s}</li>`).join("")}
+    </ol>
+  `;
+
+                document.getElementById("modal").style.display = "flex";
+            }
+
+            function closeModal() {
+                document.getElementById("modal").style.display = "none";
+            }
+
+            document.querySelectorAll(".filter").forEach((btn) => {
+                btn.addEventListener("click", () => setGoal(btn.dataset.goal));
+            });
+
+            document.getElementById("search").addEventListener("input", () => {
+                render();
+                scheduleInternetRecipes();
+            });
+
+            document.getElementById("modal").addEventListener("click", (event) => {
+                if (event.target.id === "modal") closeModal();
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") closeModal();
+            });
+
+            let internetTimer = null;
+            let internetRequest = 0;
+            let internetNextPage = 1;
+            let internetSeen = new Set();
+            let internetUsePantry = true;
+            let internetController = null;
+
+            function scheduleInternetRecipes() {
+                clearTimeout(internetTimer);
+                ++internetRequest;
+                if (internetController) internetController.abort();
+                const more = document.getElementById("internetMore");
+                more.style.display = "none";
+                internetTimer = setTimeout(() => loadInternetRecipes(false), 350);
+            }
+
+            async function loadInternetRecipes(append = false) {
+                clearTimeout(internetTimer);
+                if (internetController) internetController.abort();
+                const controller = new AbortController();
+                internetController = controller;
+                const requestId = ++internetRequest;
+                const section = document.getElementById("internetSection"),
+                    box = document.getElementById("internetRecipes"),
+                    more = document.getElementById("internetMore");
+                const page = append ? internetNextPage : 1;
+                if (!append) {
+                    internetSeen = new Set();
+                    internetNextPage = 1;
+                    box.innerHTML =
+                        '<div class="internet-loading">Chargement du catalogue de recettes Internet… Le premier chargement peut prendre quelques instants.</div>';
+                }
+                section.style.display = "block";
+                more.disabled = true;
+                if (append) more.textContent = "Chargement…";
+                else more.style.display = "none";
+                document.getElementById("internetTitle").textContent =
+                    currentGoal === "all"
+                        ? "Recettes trouvées sur Internet"
+                        : `Recettes Internet • ${goalNames[currentGoal]}`;
+                const params = new URLSearchParams({
+                    ingredients: pantry.join(","),
+                    filter_pantry: internetUsePantry ? "1" : "0",
+                    goal: currentGoal,
+                    search: document.getElementById("search").value.trim(),
+                    all: "1",
+                    page: String(page),
+                    likes: document.getElementById("tasteLikes").value,
+                    exclude: document.getElementById("tasteExclude").value,
+                    source: document.getElementById("recipeSource").value,
+                    sort: document.getElementById("recipeSort").value,
+                });
+                try {
+                    const response = await fetch("/api/internet-recipes?" + params, {
+                        signal: controller.signal,
+                    });
+                    const payload = await response.json();
+                    if (requestId !== internetRequest) return;
+                    if (!response.ok) throw new Error(payload.detail || `HTTP ${response.status}`);
+                    const meals = payload.data || [];
+                    if (!append) box.replaceChildren();
+                    if (payload.degraded || payload.stale) {
+                        const note = document.createElement("p");
+                        note.textContent = payload.message || "Catalogue disponible en cache.";
+                        box.appendChild(note);
+                    }
+                    if (!meals.length && !append) {
+                        const empty = document.createElement("div");
+                        empty.className = "internet-loading";
+                        empty.textContent = payload.degraded
+                            ? "La source ne répond pas pour le moment. Réessaie dans quelques instants."
+                            : "Aucune recette ne correspond à ces critères. Essaie un autre mot ou affiche toutes les recettes.";
+                        box.appendChild(empty);
+                    }
+                    let rendered = 0;
+                    for (const meal of meals) {
+                        if (requestId !== internetRequest) return;
+                        if (internetSeen.has(String(meal.id))) continue;
+                        internetSeen.add(String(meal.id));
+                        const card = document.createElement("article");
+                        card.className = "recipe web-recipe";
+                        card.dataset.recipeId = String(meal.id);
+
+                        const missing = (meal.missing || []).slice(0, 4);
+                        const sourceUrl = meal.source || meal.youtube || "";
+
+                        const ownedIngredients = (meal.matched_pantry_items || []).filter(Boolean);
+
+                        const ownedHtml = ownedIngredients.length
+                            ? `
+          <div class="owned-ingredients">
+            <div class="owned-title">Tu as déjà</div>
+            <div class="owned-list">
+              ${ownedIngredients.map((name) => `<span class="owned-chip">${name}</span>`).join("")}
+            </div>
+          </div>
+        `
+                            : "";
+
+                        card.innerHTML = `
+
+        <div class="image">
+          ${
+              meal.image
+                  ? `<img src="${meal.image}" alt="${meal.name_fr || meal.name}" loading="lazy">`
+                  : "🍽️"
+          }
+        </div>
+
+        <div class="recipe-body">
+          <div class="goal">
+            ${
+                currentGoal !== "all"
+                    ? meal.goal_match
+                        ? currentGoal === "cut"
+                            ? "✓ Bonne option sèche"
+                            : currentGoal === "bulk"
+                              ? "✓ Bonne option prise de masse"
+                              : "✓ Bonne option maintien"
+                        : "Alternative compatible avec tes courses"
+                    : meal.recommended_goal === "cut"
+                      ? "Plutôt sèche"
+                      : meal.recommended_goal === "bulk"
+                        ? "Plutôt prise de masse"
+                        : meal.recommended_goal === "maintain"
+                          ? "Plutôt maintien"
+                          : "Recette Internet"
+            }
+            <span class="web-badge">${meal.source_name || "Internet"}</span>
+          </div>
+
+          <h3>${meal.name_fr || meal.name}</h3>
+
+          <div class="desc">
+            ${meal.category_fr || "Recette"}${meal.area_fr ? ` • Cuisine ${meal.area_fr.toLowerCase()}` : ""}
+          </div>
+
+          <div class="match-box">
+            <div class="match-row">
+              <strong>${meal.metadata_unknown ? "Ingrédients à consulter sur la fiche source" : `${meal.owned_recipe_ingredients}/${meal.recipe_ingredient_total} ingrédients déjà disponibles`}</strong>
+              <span>${meal.recipe_coverage_percent} %</span>
+            </div>
+
+            <div class="match-progress">
+              <span style="width:${meal.recipe_coverage_percent}%"></span>
+            </div>
+
+            <div class="missing" style="margin-top:8px;">
+              ${meal.matched_pantry}/${meal.pantry_total} aliment${meal.pantry_total > 1 ? "s" : ""} de tes courses utilisé${meal.matched_pantry > 1 ? "s" : ""} dans cette recette.
+            </div>
+
+            ${ownedHtml}
+
+            ${
+                missing.length
+                    ? `<div class="missing"><strong>À prévoir :</strong> ${missing.join(", ")}${(meal.missing || []).length > 4 ? "…" : ""}</div>`
+                    : `<div class="missing" style="color:#bfffaf;"><strong>Très bonne correspondance avec tes courses.</strong></div>`
+            }
+          </div>
+
+          <button class="details-btn" type="button" data-internet-details>
+            Voir les ingrédients
+          </button>
+
+          ${
+              sourceUrl
+                  ? `<a class="source-link" href="${sourceUrl}" target="_blank" rel="noopener">Voir la recette source ↗</a>`
+                  : ""
+          }
+        </div>
+`;
+
+                        card.querySelector("[data-internet-details]")?.addEventListener(
+                            "click",
+                            () => openInternetRecipe(meal),
+                        );
+                        box.appendChild(card);
+                        if (++rendered % 100 === 0)
+                            await new Promise((resolve) => setTimeout(resolve, 0));
+                    }
+                    internetNextPage = payload.next_page || page + 1;
+                    more.dataset.reindex =
+                        payload.wiki_complete === false && !payload.has_more ? "1" : "0";
+                    more.style.display =
+                        payload.has_more ||
+                        payload.wiki_complete === false ||
+                        (!internetSeen.size && payload.degraded)
+                            ? "inline-flex"
+                            : "none";
+                    more.textContent =
+                        more.dataset.reindex === "1"
+                            ? "Continuer le chargement des sources"
+                            : !internetSeen.size && payload.degraded
+                              ? "Réessayer"
+                              : "Voir plus de recettes";
+                    document.getElementById("internetSubtitle").textContent =
+                        `${internetSeen.size} recette${internetSeen.size > 1 ? "s" : ""} affichée${internetSeen.size > 1 ? "s" : ""} sur ${payload.total || 0} correspondant à tes critères · ${payload.catalog_size || 0} recettes récupérées${payload.degraded ? " (catalogue partiel)" : ""}. Le classement par objectif reste indicatif.`;
+                } catch (error) {
+                    if (error.name === "AbortError" || requestId !== internetRequest) return;
+                    if (!append) {
+                        box.textContent =
+                            "Impossible de récupérer les recettes Internet pour le moment. Réessaie avec le bouton ci-dessous.";
+                        more.style.display = "inline-flex";
+                        more.textContent = "Réessayer";
+                        internetNextPage = 1;
+                    } else {
+                        more.style.display = "inline-flex";
+                        more.textContent = "Réessayer de charger la suite";
+                    }
+                } finally {
+                    if (requestId === internetRequest) more.disabled = false;
+                }
+            }
+
+            document
+                .getElementById("internetMore")
+                .addEventListener("click", () => loadInternetRecipes(false));
+
+            document.getElementById("applyTastes").addEventListener("click", () => {
+                localStorage.setItem(
+                    "gymapp-tastes",
+                    JSON.stringify({
+                        likes: document.getElementById("tasteLikes").value,
+                        exclude: document.getElementById("tasteExclude").value,
+                        sort: document.getElementById("recipeSort").value,
+                        source: document.getElementById("recipeSource").value,
+                    }),
+                );
+                loadInternetRecipes(false);
+            });
+            try {
+                const tastes = JSON.parse(localStorage.getItem("gymapp-tastes") || "{}");
+                for (const [key, id] of Object.entries({
+                    likes: "tasteLikes",
+                    exclude: "tasteExclude",
+                    sort: "recipeSort",
+                    source: "recipeSource",
+                }))
+                    if (tastes[key]) document.getElementById(id).value = tastes[key];
+            } catch (_) {}
+            function internetIngredientOwned(item) {
+                const label = item?.name_fr || item?.name || "";
+                return pantryHasIngredient(label);
+            }
+
+            let recipeDetailRequest = 0;
+            function decodeRecipeText(value) {
+                const e = document.createElement("textarea");
+                e.innerHTML = String(value || "");
+                return e.value;
+            }
+            function openInternetRecipe(meal, loaded = false) {
+                const detailId = ++recipeDetailRequest;
+                document.getElementById("modalTitle").textContent = decodeRecipeText(
+                    meal.name_fr || meal.name || "Recette Internet",
+                );
+
+                const ingredients = (meal.ingredients || [])
+                    .map((item) => {
+                        const measure = item.measure ? `${item.measure} ` : "";
+                        const name = item.name_fr || item.name;
+                        const owned = Boolean(item.owned);
+
+                        return `
+      <div class="ingredient-line ${owned ? "owned" : "missing"}">
+        <div class="ingredient-status">${owned ? "✓" : "•"}</div>
+        <div class="ingredient-text">
+          <strong>${name}</strong>
+          ${measure ? `<div style="font-size:11px;color:#8f9991;margin-top:2px;">${measure}</div>` : ""}
+        </div>
+      </div>
+    `;
+                    })
+                    .join("");
+
+                const link = meal.source || meal.youtube || "";
+
+                document.getElementById("modalContent").innerHTML = `
+    <div class="goal">
+      Recette trouvée sur Internet
+    </div>
+
+    <h3>Ingrédients</h3>
+
+    <div class="legend">
+      <span><i class="legend-dot have"></i> Déjà dans tes courses</span>
+      <span><i class="legend-dot need"></i> À prévoir</span>
+    </div>
+
+    <div>${ingredients}</div>
+
+    ${
+        link
+            ? `
+          <h3>Préparation</h3>
+          <p style="color:#d8ded9;line-height:1.7;">
+            La recette complète est disponible sur la source d’origine.
+          </p>
+          <a
+            class="details-btn"
+            style="display:flex;align-items:center;justify-content:center;text-decoration:none;"
+            href="${link}"
+            target="_blank"
+            rel="noopener"
+          >
+            Ouvrir la recette complète
+          </a>
+        `
+            : ""
+    }
+  `;
+
+                const box = document.getElementById("modalContent");
+                const heading = document.createElement("h3");
+                heading.textContent = "Préparation détaillée";
+                box.appendChild(heading);
+                const note = document.createElement("p");
+                note.style.cssText = "font-size:12px;color:#a8baad";
+                note.textContent = loaded
+                    ? "Traduction automatique ; vérifie les indications sur le site source."
+                    : "Chargement de la préparation et de sa traduction…";
+                box.appendChild(note);
+                const prep = document.createElement("p");
+                prep.style.cssText = "white-space:pre-line;line-height:1.7";
+                prep.textContent = decodeRecipeText(
+                    meal.instructions ||
+                        meal.instructions_original ||
+                        "Préparation non fournie par cette source.",
+                );
+                box.appendChild(prep);
+                if (loaded && meal.instructions_original) {
+                    const details = document.createElement("details");
+                    const summary = document.createElement("summary");
+                    summary.textContent = "Voir le texte original";
+                    const original = document.createElement("p");
+                    original.style.whiteSpace = "pre-line";
+                    original.textContent = decodeRecipeText(meal.instructions_original);
+                    details.append(summary, original);
+                    box.appendChild(details);
+                }
+                if (!loaded) {
+                    fetch(
+                        "/api/recipes/" +
+                            encodeURIComponent(meal.id) +
+                            "/details?" +
+                            new URLSearchParams({ ingredients: pantry.join(",") }),
+                    )
+                        .then((r) => {
+                            if (!r.ok) throw new Error();
+                            return r.json();
+                        })
+                        .then((payload) => {
+                            if (
+                                detailId === recipeDetailRequest &&
+                                document.getElementById("modal").style.display === "flex"
+                            )
+                                openInternetRecipe(payload.data, true);
+                        })
+                        .catch(() => {
+                            if (detailId === recipeDetailRequest)
+                                note.textContent =
+                                    "Préparation traduite indisponible. Le texte et le lien de la source restent accessibles.";
+                        });
+                }
+
+                document.getElementById("modal").style.display = "flex";
+            }
+
+            function savePantry() {
+                localStorage.setItem("gymapp-pantry", JSON.stringify(pantry));
+            }
+
+            function loadPantry() {
+                try {
+                    const saved = JSON.parse(localStorage.getItem("gymapp-pantry") || "[]");
+
+                    if (Array.isArray(saved)) {
+                        pantry = saved.map((item) => String(item).trim()).filter(Boolean);
+                    }
+                } catch (error) {
+                    pantry = [];
+                }
+
+                renderPantryTags();
+
+                scheduleInternetRecipes();
+            }
+
+            function addPantryItem(value) {
+                internetUsePantry = true;
+                const clean = String(value || "").trim();
+
+                if (!clean) return;
+
+                const exists = pantry.some(
+                    (item) => normalizeIngredient(item) === normalizeIngredient(clean),
+                );
+
+                if (!exists) {
+                    pantry.push(clean);
+                    savePantry();
+                }
+
+                renderPantryTags();
+                scheduleInternetRecipes();
+            }
+
+            function removePantryItem(index) {
+                pantry.splice(index, 1);
+                savePantry();
+                renderPantryTags();
+
+                if (pantryMode) {
+                    render();
+                    updateSuggestionBanner();
+                }
+
+                scheduleInternetRecipes();
+            }
+
+            function renderPantryTags() {
+                const box = document.getElementById("pantryTags");
+
+                if (!pantry.length) {
+                    box.innerHTML = `<div class="pantry-empty">Aucun aliment ajouté pour le moment.</div>`;
+                    return;
+                }
+
+                box.innerHTML = pantry
+                    .map(
+                        (item, index) => `
+    <span class="pantry-tag">
+      ${item}
+      <button type="button" onclick="removePantryItem(${index})" aria-label="Supprimer ${item}">×</button>
+    </span>
+  `,
+                    )
+                    .join("");
+            }
+
+            function updateSuggestionBanner() {
+                document.getElementById("suggestionBanner").style.display = "none";
+                return;
+                const banner = document.getElementById("suggestionBanner");
+
+                if (!pantryMode || !pantry.length) {
+                    banner.style.display = "none";
+                    banner.innerHTML = "";
+                    return;
+                }
+
+                const candidates = recipes
+                    .filter((recipe) => currentGoal === "all" || recipe.goal === currentGoal)
+                    .map((recipe) => ({
+                        recipe,
+                        match: getMatch(recipe),
+                    }))
+                    .filter((item) => item.match.owned > 0)
+                    .sort((a, b) => b.match.ratio - a.match.ratio || b.match.owned - a.match.owned);
+
+                if (!candidates.length) {
+                    banner.style.display = "block";
+                    banner.innerHTML = `
+      Je n’ai pas encore trouvé de recette correspondant à tes aliments.
+      Ajoute quelques ingrédients supplémentaires.
+    `;
+                    return;
+                }
+
+                const best = candidates[0];
+
+                banner.style.display = "block";
+                banner.innerHTML = `
+    <strong>Meilleure proposition :</strong>
+    ${best.recipe.name} —
+    tu as ${best.match.owned} ingrédient${best.match.owned > 1 ? "s" : ""}
+    sur ${best.match.total}.
+    ${
+        best.match.missing.length
+            ? `Il te manque surtout : ${best.match.missing.slice(0, 3).join(", ")}.`
+            : "Tu as déjà tous les ingrédients nécessaires."
+    }
+  `;
+            }
+
+            document.getElementById("addPantry").addEventListener("click", () => {
+                const input = document.getElementById("pantryInput");
+                addPantryItem(input.value);
+                input.value = "";
+                input.focus();
+            });
+
+            document.getElementById("pantryInput").addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    document.getElementById("addPantry").click();
+                }
+            });
+
+            document.querySelectorAll("[data-quick]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    addPantryItem(button.dataset.quick);
+                });
+            });
+
+            document.getElementById("findRecipes").addEventListener("click", () => {
+                if (!pantry.length) {
+                    alert("Ajoute d’abord quelques aliments que tu as achetés.");
+                    return;
+                }
+
+                pantryMode = true;
+                internetUsePantry = true;
+                scheduleInternetRecipes();
+                updateSuggestionBanner();
+                render();
+
+                document.getElementById("internetSection").scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            });
+
+            document.getElementById("showAllAgain").addEventListener("click", () => {
+                pantryMode = false;
+                updateSuggestionBanner();
+                render();
+
+                internetUsePantry = false;
+                scheduleInternetRecipes();
+            });
+
+            document.getElementById("clearPantry").addEventListener("click", () => {
+                pantry = [];
+                pantryMode = false;
+                savePantry();
+                renderPantryTags();
+                updateSuggestionBanner();
+                render();
+                scheduleInternetRecipes();
+            });
+
+            // V6 : préférences d'objectif indépendantes des estimations automatiques V5.
+            // L'utilisateur a explicitement choisi 2 300 kcal en sèche.
+            const DAILY_PREFS_KEY = "gymapp-objectifs-personnalises-v6";
+            let dailyGoal = "cut";
+            let dailyVariant = 0;
+            let lastDailyMenu = null;
+
+            function dailyGoalLabel(goal) {
+                return (
+                    { cut: "Sèche", maintain: "Maintien", bulk: "Prise de masse" }[goal] || "Sèche"
+                );
+            }
+
+            function getSavedCalorieTargets() {
+                try {
+                    const data = JSON.parse(
+                        localStorage.getItem("gymapp-calorie-targets") || "null",
+                    );
+                    return data && data.version === 5 && data.plans && data.tdee ? data : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function getGoalPreferences() {
+                try {
+                    const existing = JSON.parse(localStorage.getItem(DAILY_PREFS_KEY) || "null");
+                    if (
+                        existing?.version === 6 &&
+                        existing.goals &&
+                        ["cut", "maintain", "bulk"].every((g) => existing.goals[g])
+                    )
+                        return existing;
+                } catch (e) {}
+                // Première ouverture V6 : ne jamais importer les 2 700 kcal V5 comme objectif
+                // personnel. On démarre avec les 2 300 kcal souhaitées par l'utilisateur.
+                const fresh = {
+                    version: 6,
+                    lastGoal: "cut",
+                    goals: {
+                        cut: { mode: "custom", calories: 2300, protein: 1.8 },
+                        maintain: { mode: "auto", calories: null, protein: null },
+                        bulk: { mode: "auto", calories: null, protein: null },
+                    },
+                };
+                localStorage.setItem(DAILY_PREFS_KEY, JSON.stringify(fresh));
+                return fresh;
+            }
+
+            function persistGoalPreferences(prefs) {
+                localStorage.setItem(DAILY_PREFS_KEY, JSON.stringify(prefs));
+            }
+            function goalPreference(goal = dailyGoal) {
+                return getGoalPreferences().goals[goal];
+            }
+            function updateGoalPreference(fields, goal = dailyGoal) {
+                const prefs = getGoalPreferences();
+                prefs.goals[goal] = { ...prefs.goals[goal], ...fields };
+                prefs.lastGoal = goal;
+                persistGoalPreferences(prefs);
+            }
+
+            function getNutritionRequestFromForm() {
+                return {
+                    sex: document.getElementById("profileSex").value,
+                    age: Number(document.getElementById("profileAge").value),
+                    weight_kg: Number(document.getElementById("profileWeight").value),
+                    height_cm: Number(document.getElementById("profileHeight").value),
+                    activity_factor: Number(document.getElementById("profileActivity").value),
+                    target_weight_kg: document.getElementById("profileTargetWeight").value
+                        ? Number(document.getElementById("profileTargetWeight").value)
+                        : null,
+                    target_date: document.getElementById("profileTargetDate").value || null,
+                    cut_protein_g_per_kg: Number(document.getElementById("profileProtein").value),
+                };
+            }
+
+            function invalidateGeneratedMenu() {
+                const r = document.getElementById("dailyResult");
+                if (r) r.style.display = "none";
+            }
+
+            function useProfileGoal(goal) {
+                // Clic explicite sur « Appliquer ce profil » : l'utilisateur choisit l'automatique.
+                dailyGoal = goal;
+                dailyVariant = 0;
+                updateGoalPreference({ mode: "auto" }, goal);
+                updateDailyGoalButtons();
+                applySavedCalories(true);
+                if (typeof setGoal === "function") setGoal(goal);
+                invalidateGeneratedMenu();
+            }
+
+            async function calculateProfile() {
+                const request = getNutritionRequestFromForm();
+                const status = document.getElementById("profileStatus");
+                const button = document.getElementById("calculateProfile");
+                if (request.age < 18 || request.weight_kg < 35 || request.height_cm < 120) {
+                    status.textContent = "Renseigne un âge adulte, ton poids et ta taille.";
+                    return;
+                }
+                if (Boolean(request.target_weight_kg) !== Boolean(request.target_date)) {
+                    status.textContent =
+                        "Renseigne à la fois un poids cible et une date (ou laisse les deux vides).";
+                    return;
+                }
+                button.disabled = true;
+                status.textContent = "Calcul du maintien et de la trajectoire…";
+                try {
+                    const response = await fetch("/api/nutrition/calculate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(request),
+                    });
+                    const data = await response.json();
+                    if (!response.ok)
+                        throw new Error(
+                            typeof data.detail === "string" ? data.detail : "Profil invalide",
+                        );
+                    const { cut, maintain, bulk } = data.plans;
+                    const saved = {
+                        version: 5,
+                        targetWeight: request.target_weight_kg,
+                        targetDate: request.target_date,
+                        cutProtein: request.cut_protein_g_per_kg,
+                        trajectory: data.trajectory,
+                        cut: cut.calories,
+                        maintenance: maintain.calories,
+                        bulk: bulk.calories,
+                        weight: request.weight_kg,
+                        height: request.height_cm,
+                        age: request.age,
+                        activity: request.activity_factor,
+                        sex: request.sex,
+                        profile: data.profile,
+                        plans: data.plans,
+                        bmr: data.bmr,
+                        tdee: data.maintenance,
+                        savedAt: Date.now(),
+                    };
+                    const previousProfile = getSavedCalorieTargets();
+                    const previousCalibration = previousProfile?.calibration;
+                    if (
+                        previousCalibration &&
+                        Date.now() - previousCalibration.savedAt < 30 * 86400000 &&
+                        Math.abs(Number(previousCalibration.weight_kg) - request.weight_kg) < 3
+                    ) {
+                        saved.calibration = previousCalibration;
+                        saved.estimateSource = "weight_trend";
+                        saved.plans = previousCalibration.plans;
+                        saved.tdee = previousCalibration.maintenance;
+                        saved.maintenance = previousCalibration.maintenance;
+                    }
+                    localStorage.setItem("gymapp-calorie-targets", JSON.stringify(saved));
+                    document.getElementById("dailyWeight").value = request.weight_kg;
+                    const displayed = getSavedCalorieTargets();
+                    const displayPlans = displayed?.plans || data.plans;
+                    const plan = (p) =>
+                        `<button class="profile-card" type="button" data-select-plan="${p.goal}"><span>${p.label} (${displayed?.estimateSource === "weight_trend" ? "tendance de poids" : "formule d'activité"})</span><strong>${p.calories} kcal</strong><small>${p.protein} g protéines · ${p.carbs} g glucides · ${p.fat} g lipides</small><small>Appliquer explicitement cette estimation →</small></button>`;
+                    document.getElementById("profileResults").innerHTML =
+                        plan(displayPlans.cut) +
+                        plan(displayPlans.maintain) +
+                        plan(displayPlans.bulk);
+                    document
+                        .querySelectorAll("[data-select-plan]")
+                        .forEach((b) =>
+                            b.addEventListener("click", () => useProfileGoal(b.dataset.selectPlan)),
+                        );
+                    const activeEstimate = getSavedCalorieTargets();
+                    status.textContent =
+                        `Repos : ${data.bmr} kcal · maintien selon le coefficient d'activité : ${data.maintenance} kcal/j.` +
+                        (activeEstimate?.estimateSource === "weight_trend"
+                            ? ` Suivi de poids : environ ${activeEstimate.tdee} kcal/j.`
+                            : "") +
+                        " Ton objectif personnel reste inchangé.";
+                    const trajectory = data.trajectory;
+                    document.getElementById("profileTrajectory").textContent = trajectory
+                        ? `Objectif : ${trajectory.target_weight_kg} kg pour le ${trajectory.target_date.split("-").reverse().join("/")} · ${trajectory.weight_to_lose_kg} kg en ${trajectory.weeks_remaining} semaines (≈ ${trajectory.average_kg_per_week} kg/semaine). Déficit théorique ≈ ${trajectory.applied_daily_deficit} kcal/j. ${trajectory.note}`
+                        : "Pas de calendrier saisi : déficit initial indicatif de 15 %.";
+                    applySavedCalories(false); // Ne réapplique JAMAIS les 2 700 kcal si le mode manuel est actif.
+                    showGoalCalorieWarning();
+                } catch (error) {
+                    status.textContent = "Calcul impossible : " + error.message;
+                } finally {
+                    button.disabled = false;
+                }
+            }
+
+            let pendingWeightTrend = null;
+            function updateWeightTrendSourceNotice() {
+                const saved = getSavedCalorieTargets();
+                const status = document.getElementById("weightTrendStatus");
+                if (saved?.estimateSource === "weight_trend" && saved?.calibration) {
+                    status.textContent = `Maintien actuellement basé sur ton suivi de poids : environ ${saved.calibration.maintenance} kcal/j. Objectif personnel de ${getGoalPreferences().goals.cut.calories} kcal inchangé.`;
+                }
+            }
+            document.getElementById("calculateWeightTrend").addEventListener("click", async () => {
+                const payload = {
+                    average_daily_calories: Number(document.getElementById("trendCalories").value),
+                    start_weight_kg: Number(document.getElementById("trendStartWeight").value),
+                    end_weight_kg: Number(document.getElementById("trendEndWeight").value),
+                    duration_days: Number(document.getElementById("trendDays").value),
+                    target_weight_kg: document.getElementById("profileTargetWeight").value
+                        ? Number(document.getElementById("profileTargetWeight").value)
+                        : null,
+                    target_date: document.getElementById("profileTargetDate").value || null,
+                    cut_protein_g_per_kg: Number(document.getElementById("profileProtein").value),
+                };
+                const status = document.getElementById("weightTrendStatus");
+                if (
+                    !payload.average_daily_calories ||
+                    !payload.start_weight_kg ||
+                    !payload.end_weight_kg ||
+                    !payload.duration_days
+                ) {
+                    status.textContent =
+                        "Renseigne les quatre mesures réelles, pas seulement tes objectifs.";
+                    return;
+                }
+                try {
+                    status.textContent = "Calcul à partir de tes observations...";
+                    const resp = await fetch("/api/nutrition/calibrate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    });
+                    const res = await resp.json();
+                    if (!resp.ok)
+                        throw new Error(
+                            typeof res.detail === "string" ? res.detail : "Données invalides",
+                        );
+                    pendingWeightTrend = {
+                        ...res,
+                        weight_kg: payload.end_weight_kg,
+                        savedAt: Date.now(),
+                    };
+                    document.getElementById("applyWeightTrend").disabled = false;
+                    status.textContent =
+                        `Maintien estimé depuis ton suivi : ${res.maintenance} kcal/j (variation ${res.weekly_weight_change_kg} kg/semaine). ` +
+                        `Sèche indicative : ${res.plans.cut.calories} kcal. Incertitude importante : à confirmer sur plusieurs semaines. Clique sur « Utiliser » pour l'appliquer à l'estimation automatique.`;
+                } catch (e) {
+                    pendingWeightTrend = null;
+                    document.getElementById("applyWeightTrend").disabled = true;
+                    status.textContent = "Impossible de calibrer : " + e.message;
+                }
+            });
+            document.getElementById("applyWeightTrend").addEventListener("click", () => {
+                if (!pendingWeightTrend) return;
+                const old = getSavedCalorieTargets();
+                const combined = {
+                    ...old,
+                    version: 5,
+                    weight: pendingWeightTrend.weight_kg,
+                    tdee: pendingWeightTrend.maintenance,
+                    maintenance: pendingWeightTrend.maintenance,
+                    plans: pendingWeightTrend.plans,
+                    estimateSource: "weight_trend",
+                    calibration: pendingWeightTrend,
+                    savedAt: Date.now(),
+                };
+                localStorage.setItem("gymapp-calorie-targets", JSON.stringify(combined));
+                const plan = (p) =>
+                    `<button class="profile-card" type="button" data-select-plan="${p.goal}"><span>${p.label} (tendance de poids)</span><strong>${p.calories} kcal</strong><small>${p.protein} g protéines · ${p.carbs} g glucides · ${p.fat} g lipides</small><small>Appliquer cette estimation →</small></button>`;
+                document.getElementById("profileResults").innerHTML =
+                    plan(combined.plans.cut) +
+                    plan(combined.plans.maintain) +
+                    plan(combined.plans.bulk);
+                document
+                    .querySelectorAll("[data-select-plan]")
+                    .forEach((b) =>
+                        b.addEventListener("click", () => useProfileGoal(b.dataset.selectPlan)),
+                    );
+                document.getElementById("weightTrendStatus").textContent =
+                    `Maintien recalibré : ${combined.tdee} kcal/j. Ta cible de sèche personnalisée est conservée.`;
+                applySavedCalories(false);
+                showGoalCalorieWarning();
+            });
+
+            document.getElementById("calculateProfile").addEventListener("click", calculateProfile);
+
+            function setProfileInputs(saved) {
+                if (!saved) return;
+                for (const [id, value] of Object.entries({
+                    profileSex: saved.sex,
+                    profileAge: saved.age,
+                    profileWeight: saved.weight,
+                    profileHeight: saved.height,
+                    profileActivity: saved.activity,
+                    profileTargetWeight: saved.targetWeight,
+                    profileTargetDate: saved.targetDate,
+                    profileProtein: saved.cutProtein,
+                })) {
+                    const el = document.getElementById(id);
+                    if (el && value !== null && value !== undefined) el.value = String(value);
+                }
+            }
+
+            function updateDailyGoalButtons() {
+                document.querySelectorAll("[data-daily-goal]").forEach((button) => {
+                    button.classList.toggle("active", button.dataset.dailyGoal === dailyGoal);
+                });
+            }
+
+            function updateDailyModeButtons() {
+                const cut = Number(getGoalPreferences().goals.cut.calories);
+                const banner = document.getElementById("dailyManualBannerText");
+                if (banner && cut >= 1200 && cut <= 6000) {
+                    banner.textContent = `🎯 Ta cible personnelle de sèche : ${cut.toLocaleString("fr-FR")} kcal/jour`;
+                }
+                const custom = goalPreference().mode === "custom";
+                const manualButton = document.getElementById("dailyModeCustom");
+                const autoButton = document.getElementById("dailyModeAuto");
+                manualButton.classList.toggle("active", custom);
+                autoButton.classList.toggle("active", !custom);
+                manualButton.setAttribute("aria-pressed", String(custom));
+                autoButton.setAttribute("aria-pressed", String(!custom));
+                document.getElementById("dailyModeDescription").textContent = custom
+                    ? "Ta cible personnalisée est prioritaire et reste enregistrée quand tu changes de page ou recalcule tes besoins."
+                    : "Estimation indicative selon ton profil et ton activité. Reviens au mode personnalisé pour retrouver tes calories enregistrées.";
+            }
+
+            function applySavedCalories(showMessage = true) {
+                const saved = getSavedCalorieTargets();
+                const pref = goalPreference();
+                const note = document.getElementById("savedCalorieNote");
+                const caloriesInput = document.getElementById("dailyCalories");
+                updateDailyModeButtons();
+
+                if (pref.mode === "custom") {
+                    const val = Number(pref.calories);
+                    if (Number.isFinite(val) && val >= 1200 && val <= 6000) {
+                        caloriesInput.value = val;
+                    }
+                    const manualProtein = Number(pref.protein);
+                    if ([1.6, 1.8, 2.0].includes(manualProtein))
+                        document.getElementById("dailyProtein").value = String(manualProtein);
+                    note.textContent = `🎯 ${dailyGoalLabel(dailyGoal)} personnalisée : ${caloriesInput.value} kcal/jour. Ton choix est sauvegardé et n'est pas remplacé par l'estimation automatique.`;
+                } else if (saved) {
+                    const suggested = saved.plans?.[dailyGoal]?.calories;
+                    if (Number.isFinite(Number(suggested)) && Number(suggested) > 0)
+                        caloriesInput.value = String(suggested);
+                    const ratio = saved.plans?.[dailyGoal]?.protein_g_per_kg;
+                    if (ratio) document.getElementById("dailyProtein").value = String(ratio);
+                    note.textContent = `📊 Estimation automatique (${dailyGoalLabel(dailyGoal).toLowerCase()}) : ${caloriesInput.value} kcal/jour. Le maintien est seulement estimé ; compare-le à tes pesées.`;
+                } else {
+                    caloriesInput.value = "";
+                    note.textContent =
+                        "Aucune estimation sauvegardée. Calcule d'abord ton profil ou passe en mode personnalisé pour saisir tes calories.";
+                }
+                if (saved?.weight) document.getElementById("dailyWeight").value = saved.weight;
+                showGoalCalorieWarning();
+                return pref.mode === "custom" || Boolean(saved);
+            }
+
+            function chooseDailyMode(mode) {
+                if (!["custom", "auto"].includes(mode)) return;
+                const existing = goalPreference();
+                const current = Number(document.getElementById("dailyCalories").value);
+                const updates = { mode };
+                if (
+                    mode === "custom" &&
+                    !(Number(existing.calories) >= 1200 && Number(existing.calories) <= 6000)
+                ) {
+                    if (current >= 1200 && current <= 6000) updates.calories = current;
+                }
+                updateGoalPreference(updates);
+                applySavedCalories(true);
+                invalidateGeneratedMenu();
+            }
+
+            // Modifier la valeur constitue un choix manuel explicite (et l'enregistre).
+            document.getElementById("dailyCalories").addEventListener("input", () => {
+                const value = Number(document.getElementById("dailyCalories").value);
+                if (value >= 1200 && value <= 6000)
+                    updateGoalPreference({ mode: "custom", calories: Math.round(value) });
+                else updateGoalPreference({ mode: "custom" });
+                updateDailyModeButtons();
+                document.getElementById("savedCalorieNote").textContent =
+                    value >= 1200 && value <= 6000
+                        ? `🎯 ${dailyGoalLabel(dailyGoal)} personnalisée : ${Math.round(value)} kcal/jour enregistrées.`
+                        : "Indique une cible entre 1 200 et 6 000 kcal pour l'enregistrer.";
+                showGoalCalorieWarning();
+                invalidateGeneratedMenu();
+            });
+
+            document.getElementById("dailyProtein").addEventListener("change", () => {
+                updateGoalPreference({
+                    protein: Number(document.getElementById("dailyProtein").value),
+                });
+                invalidateGeneratedMenu();
+            });
+
+            document
+                .getElementById("dailyModeCustom")
+                .addEventListener("click", () => chooseDailyMode("custom"));
+            document
+                .getElementById("dailyModeAuto")
+                .addEventListener("click", () => chooseDailyMode("auto"));
+
+            function diffClass(value, goodLimit) {
+                return Math.abs(Number(value || 0)) <= goodLimit ? "good" : "warn";
+            }
+
+            function signed(value, unit) {
+                const number = Number(value || 0);
+                return `${number > 0 ? "+" : ""}${number} ${unit}`;
+            }
+
+            function renderDailyMenu(menu) {
+                lastDailyMenu = menu;
+
+                const targets = menu.targets || {};
+                const actual = menu.actual || {};
+                const differences = menu.differences || {};
+
+                document.getElementById("dailySummary").innerHTML = `
+    <div class="daily-stat highlight">
+      <span>Calories</span>
+      <strong>${actual.calories} / ${targets.calories}</strong>
+      <small class="${diffClass(differences.calories, 30)}">${signed(differences.calories, "kcal")}</small>
+    </div>
+
+    <div class="daily-stat">
+      <span>Protéines</span>
+      <strong>${actual.protein} / ${targets.protein} g</strong>
+      <small class="${diffClass(differences.protein, 5)}">${signed(differences.protein, "g")}</small>
+    </div>
+
+    <div class="daily-stat">
+      <span>Glucides</span>
+      <strong>${actual.carbs} / ${targets.carbs} g</strong>
+      <small class="${diffClass(differences.carbs, 10)}">${signed(differences.carbs, "g")}</small>
+    </div>
+
+    <div class="daily-stat">
+      <span>Lipides</span>
+      <strong>${actual.fat} / ${targets.fat} g</strong>
+      <small class="${diffClass(differences.fat, 5)}">${signed(differences.fat, "g")}</small>
+    </div>
+  `;
+
+                document.getElementById("dailyTargetSummary").innerHTML = `
+    <strong>Objectif ${dailyGoalLabel(menu.goal).toLowerCase()} pour ${menu.weight} kg :</strong>
+    ${targets.calories} kcal • ${targets.protein} g protéines •
+    ${targets.carbs} g glucides • ${targets.fat} g lipides.
+    <br>
+    <strong>Les quantités affichées ci-dessous sont déjà les quantités finales à préparer.</strong>
+  `;
+
+                const meals = document.getElementById("dailyMeals");
+                meals.innerHTML = "";
+
+                (menu.meals || []).forEach((meal) => {
+                    const card = document.createElement("article");
+                    card.className = "daily-meal";
+
+                    const pantryHtml = meal.pantry_match_count
+                        ? `
+        <div class="daily-pantry">
+          ✓ Tu as déjà : ${meal.pantry_matches.join(", ")}
+        </div>
+      `
+                        : "";
+
+                    card.innerHTML = `
+      <div class="daily-meal-top">
+        <div class="daily-emoji">${meal.emoji}</div>
+        <div>
+          <div class="daily-slot">${meal.slot_label}</div>
+          <h3>${meal.name}</h3>
+        </div>
+      </div>
+
+      <div class="daily-meal-macros">
+        <span class="daily-macro">≈ ${meal.kcal} kcal</span>
+        <span class="daily-macro">${meal.protein} g protéines</span>
+        <span class="daily-macro">${meal.carbs} g glucides</span>
+        <span class="daily-macro">${meal.fat} g lipides</span>
+      </div>
+
+      <div class="daily-distribution ${meal.distribution_ok ? "ok" : "warning"}">
+        Cible du repas : ≈ ${meal.target_kcal} kcal
+        <span>${meal.difference_kcal > 0 ? "+" : ""}${meal.difference_kcal} kcal</span>
+      </div>
+
+      <ul class="daily-ingredients">
+        ${meal.ingredients.map((item) => `<li>${item}</li>`).join("")}
+      </ul>
+
+      ${pantryHtml}
+    `;
+
+                    const webButton = document.createElement("button");
+                    webButton.type = "button";
+                    webButton.className = "daily-web-link";
+                    webButton.textContent = "Voir des recettes similaires sur Internet";
+                    webButton.addEventListener("click", () => {
+                        const words = (meal.web_keywords || []).join(",");
+                        loadDailyInternetIdeas(words);
+                        document
+                            .getElementById("dailyInternet")
+                            .scrollIntoView({ behavior: "smooth", block: "start" });
+                    });
+                    card.appendChild(webButton);
+                    meals.appendChild(card);
+                });
+
+                document.getElementById("dailyResult").style.display = "block";
+            }
+
+            let dailyInternetRequestId = 0;
+            function safeHtml(value) {
+                return String(value ?? "").replace(
+                    /[&<>"']/g,
+                    (c) =>
+                        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+                            c
+                        ] || "",
+                );
+            }
+            function safeExternalUrl(value) {
+                try {
+                    const u = new URL(value);
+                    return ["https:", "http:"].includes(u.protocol) ? u.href : "";
+                } catch (e) {
+                    return "";
+                }
+            }
+            async function loadDailyInternetIdeas(overrideIngredients = "") {
+                const req = ++dailyInternetRequestId;
+                const status = document.getElementById("dailyInternetStatus");
+                const cards = document.getElementById("dailyInternetCards");
+                cards.replaceChildren();
+                status.textContent = overrideIngredients
+                    ? `Recherche de recettes Internet similaires avec ${overrideIngredients}...`
+                    : "Recherche de nouvelles recettes sur Internet...";
+                const ingredients =
+                    overrideIngredients ||
+                    (pantry.length
+                        ? pantry.slice(0, 7).join(",")
+                        : dailyGoal === "cut"
+                          ? "poulet,thon,œufs,lentilles"
+                          : dailyGoal === "bulk"
+                            ? "riz,pâtes,poulet,œufs"
+                            : "poulet,riz,œufs,saumon");
+                const query = new URLSearchParams({ ingredients, goal: dailyGoal, limit: "12" });
+                try {
+                    const response = await fetch(`/api/internet-recipes?${query}`);
+                    const payload = await response.json();
+                    if (req !== dailyInternetRequestId) return;
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const items = (payload.data || []).slice(0, 6);
+                    if (!items.length) {
+                        status.textContent =
+                            "Aucune recette externe trouvée avec ces aliments. Le menu calculé reste disponible.";
+                        return;
+                    }
+                    status.textContent = `${items.length} idées trouvées sur TheMealDB. Recettes non comptabilisées dans les totaux kcal/macros.`;
+                    items.forEach((item) => {
+                        const article = document.createElement("article");
+                        article.className = "online-meal";
+                        const imgUrl = safeExternalUrl(item.image);
+                        if (imgUrl && new URL(imgUrl).hostname.endsWith("themealdb.com")) {
+                            const img = document.createElement("img");
+                            img.src = imgUrl;
+                            img.alt = "Photo du plat";
+                            img.loading = "lazy";
+                            article.appendChild(img);
+                        }
+                        const content = document.createElement("div");
+                        content.className = "online-meal-content";
+                        const kind = document.createElement("div");
+                        kind.className = "kind";
+                        kind.textContent = (item.category_fr || "Recette") + " · Internet";
+                        content.appendChild(kind);
+                        const title = document.createElement("h4");
+                        title.textContent = decodeRecipeText(
+                            item.name_fr || item.name || "Recette",
+                        );
+                        content.appendChild(title);
+                        const info = document.createElement("p");
+                        info.textContent = `${item.owned_recipe_ingredients || 0}/${item.recipe_ingredient_total || 0} ingrédients de la recette disponibles. Nutrition non vérifiée.`;
+                        content.appendChild(info);
+                        const href = safeExternalUrl(item.source || item.youtube);
+                        if (href) {
+                            const link = document.createElement("a");
+                            link.href = href;
+                            link.target = "_blank";
+                            link.rel = "noopener noreferrer";
+                            link.textContent = "Voir la recette originale ↗";
+                            content.appendChild(link);
+                        } else {
+                            const text = document.createElement("span");
+                            text.textContent =
+                                "Voir le détail dans les recettes Internet ci-dessous";
+                            text.style.color = "#9eafa1";
+                            text.style.fontSize = "11px";
+                            content.appendChild(text);
+                        }
+                        article.appendChild(content);
+                        cards.appendChild(article);
+                    });
+                } catch (error) {
+                    if (req === dailyInternetRequestId)
+                        status.textContent =
+                            "La recherche Internet n'est pas disponible pour le moment. Vérifie la connexion DNS de la VM ou réessaie plus tard.";
+                }
+            }
+            function showGoalCalorieWarning() {
+                const note = document.getElementById("dailyGoalWarning");
+                if (!note) return;
+                const saved = getSavedCalorieTargets();
+                const calories = Number(document.getElementById("dailyCalories").value);
+                const maint = Number(saved?.tdee || 0);
+                if (!maint) {
+                    note.textContent =
+                        "Sans maintien estimé, l'application ne peut pas vérifier si les calories saisies correspondent réellement à une sèche ou une prise de masse.";
+                    return;
+                }
+                if (dailyGoal === "cut" && calories >= maint) {
+                    note.textContent = `Attention : ${calories} kcal est au moins égal à ton maintien estimé (${maint} kcal). Ce ne serait pas une sèche si ce maintien se confirme.`;
+                    return;
+                }
+                if (dailyGoal === "bulk" && calories <= maint) {
+                    note.textContent = `Attention : ${calories} kcal est inférieur ou égal à ton maintien estimé (${maint} kcal). La prise de masse pourrait être insuffisante.`;
+                    return;
+                }
+                if (dailyGoal === "cut" && (maint - calories) / maint > 0.25) {
+                    note.textContent =
+                        saved?.estimateSource === "weight_trend"
+                            ? `Le déficit serait important par rapport au maintien estimé depuis tes pesées (${maint} kcal). Réévalue avec tes tendances et ta récupération.`
+                            : `Attention : ${maint} kcal est un maintien THÉORIQUE basé sur « ${Number(saved?.activity || 1.55).toFixed(3)} » d'activité, pas une mesure. 2 300 kcal peut être adapté ou non : compare tes pesées hebdomadaires.`;
+                    return;
+                }
+                if (dailyGoal === "bulk" && (calories - maint) / maint > 0.2) {
+                    note.textContent = `Attention : surplus estimé supérieur à 20 %. Une prise de masse plus progressive peut limiter la prise de gras.`;
+                    return;
+                }
+                note.textContent = `Objectif ${dailyGoalLabel(dailyGoal).toLowerCase()} : ${calories} kcal/jour. Maintien estimé : ${maint} kcal/jour.`;
+            }
+
+            async function generateDailyMenu() {
+                const calories = Number(document.getElementById("dailyCalories").value);
+                const weight = Number(document.getElementById("dailyWeight").value);
+
+                if (!calories || calories < 1200 || calories > 6000) {
+                    alert("Entre un objectif calorique compris entre 1200 et 6000 kcal.");
+                    return;
+                }
+
+                if (!weight || weight < 40 || weight > 250) {
+                    alert("Entre ton poids pour calculer correctement les macros.");
+                    return;
+                }
+
+                const button = document.getElementById("generateDailyMenu");
+                const originalText = button.textContent;
+
+                button.disabled = true;
+                button.textContent = "Optimisation du menu...";
+
+                const query = new URLSearchParams({
+                    calories: String(Math.round(calories)),
+                    weight: String(weight),
+                    protein_g_per_kg: document.getElementById("dailyProtein").value,
+                    goal: dailyGoal,
+                    ingredients: pantry.join(","),
+                    variant: String(dailyVariant),
+                });
+
+                try {
+                    const response = await fetch(`/api/daily-menu?${query.toString()}`);
+                    const payload = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(payload.detail || `HTTP ${response.status}`);
+                    }
+
+                    renderDailyMenu(payload);
+                    showGoalCalorieWarning();
+                    // La recherche externe est indépendante : un échec ne bloque jamais le menu.
+                    loadDailyInternetIdeas();
+
+                    document.getElementById("dailyResult").scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                    });
+                } catch (error) {
+                    alert(`Impossible de générer le menu : ${error.message}`);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = originalText;
+                }
+            }
+
+            document.querySelectorAll("[data-daily-goal]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    dailyGoal = button.dataset.dailyGoal;
+                    dailyVariant = 0;
+                    const prefs = getGoalPreferences();
+                    prefs.lastGoal = dailyGoal;
+                    persistGoalPreferences(prefs);
+                    updateDailyGoalButtons();
+                    applySavedCalories(false);
+                    setGoal(dailyGoal);
+                    invalidateGeneratedMenu();
+                });
+            });
+
+            document.getElementById("useSavedCalories").addEventListener("click", () => {
+                // Action explicite : basculer en estimation automatique, sans perdre la cible manuelle.
+                chooseDailyMode("auto");
+            });
+
+            document.getElementById("generateDailyMenu").addEventListener("click", () => {
+                dailyVariant = 0;
+                generateDailyMenu();
+            });
+
+            document.getElementById("regenerateDailyMenu").addEventListener("click", () => {
+                dailyVariant += 1;
+                generateDailyMenu();
+            });
+
+            function initializeDailyPlannerFromUrl() {
+                const query = new URLSearchParams(window.location.search);
+                const explicitGoal = query.get("goal");
+                const explicitMode = query.get("mode");
+                const kcal = Number(query.get("kcal"));
+                const prefs = getGoalPreferences();
+                dailyGoal = ["cut", "maintain", "bulk"].includes(explicitGoal)
+                    ? explicitGoal
+                    : prefs.lastGoal || "cut";
+                prefs.lastGoal = dailyGoal;
+
+                // Seuls les liens marqués explicitement mode=auto peuvent activer une estimation.
+                // L'ancien ?goal=cut&kcal=2700 (sans mode) ne doit pas écraser 2 300.
+                if (explicitMode === "auto") prefs.goals[dailyGoal].mode = "auto";
+                else if (explicitMode === "custom") {
+                    prefs.goals[dailyGoal].mode = "custom";
+                    if (kcal >= 1200 && kcal <= 6000)
+                        prefs.goals[dailyGoal].calories = Math.round(kcal);
+                }
+                persistGoalPreferences(prefs);
+
+                updateDailyGoalButtons();
+                const saved = getSavedCalorieTargets();
+                let previousProfile = null;
+                try {
+                    previousProfile = JSON.parse(
+                        localStorage.getItem("gymapp-calorie-targets") || "null",
+                    );
+                } catch (e) {}
+                setProfileInputs(saved || previousProfile);
+                if (saved?.weight) document.getElementById("dailyWeight").value = saved.weight;
+                applySavedCalories(false);
+                updateWeightTrendSourceNotice();
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            const requestedGoal = params.get("goal");
+            const requestedRecipe = params.get("recipe");
+            if (requestedRecipe && /^(?:\d+|wkb-\d+)$/.test(requestedRecipe)) {
+                fetch("/api/recipes/" + encodeURIComponent(requestedRecipe) + "/details")
+                    .then((response) => {
+                        if (!response.ok) throw new Error("Recette indisponible");
+                        return response.json();
+                    })
+                    .then((payload) => openInternetRecipe(payload.data, true))
+                    .catch(() => {
+                        internetSubtitle.textContent =
+                            "La recette demandée est indisponible pour le moment.";
+                    });
+            }
+
+            loadPantry();
+            initializeDailyPlannerFromUrl();
+            showGoalCalorieWarning();
+
+            if (["cut", "maintain", "bulk"].includes(requestedGoal)) {
+                setGoal(requestedGoal);
+            } else {
+                setGoal("all");
+            }
+        </script>
+    </body>
+</html>

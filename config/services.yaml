@@ -1,0 +1,28 @@
+parameters: {}
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+  App\:
+    resource: '../src/'
+    exclude: '../src/Kernel.php'
+  App\Service\GymStore:
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+      $databaseUrl: '%env(DATABASE_URL)%'
+  App\Service\Nutrition:
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+  App\Service\RemoteCache:
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+  App\Service\AiClient:
+    arguments:
+      $apiKey: '%env(OPENAI_API_KEY)%'
+      $model: '%env(OPENAI_MODEL)%'
+      $provider: '%env(AI_PROVIDER)%'
+      $ollamaUrl: '%env(OLLAMA_URL)%'
+      $ollamaModel: '%env(OLLAMA_MODEL)%'
+  App\Service\AssistantService:
+    arguments:
+      $requestsPerDay: '%env(int:AI_REQUESTS_PER_DAY)%'

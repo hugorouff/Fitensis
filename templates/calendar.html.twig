@@ -1,0 +1,171 @@
+{% extends 'base.html.twig' %}
+{% block title %}
+    Mes séances · Gym
+{% endblock %}
+{% block body %}
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">MON PLANNING PERSONNEL</span><h1>
+                Qu’est-ce qu’on entraîne<span class="accent">?</span>
+            </h1>
+            <p class="muted">
+                Choisis ta séance, les parties du corps et tes exercices. Note ensuite ce que tu as
+                réalisé.
+            </p>
+        </div><a class="button secondary" href="/calendrier.ics">Exporter mon planning</a>
+    </div>
+    <div class="calendar-toolbar">
+        <a class="button secondary" href="?date={{ prev|date('Y-m-d') }}">← Précédente</a><strong>
+            Semaine du {{ start|date('d/m/Y') }}
+        </strong><a href="/calendrier">Aujourd’hui</a><a class="button secondary" href="?date={{ next|date('Y-m-d') }}">Suivante
+            →</a>
+    </div>
+    <div class="week-grid">
+        {% set weekdays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] %}
+        {% for day in days %}
+            <section class="day {{ (day|date('Y-m-d')) == ('now'|date('Y-m-d')) ? 'today' : '' }}">
+                <h3>{{ weekdays[loop.index0] }} <strong>{{ day|date('d') }}</strong></h3>
+                {% for s in sessions %}
+                    {% if (s.starts_at|date('Y-m-d')) == (day|date('Y-m-d')) %}
+                        <a class="course training-card" href="/entrainements/{{ s.id }}">
+                            <span class="eyebrow">
+                                {{ s.starts_at|date('H:i') }} · {{ s.duration_minutes }} min
+                            </span><h4>{{ s.title }}</h4>
+                            <div class="muscle-pills">
+                                {% for muscle in s.muscle_ids %}
+                                    <span class="pill">{{ muscles[muscle]|default(muscle) }}</span>
+                                {% endfor %}
+                            </div>
+                            <p>
+                                {{ s.exercise_count }} exercice{{ s.exercise_count > 1 ? 's' : '' }}
+                            </p><span
+                                class="pill {{
+                                s.status == 'completed'
+                                    ? 'confirmed'
+                                    : s.status == 'skipped' ? 'cancelled' : ''
+                                }}"
+                            >
+                                {{
+                                    {
+                                        planned: 'À faire',
+                                        completed: 'Terminée ✓',
+                                        skipped: 'Reportée / non faite'
+                                    }[s.status]
+                                }}
+                            </span>{% if s.volume > 0 %}
+                                <small>{{ s.volume }} kg de volume</small>
+                            {% endif %}<strong class="training-link">
+                                {{ s.status == 'completed'
+                                    ? 'Voir mes résultats'
+                                    : 'Ouvrir ma séance' }} →
+                            </strong>
+                        </a>
+                    {% endif %}
+                {% endfor %}<a class="add-training" href="?date={{ day|date('Y-m-d') }}#planifier">
+                    + Ajouter
+                </a>
+            </section>
+        {% endfor %}
+    </div>
+    <section class="panel" id="planifier">
+        <h2>{{ edit ? 'Modifier ma séance' : 'Préparer une séance' }}</h2>
+        <form method="post" action="/entrainements/enregistrer" class="form-grid">
+            <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+            <input type="hidden" name="id" value="{{ edit.id|default('') }}" /><label>
+                Type de séance<select name="preset" id="training-preset">
+                    {% for key, preset in presets %}
+                        <option
+                            value="{{ key }}"
+                            data-muscles="{{ preset.muscles|json_encode }}"
+                            data-title="{{ preset.label }}"
+                            {{ (edit.preset|default(initialPreset)) == key ? 'selected' : '' }}
+                        >
+                            {{ preset.label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </label><label>
+                Nom (facultatif)<input
+                    name="title"
+                    id="training-title"
+                    value="{{ edit.title|default('') }}"
+                    placeholder="Ex. Haut du corps · force"
+                    maxlength="250"
+                />
+            </label><label>
+                Date<input
+                    name="date"
+                    type="date"
+                    value="{{ edit ? edit.starts_at|date('Y-m-d') : selectedDate }}"
+                    required
+                />
+            </label><label>
+                Heure repère<input
+                    name="time"
+                    type="time"
+                    value="{{ edit ? edit.starts_at|date('H:i') : '18:00' }}"
+                    required
+                />
+            </label><label>
+                Durée prévue (minutes)<input
+                    name="duration"
+                    type="number"
+                    min="10"
+                    max="300"
+                    value="{{ edit.duration_minutes|default(60) }}"
+                    required
+                />
+            </label>{% if not edit %}
+                <label>
+                    Répéter chaque semaine<input
+                        name="repeat"
+                        type="number"
+                        min="1"
+                        max="12"
+                        value="1"
+                    /><small>1 à 12 occurrences.</small>
+                </label>
+            {% endif %}
+            <fieldset class="wide muscle-selector">
+                <legend>
+                    Parties du corps à entraîner
+                </legend>
+                {% for key, label in muscles %}
+                    <label class="checkbox">
+                        <input
+                            type="checkbox"
+                            name="muscles[]"
+                            value="{{ key }}"
+                            {{ key in edit ? edit.muscle_ids : initialGroups ? 'checked' : '' }}
+                        /> {{ label }}
+                    </label>
+                {% endfor %}
+            </fieldset>
+            {% if not edit %}
+                <label class="wide">
+                    Premier exercice (facultatif)<input
+                        name="exercise"
+                        class="exercise-autocomplete"
+                        list="exercise-suggestions"
+                        value="{{ exercise }}"
+                        placeholder="Rechercher un exercice ou saisir son nom"
+                    />
+                    <datalist id="exercise-suggestions"></datalist><small>
+                        Tu pourras en ajouter d’autres dans ta séance.
+                    </small>
+                </label>
+            {% endif %}<label class="wide">
+                Notes / objectif de la séance<textarea
+                    name="notes"
+                    rows="2"
+                    placeholder="Ex. améliorer la technique, viser 3 × 10 à 60 kg"
+                >
+                    {{ edit.notes|default('') }}
+                </textarea>
+            </label><div class="actions">
+                <button>{{ edit ? 'Enregistrer' : 'Créer ma séance →' }}</button><a href="/performances">Voir
+                    mes performances</a>
+            </div>
+        </form>
+    </section>
+{% endblock %}

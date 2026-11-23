@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="csrf-token" content="{{ csrf_token('gym') }}" />
+        <title>
+            {% block title %}
+                Fitensis
+            {% endblock %}
+        </title>
+        <link rel="icon" href="/assets/datensis-light.png" />
+        <link rel="stylesheet" href="/assets/app.css" />
+        <script defer src="/assets/app.js"></script>
+    </head>
+    <body>
+        {% include '_navigation.html.twig' %}
+        <main class="container personal-page">
+            {% include '_flashes.html.twig' %}
+            {% block body %}
+
+            {% endblock %}
+        </main>
+        <footer class="container app-footer">
+            <div class="footer-links">
+                <a href="/espace/workouts">Carnet</a><a href="/espace/measurements">
+                    Poids & mensurations
+                </a><a href="/espace/goals">Objectifs</a><a href="/espace/programs">Programmes</a>{% if
+                    gym.staff %}
+                    <a href="/adherents">Comptes</a><a href="/espace/equipment">Matériel</a>
+                {% endif %}
+                {% if gym.user.role == 'admin' %}
+                    <a href="/espace/memberships">Abonnements</a><a href="/espace/payments">Encaissements</a>
+                {% endif %}
+                <form method="post" action="/deconnexion">
+                    <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><button
+                        class="link"
+                    >
+                        Se déconnecter
+                    </button>
+                </form>
+            </div>
+            <p>
+                Fitensis · Entraînement, nutrition & progression
+            </p>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,209 @@
+<section class="panel ai-wizard" aria-label="Questionnaire de l’assistant">
+    <span class="eyebrow">ON CONSTRUIT TA DEMANDE ENSEMBLE</span>
+    <h2>Quelques choix, des propositions adaptées.</h2>
+    <p id="wizard-progress" role="status">
+        Étape 1 sur 3 · Ton objectif
+    </p>
+    <div class="wizard-step" data-step="0">
+        <label>
+            De quoi as-tu envie ?<select id="wizard-topic">
+                <option value="auto">
+                    Séances et idées de repas
+                </option>
+                <option value="sessions">
+                    Des séances uniquement
+                </option>
+                <option value="recipes">
+                    Des recettes uniquement
+                </option>
+                <option value="advice">
+                    Des conseils
+                </option>
+            </select>
+        </label>
+        <label>
+            Ton objectif<select id="wizard-goal">
+                <option value="maintain">
+                    Me maintenir / prendre de bonnes habitudes
+                </option>
+                <option value="bulk">
+                    Prendre de la masse
+                </option>
+                <option value="cut">
+                    Perdre de la masse grasse
+                </option>
+                <option value="all">
+                    À définir
+                </option>
+            </select>
+        </label>
+        <label>
+            Ton expérience<select id="wizard-level">
+                <option>
+                    Je débute / je reprends
+                </option>
+                <option>
+                    Je m’entraîne régulièrement
+                </option>
+                <option>
+                    Je suis expérimenté
+                </option>
+            </select>
+        </label>
+    </div>
+    <div class="wizard-step" data-step="1" hidden>
+        <p class="muted">
+            L’assistant proposera par défaut 5 alternatives à comparer. « Séances par proposition »
+            indique la taille de chaque programme, pas le nombre d’idées.
+        </p>
+        <p id="wizard-catalog-preview" class="muted" aria-live="polite">
+            Les exemples de la page Exercices apparaîtront ici.
+        </p>
+        <p class="muted">
+            Les groupes ci-dessous reprennent ceux du catalogue Exercices.
+        </p>
+        <div class="form-grid">
+            <label>
+                Point de départ<select id="wizard-muscle">
+                    <optgroup label="Séances complètes">
+                        <option value="upper">
+                            Haut du corps
+                        </option>
+                        <option value="lower">
+                            Bas du corps
+                        </option>
+                        <option value="full">
+                            Full body
+                        </option>
+                        <option value="arms">
+                            Bras
+                        </option>
+                    </optgroup>
+                    <optgroup label="Groupes du catalogue">
+                        {% for key, label in muscles %}
+                            <option value="{{ key }}">
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </label>
+            <label>
+                Séances par proposition<input
+                    id="wizard-count"
+                    type="number"
+                    min="1"
+                    max="6"
+                    value="1"
+                />
+            </label>
+            <label>
+                Minutes par séance<input
+                    id="wizard-minutes"
+                    type="number"
+                    min="10"
+                    max="120"
+                    value="45"
+                />
+            </label>
+        </div>
+        <fieldset class="wizard-combine">
+            <legend>
+                Combine les groupes que tu veux entraîner
+            </legend>
+            <p class="muted">
+                Ajoute plusieurs muscles pour une même séance. La durée choisie s’applique à
+                l’ensemble.
+            </p>
+            <div class="muscle-presets">
+                <button type="button" data-muscle-preset="chest,shoulders,triceps">
+                    Push · pecs / épaules / triceps
+                </button>
+                <button type="button" data-muscle-preset="back,biceps,forearms">
+                    Pull · dos / biceps / avant-bras
+                </button>
+                <button type="button" data-muscle-preset="biceps,triceps,forearms">
+                    Bras complets
+                </button>
+                <button type="button" data-muscle-preset="quads,hamstrings,glutes,calves">
+                    Jambes / fessiers
+                </button>
+            </div>
+            <div class="wizard-muscle-chips">
+                {% for key, label in muscles %}
+                    <label>
+                        <input
+                            class="wizard-extra-muscle"
+                            type="checkbox"
+                            value="{{ key }}"
+                            data-label="{{ label }}"
+                        /> {{ label }}
+                    </label>
+                {% endfor %}
+            </div>
+            <p id="wizard-muscle-summary" class="muted" aria-live="polite"></p>
+        </fieldset>
+        <label>
+            Ton matériel<select id="wizard-equipment">
+                <option value="salle équipée">
+                    Salle équipée
+                </option>
+                <option value="uniquement des haltères">
+                    Haltères uniquement
+                </option>
+                <option value="à domicile avec des élastiques">
+                    Élastiques
+                </option>
+                <option value="à domicile au poids du corps sans matériel">
+                    Poids du corps
+                </option>
+            </select>
+        </label>
+        <p class="muted">
+            Les propositions utilisent les exercices du catalogue compatibles avec ces choix quand
+            les informations sont disponibles.
+        </p>
+    </div>
+    <div class="wizard-step" data-step="2" hidden>
+        <label>
+            Aliments et saveurs que tu apprécies<input
+                id="wizard-likes"
+                maxlength="300"
+                placeholder="Poulet, riz, curry…"
+            />
+        </label>
+        <label>
+            Aliments à exclure<input
+                id="wizard-dislikes"
+                maxlength="300"
+                placeholder="Champignons, porc…"
+            />
+        </label>
+        <label>
+            Portions souhaitées<input
+                id="wizard-portions"
+                type="number"
+                min="1"
+                max="12"
+                value="2"
+            />
+        </label>
+        <label>
+            Autres précisions<textarea
+                id="wizard-extra"
+                maxlength="1000"
+                rows="2"
+                placeholder="Temps disponible, préférences, exercices à éviter…"
+            ></textarea>
+        </label>
+    </div>
+    <div class="actions">
+        <button id="wizard-back" type="button" class="secondary" hidden>← Retour</button><button
+            id="wizard-next"
+            type="button"
+        >
+            Continuer →
+        </button><button id="wizard-apply" type="button" hidden>Préparer ma demande →</button>
+    </div>
+    <p id="wizard-summary" class="muted" aria-live="polite"></p>
+</section>

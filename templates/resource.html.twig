@@ -1,0 +1,494 @@
+{% extends 'base.html.twig' %}
+{% set titles = {
+    workouts: 'Carnet d’entraînement',
+    measurements: 'Ma progression',
+    goals: 'Mes objectifs',
+    programs: 'Programmes',
+    equipment: 'Matériel de la salle',
+    memberships: 'Abonnements',
+    payments: 'Paiements'
+} %}
+{% set editable = resource in ['workouts', 'measurements', 'goals']
+    or (resource == 'programs' and gym.staff)
+    or (resource in ['equipment', 'memberships', 'payments'] and gym.user.role == 'admin')
+%}
+{% block body %}
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">LE PROGRÈS SE CONSTRUIT</span><h1>
+                {{ titles[resource] }}<span class="accent">.</span>
+            </h1>
+        </div>
+        {% if resource in ['workouts', 'measurements'] %}
+            <a class="button secondary" href="/export/{{ resource }}.csv">Exporter en CSV</a>
+        {% endif %}
+    </div>
+    {% if resource == 'workouts' %}
+        <section class="panel">
+            <div class="section-head">
+                <h2>Chronomètre de récupération</h2><strong id="rest-display" role="timer">
+                    01:30
+                </strong>
+            </div>
+            <div class="actions">
+                <button type="button" data-rest="60" class="secondary small">60 s</button><button
+                    type="button"
+                    data-rest="90"
+                    class="secondary small"
+                >
+                    90 s
+                </button><button type="button" data-rest="120" class="secondary small">
+                    120 s
+                </button><button type="button" id="rest-stop" class="secondary small">
+                    Arrêter
+                </button>
+            </div>
+        </section>
+    {% endif %}
+    {% if resource == 'measurements' and (rows|length) > 1 %}
+        <section class="panel">
+            <h2>Évolution du poids</h2>
+            <div class="weight-chart" aria-label="Historique des poids">
+                {% for row in rows|reverse %}
+                    <div class="weight-point">
+                        <span>{{ row.weight }} kg</span><div
+                            style="height:{{ row.weight * 1.3 }}px"
+                        ></div><small>{{ row.date|date('d/m') }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    {% if editable %}
+        <details class="panel" {{ edit or prefillExercise ? 'open' : '' }}>
+            <summary>
+                {{ edit ? 'Modifier cet élément' : 'Ajouter un élément' }}
+            </summary>
+            <form method="post" action="/espace/{{ resource }}/enregistrer" class="form-grid">
+                <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                <input type="hidden" name="id" value="{{ edit.id|default('') }}" />
+                {% if resource in ['programs', 'memberships'] %}
+                    <label>
+                        Adhérent<select name="user_id" required>
+                            {% for u in users %}
+                                <option
+                                    value="{{ u.id }}"
+                                    {{ (edit.user_id|default('')) == u.id ? 'selected' : '' }}
+                                >
+                                    {{ u.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% endif %}
+                {% if resource in ['workouts', 'measurements'] %}
+                    <label>
+                        Date<input
+                            name="date"
+                            type="date"
+                            value="{{ edit.date|default('now'|date('Y-m-d')) }}"
+                            required
+                        />
+                    </label>
+                {% endif %}
+                {% if resource == 'workouts' %}
+                    <label>
+                        Exercice<input
+                            name="exercise"
+                            value="{{ edit.exercise|default(prefillExercise) }}"
+                            required
+                            placeholder="Développé couché"
+                        />
+                    </label><label>
+                        Séries<input
+                            name="sets"
+                            type="number"
+                            min="1"
+                            max="50"
+                            value="{{ edit.sets|default(3) }}"
+                            required
+                        />
+                    </label><label>
+                        Répétitions / série<input
+                            name="reps"
+                            type="number"
+                            min="1"
+                            max="200"
+                            value="{{ edit.reps|default(10) }}"
+                            required
+                        />
+                    </label><label>
+                        Charge (kg)<input
+                            name="weight"
+                            type="number"
+                            min="0"
+                            max="1000"
+                            step="0.5"
+                            value="{{ edit.weight|default(0) }}"
+                            required
+                        />
+                    </label><label>
+                        Effort perçu (RPE 1–10)<input
+                            name="rpe"
+                            type="number"
+                            min="1"
+                            max="10"
+                            step="0.5"
+                            value="{{ edit.rpe|default(7) }}"
+                            required
+                        />
+                    </label>
+                {% endif %}
+                {% if resource == 'measurements' %}
+                    <label>
+                        Poids (kg)<input
+                            name="weight"
+                            type="number"
+                            min="25"
+                            max="350"
+                            step="0.1"
+                            value="{{ edit.weight|default('') }}"
+                            required
+                        />
+                    </label><label>
+                        Tour de taille (cm, facultatif)<input
+                            name="waist"
+                            type="number"
+                            min="30"
+                            max="250"
+                            step="0.1"
+                            value="{{ edit.waist|default('') }}"
+                        />
+                    </label><label>
+                        Masse grasse (%, facultatif)<input
+                            name="body_fat"
+                            type="number"
+                            min="1"
+                            max="70"
+                            step="0.1"
+                            value="{{ edit.body_fat|default('') }}"
+                        />
+                    </label>
+                {% endif %}
+                {% if resource == 'goals' %}
+                    <label>
+                        Objectif<input
+                            name="title"
+                            value="{{ edit.title|default('') }}"
+                            required
+                            placeholder="12 séances ce mois-ci"
+                        />
+                    </label><label>
+                        Cible<input
+                            type="number"
+                            name="target"
+                            min="0.1"
+                            max="1000000"
+                            step="0.1"
+                            value="{{ edit.target|default(12) }}"
+                            required
+                        />
+                    </label><label>
+                        Valeur actuelle<input
+                            type="number"
+                            name="current"
+                            min="0"
+                            max="1000000"
+                            step="0.1"
+                            value="{{ edit.current|default(0) }}"
+                            required
+                        />
+                    </label><label>
+                        Unité<input
+                            name="unit"
+                            value="{{ edit.unit|default('séances') }}"
+                            required
+                        />
+                    </label><label>
+                        Échéance<input
+                            type="date"
+                            name="deadline"
+                            value="{{ edit.deadline|default('') }}"
+                            required
+                        />
+                    </label><label class="checkbox">
+                        <input
+                            type="checkbox"
+                            name="done"
+                            {{ edit.done|default(0) ? 'checked' : '' }}
+                        />Objectif atteint
+                    </label>
+                {% endif %}
+                {% if resource == 'programs' %}
+                    <label>
+                        Nom du programme<input
+                            name="title"
+                            value="{{ edit.title|default('') }}"
+                            required
+                        />
+                    </label><label>
+                        Objectif<input name="goal" value="{{ edit.goal|default('') }}" required />
+                    </label><label>
+                        Durée (semaines)<input
+                            name="weeks"
+                            type="number"
+                            min="1"
+                            max="104"
+                            value="{{ edit.weeks|default(6) }}"
+                            required
+                        />
+                    </label><label class="wide">
+                        Séances, exercices et consignes<textarea
+                            name="content"
+                            rows="8"
+                            required
+                            placeholder="Lundi : full body&#10;Squat : 3 × 10, repos 90 s&#10;Tirage : 3 × 12"
+                        >
+                            {{ edit.content|default('') }}
+                        </textarea>
+                    </label>
+                {% endif %}
+                {% if resource == 'equipment' %}
+                    <label>
+                        Nom du matériel<input
+                            name="name"
+                            value="{{ edit.name|default('') }}"
+                            required
+                        />
+                    </label><label>
+                        Zone<input name="zone" value="{{ edit.zone|default('') }}" required />
+                    </label><label>
+                        État<select name="status">
+                            {% for s in ['Disponible', 'Maintenance', 'Hors service'] %}
+                                <option {{ (edit.status|default('')) == s ? 'selected' : '' }}>
+                                    {{ s }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label><label>
+                        Prochain entretien<input
+                            name="next_service"
+                            type="date"
+                            value="{{ edit.next_service|default('') }}"
+                            required
+                        />
+                    </label>
+                {% endif %}
+                {% if resource == 'memberships' %}
+                    <label>
+                        Formule<input
+                            name="plan"
+                            value="{{ edit.plan|default('Essentiel') }}"
+                            required
+                        />
+                    </label><label>
+                        Début<input
+                            name="starts_on"
+                            type="date"
+                            value="{{ edit.starts_on|default('now'|date('Y-m-d')) }}"
+                            required
+                        />
+                    </label><label>
+                        Fin<input
+                            name="ends_on"
+                            type="date"
+                            value="{{ edit.ends_on|default('') }}"
+                            required
+                        />
+                    </label><label>
+                        Montant total (€)<input
+                            name="price"
+                            type="number"
+                            min="0"
+                            max="100000"
+                            step="0.01"
+                            value="{{ edit ? edit.price_cents / 100 : 39.9 }}"
+                            required
+                        />
+                    </label><label>
+                        État<select name="status">
+                            {% for s in ['Actif', 'Suspendu', 'Terminé'] %}
+                                <option {{ (edit.status|default('')) == s ? 'selected' : '' }}>
+                                    {{ s }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                {% endif %}
+                {% if resource == 'payments' %}
+                    <label>
+                        Abonnement<select name="membership_id" required>
+                            {% for m in memberships %}
+                                <option
+                                    value="{{ m.id }}"
+                                    {{ (edit.membership_id|default('')) == m.id ? 'selected' : '' }}
+                                >
+                                    {{ m.member }} · {{ m.plan }} · {{ m.ends_on }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label><label>
+                        Montant encaissé (€)<input
+                            name="amount"
+                            type="number"
+                            min="0.01"
+                            max="100000"
+                            step="0.01"
+                            value="{{ edit ? edit.amount_cents / 100 : '' }}"
+                            required
+                        />
+                    </label><label>
+                        Date d’encaissement<input
+                            name="paid_on"
+                            type="date"
+                            value="{{ edit.paid_on|default('now'|date('Y-m-d')) }}"
+                            required
+                        />
+                    </label><label>
+                        Moyen de paiement<select name="method">
+                            {% for s in ['Carte', 'Virement', 'Espèces', 'Chèque', 'Prélèvement'] %}
+                                <option {{ (edit.method|default('')) == s ? 'selected' : '' }}>
+                                    {{ s }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label><label>
+                        Référence<input name="reference" value="{{ edit.reference|default('') }}" />
+                    </label>
+                {% endif %}
+                {% if resource in ['workouts', 'measurements', 'equipment'] %}
+                    <label class="wide">
+                        Notes<textarea name="notes" rows="2">
+                            {{ edit.notes|default('') }}
+                        </textarea>
+                    </label>
+                {% endif %}
+                <div class="actions">
+                    <button>{{ edit ? 'Enregistrer les modifications' : 'Ajouter →' }}</button>{% if
+                        edit %}
+                        <a href="/espace/{{ resource }}">Annuler</a>
+                    {% endif %}
+                </div>
+            </form>
+        </details>
+    {% endif %}
+    {% if resource == 'payments' %}
+        <p class="muted">
+            Registre des encaissements saisis manuellement. Aucun paiement bancaire n’est déclenché.
+        </p>
+    {% endif %}
+    <div class="cards">
+        {% for row in rows %}
+            <article class="panel record">
+                <div class="section-head">
+                    <span class="eyebrow">
+                        {% if resource in ['programs', 'memberships', 'payments'] %}
+                            {{ row.member }}
+                        {% elseif resource in ['workouts', 'measurements'] %}
+                            {{ row.date|date('d/m/Y') }}
+                        {% else %}
+                            GYM / CLUB
+                        {% endif %}
+                    </span>{% if editable %}
+                        <a class="edit-link" href="?edit={{ row.id }}">Modifier ↗</a>
+                    {% endif %}
+                </div>
+                {% if resource == 'workouts' %}
+                    <h2>{{ row.exercise }}</h2>
+                    <p class="record-number">
+                        {{ row.sets }} × {{ row.reps }} <small>à {{ row.weight }} kg</small>
+                    </p>
+                    <p class="muted">
+                        Volume : {{ row.sets * row.reps * row.weight }} kg · RPE {{ row.rpe }}/10<br
+                        />1RM estimé : {{ (row.weight * (1 + row.reps / 30))|round(1) }} kg (indicatif)
+                    </p>
+                    <p>
+                        {{ row.notes }}
+                    </p>
+                {% endif %}
+                {% if resource == 'measurements' %}
+                    <h2>{{ row.weight }} <small>kg</small></h2>
+                    <p class="muted">
+                        Tour de taille : {{ row.waist ?? '—' }} cm<br />Masse grasse : {{ row.body_fat
+                            ?? '—' }} %
+                    </p>
+                    <p>
+                        {{ row.notes }}
+                    </p>
+                {% endif %}
+                {% if resource == 'goals' %}
+                    <h2>{{ row.title }}</h2>
+                    <p class="record-number">
+                        {{ row.current }} <small>/ {{ row.target }} {{ row.unit }}</small>
+                    </p>
+                    <progress max="{{ row.target }}" value="{{ row.current }}"></progress>
+                    <p class="muted">
+                        Échéance {{ row.deadline|date('d/m/Y') }} · {{ row.done ? 'Atteint ✓' : 'En cours' }}
+                    </p>
+                {% endif %}
+                {% if resource == 'programs' %}
+                    <h2>{{ row.title }}</h2>
+                    <p class="pill">
+                        {{ row.weeks }} semaines · {{ row.goal }}
+                    </p>
+                    <p class="pre-line">
+                        {{ row.content }}
+                    </p><a href="/espace/workouts">Consigner ma séance →</a>
+                {% endif %}
+                {% if resource == 'equipment' %}
+                    <h2>{{ row.name }}</h2><span
+                        class="pill {{ row.status == 'Disponible' ? 'confirmed' : 'waiting' }}"
+                    >
+                        {{ row.status }}
+                    </span><p>
+                        {{ row.zone }} · Entretien {{ row.next_service|date('d/m/Y') }}
+                    </p>
+                    <p class="muted">
+                        {{ row.notes }}
+                    </p>
+                {% endif %}
+                {% if resource == 'memberships' %}
+                    <h2>{{ row.plan }}</h2>
+                    <p class="record-number">
+                        {{ (row.price_cents / 100)|number_format(2, ',', ' ') }} €
+                    </p>
+                    <p>
+                        {{ row.starts_on|date('d/m/Y') }} → {{ row.ends_on|date('d/m/Y') }}
+                    </p>
+                    <p class="muted">
+                        Encaissé : {{ (row.paid_cents / 100)|number_format(2, ',', ' ') }} € · Solde :
+                        {{ ((row.price_cents - row.paid_cents) / 100)|number_format(2, ',', ' ') }} €
+                    </p><span class="pill">
+                        {{ row.ends_on < ('now'|date('Y-m-d')) ? 'Expiré' : row.status }}
+                    </span>
+                {% endif %}
+                {% if resource == 'payments' %}
+                    <h2>{{ (row.amount_cents / 100)|number_format(2, ',', ' ') }} €</h2>
+                    <p>
+                        {{ row.plan }} · {{ row.paid_on|date('d/m/Y') }}
+                    </p>
+                    <p class="muted">
+                        {{ row.method }} · {{ row.reference }}
+                    </p>
+                {% endif %}
+                {% if editable %}
+                    <form
+                        method="post"
+                        action="/espace/{{ resource }}/{{ row.id }}/supprimer"
+                        data-confirm="Supprimer cet élément ?"
+                    >
+                        <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><button
+                            class="link danger"
+                        >
+                            Supprimer
+                        </button>
+                    </form>
+                {% endif %}
+            </article>
+        {% else %}
+            <div class="panel empty wide">
+                Aucun élément enregistré pour le moment.
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

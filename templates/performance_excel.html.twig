@@ -1,0 +1,212 @@
+{% extends 'base.html.twig' %}
+{% block title %}
+    Excel · Mes performances
+{% endblock %}
+{% block body %}
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">MON HISTORIQUE, MES PROGRÈS</span><h1>
+                Mon suivi <span class="accent">Excel.</span>
+            </h1>
+            <p class="muted">
+                Reprends tes anciennes performances et retrouve leur évolution
+                dans l’application.
+            </p>
+        </div>
+        <a class="button secondary" href="/performances">← Mes performances</a>
+    </div>
+    <section class="panel">
+        <h2>Importer mon historique</h2>
+        <p>
+            Fichier XLSX ou CSV · 5 Mo maximum · 2 000 lignes par import. Un
+            aperçu s’affiche avant l’enregistrement.
+        </p>
+        <p class="muted">
+            Le modèle comporte deux feuilles : Performances (date, exercice,
+            séries, répétitions, charge, RPE, notes) et Mesures (poids, tour de
+            taille, masse grasse). Remplis celle(s) qui te concernent. Dates :
+            JJ/MM/AAAA, AAAA-MM-JJ ou dates Excel. Les imports rejoignent ton
+            carnet personnel, sans créer de séance planifiée.
+        </p>
+        <div class="actions">
+            <a class="button secondary" href="/performances/excel/modele.xlsx">
+                Télécharger le modèle Excel
+            </a><a class="button" href="/performances/excel/export.xlsx">
+                Exporter mon suivi complet
+            </a>
+        </div>
+        <form
+            method="post"
+            action="/performances/excel/apercu"
+            enctype="multipart/form-data"
+            class="form-grid"
+        >
+            <input
+                type="hidden"
+                name="_token"
+                value="{{ csrf_token('gym') }}"
+            />
+            <label>
+                Mon fichier<input
+                    name="file"
+                    type="file"
+                    accept=".xlsx,.csv"
+                    required
+                />
+            </label>
+            <label>
+                RPE à utiliser si absent<input
+                    name="default_rpe"
+                    type="number"
+                    min="1"
+                    max="10"
+                    step="0.5"
+                    value="7"
+                    required
+                /><small class="muted">
+                    Valeur de remplacement affichée dans l’aperçu. Renseigne le
+                    RPE dans ton fichier pour conserver ta valeur réelle.
+                </small>
+            </label>
+            <button>Vérifier mon fichier →</button>
+        </form>
+    </section>
+    <section class="panel">
+        <h2>Ce que contient l’export</h2>
+        <p>
+            Historique complet des performances et mensurations, synthèse par
+            exercice, volume par jour, meilleures charges et 1RM estimé. Des
+            graphiques montrent les exercices les plus fréquents, la régularité
+            hebdomadaire, le poids corporel, la charge maximale et le volume
+            pour l’exercice choisi sur la page Performances.
+        </p>
+        <p class="muted">
+            Les graphiques couvrent les 365 dernières dates disponibles ; les
+            données exportées conservent l’historique. La synthèse est un
+            instantané. Pour actualiser tes progrès, importe tes nouvelles
+            lignes puis exporte à nouveau. Les calculs et leurs limites sont
+            expliqués dans la feuille Mode emploi.
+        </p>
+    </section>
+    {% if pending %}
+        {% set preview = pending.preview %}
+        <section class="panel" id="excel-preview">
+            <h2>Aperçu : {{ pending.filename }}</h2>
+            <p>
+                {{ preview.total }} ligne(s) lue(s) · {{ (preview.rows|length)
+                    - preview.duplicates }} nouvelle(s) · {{
+                    preview.duplicates
+                }} doublon(s) ignoré(s) · {{ preview.errors|length }} erreur(s).
+            </p>
+            {% if preview.default_rpe %}
+                <p class="flash info">
+                    {{ preview.default_rpe }} ligne(s) utilisent le RPE de remplacement
+                    choisi.
+                </p>
+            {% endif %}
+            {% if preview.errors %}
+                <div class="flash error">
+                    <strong>
+                        Aucune donnée ne sera ajoutée tant que le fichier
+                        contient des erreurs.
+                    </strong><ul>
+                        {% for error in preview.errors|slice(0, 50) %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% if (preview.errors|length) > 50 %}
+                        <p>
+                            Les 50 premières erreurs sont affichées. Corrige le
+                            fichier puis recharge-le.
+                        </p>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <p class="muted">
+                Les lignes identiques (date, exercice, valeurs et notes) sont
+                ignorées. Aucun enregistrement existant n’est remplacé. Aperçu
+                limité aux 100 premières lignes valides ; toutes les lignes ont
+                été vérifiées.
+            </p>
+            <p class="muted">
+                Le tableau se fait défiler horizontalement pour voir toutes les
+                colonnes.
+            </p>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feuille / ligne</th>
+                            <th>Date</th>
+                            <th>Exercice ou mesure</th>
+                            <th>Séries × répétitions</th>
+                            <th>Charge / poids</th>
+                            <th>RPE / mensurations</th>
+                            <th>Notes</th>
+                            <th>État</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview.rows|slice(0, 100) %}
+                            <tr>
+                                <td>{{ row.sheet }} · {{ row.line }}</td>
+                                <td>{{ row.data.date|date('d/m/Y') }}</td>
+                                <td>
+                                    {{ row.kind == 'workouts'
+                                        ? row.data.exercise
+                                        : 'Mensurations' }}
+                                </td>
+                                <td>
+                                    {{ row.kind == 'workouts'
+                                        ? row.data.sets ~ ' × ' ~ row.data.reps
+                                        : '—' }}
+                                </td>
+                                <td>{{ row.data.weight }} kg</td>
+                                <td>
+                                    {% if row.kind == 'workouts' %}
+                                        RPE {{ row.data.rpe }}
+                                    {% else %}
+                                        Taille : {{ row.data.waist ?? '—' }} cm ·
+                                        Masse grasse : {{ row.data.body_fat
+                                            ?? '—' }} %
+                                    {% endif %}
+                                </td>
+                                <td>{{ row.data.notes }}</td>
+                                <td>
+                                    {{ row.duplicate
+                                        ? 'Doublon · ignoré'
+                                        : 'À ajouter' }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="actions">
+                {% if
+                    not preview.errors
+                        and (preview.rows|length) > preview.duplicates %}
+                    <form method="post" action="/performances/excel/confirmer">
+                        <input
+                            type="hidden"
+                            name="_token"
+                            value="{{ csrf_token('gym') }}"
+                        />
+                        <input
+                            type="hidden"
+                            name="import_token"
+                            value="{{ pending.token }}"
+                        /><button>Confirmer l’import dans mon carnet</button>
+                    </form>
+                {% endif %}
+                <form method="post" action="/performances/excel/annuler">
+                    <input
+                        type="hidden"
+                        name="_token"
+                        value="{{ csrf_token('gym') }}"
+                    /><button class="secondary">Annuler l’aperçu</button>
+                </form>
+            </div>
+        </section>
+    {% endif %}
+{% endblock %}

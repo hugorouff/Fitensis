@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">LES VISAGES DU CLUB</span><h1>
+                Adhérents & coachs<span class="accent">.</span>
+            </h1>
+        </div>
+        {% if gym.user.role == 'admin' %}
+            <a class="button secondary" href="/export/members.csv">Exporter CSV</a>
+        {% endif %}
+    </div>
+    {% if gym.user.role == 'admin' %}
+        <details class="panel">
+            <summary>
+                Créer un compte
+            </summary>
+            <form method="post" action="/adherents/enregistrer" class="form-grid">
+                <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><label>
+                    Nom complet<input name="name" required />
+                </label><label>
+                    Adresse mail<input name="email" type="email" required />
+                </label><label>Téléphone<input name="phone" type="tel" /></label><label>
+                    Rôle<select name="role">
+                        <option value="member">
+                            Adhérent
+                        </option>
+                        <option value="coach">
+                            Coach
+                        </option>
+                        <option value="admin">
+                            Administrateur
+                        </option>
+                    </select>
+                </label><label>
+                    Mot de passe initial<input
+                        name="password"
+                        type="password"
+                        minlength="12"
+                        autocomplete="new-password"
+                        required
+                    />
+                </label><label class="checkbox">
+                    <input type="checkbox" name="active" checked />Compte actif
+                </label><button>Créer le compte →</button>
+            </form>
+        </details>
+    {% endif %}
+    <section class="panel table-scroll">
+        <input
+            class="table-search"
+            placeholder="Rechercher un nom ou une adresse mail…"
+            aria-label="Rechercher"
+        />
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Contact</th>
+                    <th>Rôle</th>
+                    <th>État</th>
+                    <th>Gestion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in rows %}
+                    <tr>
+                        <td><strong>{{ u.name }}</strong></td>
+                        <td>{{ u.email }}<small>{{ u.phone }}</small></td>
+                        <td>
+                            {{
+                                {
+                                    admin: 'Administrateur',
+                                    coach: 'Coach',
+                                    member: 'Adhérent'
+                                }[u.role]
+                            }}
+                        </td>
+                        <td>{{ u.active ? 'Actif' : 'Désactivé' }}</td>
+                        <td>
+                            {% if gym.user.role == 'admin' %}
+                                <details>
+                                    <summary>
+                                        Modifier
+                                    </summary>
+                                    <form method="post" action="/adherents/enregistrer">
+                                        <input
+                                            type="hidden"
+                                            name="_token"
+                                            value="{{ csrf_token('gym') }}"
+                                        />
+                                        <input type="hidden" name="id" value="{{ u.id }}" /><label>
+                                            Nom<input name="name" value="{{ u.name }}" required />
+                                        </label><label>
+                                            Adresse mail<input
+                                                name="email"
+                                                type="email"
+                                                value="{{ u.email }}"
+                                                required
+                                            />
+                                        </label><label>
+                                            Téléphone<input name="phone" value="{{ u.phone }}" />
+                                        </label><label>
+                                            Rôle<select name="role">
+                                                {% for key, label in {
+                                                    member: 'Adhérent',
+                                                    coach: 'Coach',
+                                                    admin: 'Administrateur'
+                                                } %}
+                                                    <option
+                                                        value="{{ key }}"
+                                                        {{ key == u.role ? 'selected' : '' }}
+                                                    >
+                                                        {{ label }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </label><label>
+                                            Nouveau mot de passe (facultatif)<input
+                                                name="password"
+                                                type="password"
+                                                minlength="12"
+                                                autocomplete="new-password"
+                                            />
+                                        </label><label class="checkbox">
+                                            <input
+                                                name="active"
+                                                type="checkbox"
+                                                {{ u.active ? 'checked' : '' }}
+                                            />Compte actif
+                                        </label><button>Enregistrer</button>
+                                    </form>
+                                </details>
+                            {% endif %}
+                            <form method="post" action="/presence">
+                                <input
+                                    type="hidden"
+                                    name="_token"
+                                    value="{{ csrf_token('gym') }}"
+                                />
+                                <input type="hidden" name="user_id" value="{{ u.id }}" /><button
+                                    class="small secondary"
+                                >
+                                    Pointer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}

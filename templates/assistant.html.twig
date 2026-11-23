@@ -1,0 +1,297 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Assistant IA · Fitensis
+{% endblock %}
+
+{% block body %}
+    <script defer src="/assets/portions.js"></script>
+    <script defer src="/assets/assistant.js"></script>
+    <script defer src="/assets/questionnaire.js"></script>
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">DES IDÉES QUI S’ADAPTENT À TOI</span>
+            <h1>Ton assistant <span class="accent">IA.</span></h1>
+            <p class="muted">
+                Décris ton envie, ton temps et tes contraintes. Recettes, séances et conseils en un
+                seul endroit.
+            </p>
+        </div>
+        <a class="button secondary" href="/calendrier">Mon planning →</a>
+    </div>
+
+    {% include '_assistant_questionnaire.html.twig' %}
+
+    <section class="panel ai-compose">
+        <div class="section-head">
+            <h2>Qu’est-ce qu’on prépare ?</h2>
+            <span class="pill">{{ provider }} · {{ model }}</span>
+        </div>
+        <div id="ai-status" class="ai-status" role="status">
+            Vérification du moteur IA…
+        </div>
+        <div class="ai-examples" aria-label="Exemples de demandes">
+            <button
+                type="button"
+                data-ai-example="Trouve 40 recettes de repas avec les aliments de mon frigo."
+                data-ai-topic="recipes"
+            >
+                40 repas avec mon frigo
+            </button>
+            <button
+                type="button"
+                data-ai-example="Prépare-moi 3 séances haut du corps de 45 minutes avec des haltères. Je reprends progressivement."
+                data-ai-topic="sessions"
+            >
+                Séances de 45 minutes
+            </button>
+            <button
+                type="button"
+                data-ai-example="Propose une semaine avec 3 séances de musculation et plusieurs idées de repas faciles. Explique comment répartir la récupération."
+                data-ai-topic="auto"
+            >
+                Organiser ma semaine
+            </button>
+            <button
+                type="button"
+                data-ai-example="Aide-moi à comprendre ma progression et donne-moi quelques conseils concrets pour mes prochaines séances."
+                data-ai-topic="advice"
+            >
+                Conseils de progression
+            </button>
+        </div>
+        <form id="ai-form" data-user-id="{{ gym.user.id }}">
+            <label>
+                Idées de séances à comparer<select id="ai-ideas-count">
+                    <option value="5">
+                        5 idées différentes
+                    </option>
+                    <option value="3">
+                        3 idées différentes
+                    </option>
+                    <option value="1">
+                        1 proposition
+                    </option>
+                </select>
+            </label>
+            <input
+                type="hidden"
+                id="ai-parent"
+                value="{{ selected and selected.status == 'completed' ? selected.id : '' }}"
+            />
+            <label>
+                Ta demande<textarea
+                    id="ai-message"
+                    name="message"
+                    rows="4"
+                    maxlength="3000"
+                    required
+                    placeholder="Ex. Je veux travailler le dos en 40 minutes et préparer 4 repas sans poisson…"
+                ></textarea>
+            </label>
+            <div class="form-grid">
+                <label>
+                    Je cherche<select id="ai-topic" name="topic">
+                        <option value="auto">
+                            Plusieurs idées / libre
+                        </option>
+                        <option value="recipes">
+                            Des recettes
+                        </option>
+                        <option value="sessions">
+                            Des séances
+                        </option>
+                        <option value="advice">
+                            Des conseils
+                        </option>
+                    </select>
+                </label>
+                <label>
+                    Objectif<select id="ai-goal" name="goal">
+                        <option value="all">
+                            À préciser dans ma demande
+                        </option>
+                        <option value="cut">
+                            Sèche
+                        </option>
+                        <option value="maintain">
+                            Maintien
+                        </option>
+                        <option value="bulk">
+                            Prise de masse
+                        </option>
+                    </select>
+                </label>
+                <label>
+                    Contraintes / préférences<input
+                        id="ai-constraints"
+                        maxlength="1000"
+                        placeholder="Matériel, niveau, aliments exclus, temps…"
+                    />
+                </label>
+            </div>
+            <details class="ai-setup">
+                <summary>
+                    Préciser les blocs de séance (facultatif)
+                </summary>
+                <p class="muted">
+                    Une demande claire comme « 30 min pecs et 1 h bras » est reconnue
+                    automatiquement. Pour les formulations ambiguës, indique les blocs ici : ils
+                    seront prioritaires.
+                </p>
+                {% for block in [1, 2, 3, 4] %}
+                    <div class="ai-portions-grid ai-training-block">
+                        <label>
+                            Bloc {{ block }}
+                            <select class="ai-block-group">
+                                <option value="">
+                                    Déduire de ma demande
+                                </option>
+                                <option value="chest">
+                                    Pectoraux
+                                </option>
+                                <option value="back">
+                                    Dos
+                                </option>
+                                <option value="arms">
+                                    Bras : biceps et triceps
+                                </option>
+                                <option value="biceps">
+                                    Biceps
+                                </option>
+                                <option value="triceps">
+                                    Triceps
+                                </option>
+                                <option value="shoulders">
+                                    Épaules
+                                </option>
+                                <option value="legs">
+                                    Jambes
+                                </option>
+                                <option value="abs">
+                                    Abdominaux
+                                </option>
+                            </select>
+                        </label>
+                        <label>
+                            Minutes<input
+                                class="ai-block-minutes"
+                                type="number"
+                                min="10"
+                                max="120"
+                                step="1"
+                                value="{{ block == 2 ? 60 : 30 }}"
+                            />
+                        </label>
+                    </div>
+                {% endfor %}
+            </details>
+            <fieldset class="ai-context">
+                <legend>
+                    Ce que j’ajoute à ma demande
+                </legend>
+                <label class="checkbox">
+                    <input id="ai-share-pantry" type="checkbox" />Mes aliments du frigo
+                </label>
+                <p id="ai-pantry-preview" class="muted">
+                    Lecture du frigo de ce compte…
+                </p>
+                <label class="checkbox">
+                    <input id="ai-share-training" type="checkbox" />Mes 12 dernières performances
+                    (exercices, charges, séries, répétitions et RPE)
+                </label>
+                <small class="muted">
+                    La demande, les préférences et les cases cochées sont transmises au moteur
+                    affiché. Ollama utilise l’adresse configurée sur cette installation ; le réglage
+                    par défaut est local. L’historique de la conversation choisie peut servir aux
+                    précisions suivantes.
+                </small>
+            </fieldset>
+            <div class="actions">
+                <button id="ai-send" type="submit" disabled>Me proposer des idées →</button>
+                <button id="ai-new" type="button" class="secondary">Nouvelle demande</button>
+                <button id="ai-recheck" type="button" class="link">Revérifier la connexion</button>
+            </div>
+            <p id="ai-loading" class="muted" hidden>
+                Génération en cours… Le premier démarrage d’un modèle local peut prendre du temps.
+            </p>
+            <div id="ai-error" class="flash error" role="alert" hidden></div>
+        </form>
+    </section>
+
+    <section id="ai-results" aria-live="polite">
+        {% if selected and selected.status == 'completed' %}
+            {% include '_assistant_result.html.twig' with {
+                run: selected
+            } %}
+        {% elseif selected %}
+            <p class="panel muted">
+                Cette demande {{ selected.status == 'pending'
+                    ? 'est encore en cours ou a été interrompue'
+                    : 'n’a pas abouti' }}. Tu peux en relancer une.
+            </p>
+        {% endif %}
+    </section>
+
+    <section class="panel" id="ai-favorites">
+        <h2>Mes recettes favorites de l’assistant</h2>
+        <div class="cards">
+            {% for favorite in favorites %}
+                {% set recipe = favorite.recipe %}
+                <details class="ai-favorite ai-fold">
+                    <summary>
+                        <strong>{{ recipe.title }}</strong><span class="muted">Recette favorite ·
+                            ouvrir</span>
+                    </summary>
+                    <div class="ai-fold-body">
+                        {% include '_recipe_card.html.twig' with {
+                            recipe: recipe
+                        } %}
+                        <form method="post" action="/assistant/favoris/{{ favorite.id }}/retirer">
+                            <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                            <button class="link">Retirer des favoris</button>
+                        </form>
+                    </div>
+                </details>
+            {% else %}
+                <p class="muted">
+                    Garde les recettes qui te plaisent depuis les propositions.
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="section-head">
+            <h2>Mes dernières demandes</h2>
+            {% if history %}
+                <form
+                    method="post"
+                    action="/assistant/historique/effacer"
+                    data-confirm="Effacer l’historique IA ? Les séances et recettes déjà enregistrées seront conservées."
+                >
+                    <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                    <button class="link danger">Effacer l’historique</button>
+                </form>
+            {% endif %}
+        </div>
+        {% for item in history %}
+            <a class="ai-history-row" href="/assistant?run={{ item.id }}#ai-results">
+                <span>{{ item.question }}</span>
+                <small>
+                    {{ item.created_at|date('d/m H:i') }} · {{
+                        {
+                            pending: 'En cours',
+                            completed: 'Répondu',
+                            failed: 'À réessayer'
+                        }[item.status]
+                    }}
+                </small>
+            </a>
+        {% else %}
+            <p class="muted">
+                Tes demandes restent privées sur ton compte.
+            </p>
+        {% endfor %}
+    </section>
+{% endblock %}

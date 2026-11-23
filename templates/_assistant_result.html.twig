@@ -1,0 +1,184 @@
+{% set result = run.data %}
+<div class="ai-result" data-run-id="{{ run.id }}">
+    <section class="panel">
+        <span class="eyebrow">PROPOSITIONS DE L’ASSISTANT · {{ run.provider }}</span>
+        <p class="ai-question">
+            {{ run.question }}
+        </p>
+        <p class="pre-line">
+            {{ result.answer }}
+        </p>
+        <p class="muted ai-disclaimer">
+            Propositions à adapter à ton niveau et à tes contraintes. Les recettes Internet sont
+            sélectionnées selon les ingrédients ; leurs valeurs nutritionnelles ne sont pas
+            vérifiées.
+        </p>
+    </section>
+
+    {% if result.recipes %}
+        <h2>Recettes trouvées sur Internet</h2>
+        {% if result.recipe_note|default('') %}
+            <p class="muted">
+                {{ result.recipe_note }}
+            </p>
+        {% endif %}
+        <div class="cards ai-cards">
+            {% for recipe in result.recipes %}
+                <details class="panel ai-recipe ai-fold">
+                    <summary>
+                        <strong>{{ recipe.title }}</strong><span class="muted">Recette · cliquer
+                            pour voir les ingrédients et portions</span>
+                    </summary>
+                    <div class="ai-fold-body">
+                        {% include '_recipe_card.html.twig' with {
+                            recipe: recipe
+                        } %}
+                        <form
+                            method="post"
+                            action="/assistant/{{ run.id }}/recette/{{ loop.index0 }}"
+                        >
+                            <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                            <input type="hidden" name="portions" value="{{ recipe.portions }}" />
+                            <input
+                                type="hidden"
+                                name="base_portions"
+                                value="{{ recipe.base_portions|default(recipe.portions) }}"
+                            />
+                            <button class="secondary small">Garder cette recette</button>
+                        </form>
+                    </div>
+                </details>
+            {% endfor %}
+        </div>
+    {% elseif result.recipe_note|default('') %}
+        <p class="flash info">
+            {{ result.recipe_note }}
+        </p>
+    {% endif %}
+
+    {% if result.sessions %}
+        <h2>Idées de séances</h2>
+        {% if result.structured_training|default(false) %}
+            <p class="muted">
+                Muscles et durées repris de ta demande. Chaque bloc peut être ajouté au planning ;
+                exercices et matériel restent modifiables.
+            </p>
+        {% endif %}
+        {% if result.idea_note|default('') %}
+            <p class="flash info">
+                {{ result.idea_note }}
+            </p>
+        {% endif %}
+        {% set previousIdea = 0 %}
+        {% for session in result.sessions %}
+            {% if (session.idea_index|default(0)) != previousIdea %}
+                {% set previousIdea = session.idea_index %}
+                <h3 class="ai-idea-heading">Proposition {{ previousIdea }} · au choix</h3>
+            {% endif %}
+            <details class="panel ai-session ai-fold">
+                <summary>
+                    <div class="section-head">
+                        <h3>{{ session.title }}</h3>
+                        <span class="pill">{{ session.duration_minutes }} min</span>
+                    </div>
+                    <div class="muscle-pills">
+                        {% for muscle in session.muscles %}
+                            <span class="pill">{{ muscles[muscle] }}</span>
+                        {% endfor %}
+                    </div>
+                </summary>
+                <div class="ai-fold-body">
+                    <p>
+                        {{ session.reason }}
+                    </p>
+                    <p class="muted pre-line">
+                        {{ session.notes }}
+                    </p>
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Exercice</th>
+                                    <th>Séries × répétitions</th>
+                                    <th>Charge proposée</th>
+                                    <th>Repos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exercise in session.exercises %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ exercise.name }}</strong>
+                                            {% if exercise.catalog_id|default('') %}
+                                                <a
+                                                    href="/exercises?exercise={{ exercise.catalog_id|url_encode }}"
+                                                >
+                                                    Fiche exercice ↗
+                                                </a>
+                                            {% endif %}<small>{{ exercise.instructions }}</small>
+                                        </td>
+                                        <td>{{ exercise.sets }} × {{ exercise.reps }}</td>
+                                        <td>
+                                            {{ exercise.weight is null
+                                                ? 'À choisir selon ton niveau'
+                                                : exercise.weight ~ ' kg · à adapter' }}
+                                        </td>
+                                        <td>{{ exercise.rest_seconds }} s</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% set planned = run.saved[loop.index0]|default(null) %}
+                    {% if planned %}
+                        <p>
+                            <a class="button" href="/entrainements/{{ planned }}">
+                                Voir la séance ajoutée →
+                            </a>
+                        </p>
+                    {% else %}
+                        <form
+                            method="post"
+                            action="/assistant/{{ run.id }}/seance/{{ loop.index0 }}"
+                            class="form-grid"
+                        >
+                            <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                            <label>
+                                Date<input
+                                    name="date"
+                                    type="date"
+                                    value="{{ 'now'|date('Y-m-d') }}"
+                                    required
+                                />
+                            </label>
+                            <label>
+                                Heure<input name="time" type="time" value="18:00" required />
+                            </label>
+                            <button>Ajouter à mon planning →</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </details>
+        {% endfor %}
+    {% endif %}
+
+    {% if result.advice %}
+        <section class="panel">
+            <h2>Conseils à garder en tête</h2>
+            <ul class="ai-advice">
+                {% for advice in result.advice %}
+                    <li>{{ advice }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+    {% if result.follow_up %}
+        <p class="flash info">
+            {{ result.follow_up }}
+        </p>
+    {% endif %}
+    <p class="muted">
+        Tu peux préciser ta demande dans le formulaire : la réponse affichée servira de contexte à
+        la suite de cet échange.
+    </p>
+</div>
