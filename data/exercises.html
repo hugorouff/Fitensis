@@ -43,10 +43,10 @@
 
         <style>
             :root {
-                --bg: #0f172a;
-                --card: #1e293b;
-                --dark: #0b1733;
-                --border: #334155;
+                --bg: var(--fitensis-bg);
+                --card: var(--fitensis-card);
+                --dark: var(--fitensis-bg-soft);
+                --border: var(--fitensis-bg-soft);
                 --blue: #2563eb;
                 --muted: #94a3b8;
                 --red: #ef4444;
@@ -60,12 +60,12 @@
                 margin: 0;
                 font-family: Arial, Helvetica, sans-serif;
                 background: var(--bg);
-                color: white;
+                color: var(--fitensis-ink);
             }
 
             header {
                 padding: 18px 24px;
-                background: #111827;
+                background: var(--fitensis-card);
                 border-bottom: 1px solid var(--border);
             }
 
@@ -93,7 +93,7 @@
             .header-actions button {
                 border: 0;
                 text-decoration: none;
-                color: white;
+                color: var(--fitensis-ink);
                 background: var(--blue);
                 border-radius: 9px;
                 padding: 11px 16px;
@@ -120,7 +120,7 @@
 
             .title p {
                 margin: 0;
-                color: #93c5fd;
+                color: var(--fitensis-muted);
             }
 
             .layout {
@@ -158,8 +158,8 @@
             .gender button {
                 border: 0;
                 border-radius: 9px;
-                background: #334155;
-                color: white;
+                background: var(--fitensis-bg-soft);
+                color: var(--fitensis-ink);
                 padding: 10px 15px;
                 cursor: pointer;
                 font-weight: 700;
@@ -234,7 +234,7 @@
             }
 
             .help {
-                background: #172554;
+                background: #e3f2f5;
                 border-left: 4px solid #3b82f6;
                 padding: 14px;
                 border-radius: 9px;
@@ -252,8 +252,8 @@
                 border: 0;
                 border-radius: 999px;
                 padding: 9px 13px;
-                background: #334155;
-                color: white;
+                background: var(--fitensis-bg-soft);
+                color: var(--fitensis-ink);
                 cursor: pointer;
             }
 
@@ -267,7 +267,7 @@
                 gap: 9px;
                 align-items: center;
                 margin: 12px 0 16px;
-                color: #cbd5e1;
+                color: var(--fitensis-muted);
             }
 
             .secondary-option input {
@@ -277,7 +277,7 @@
             .search {
                 width: 100%;
                 background: var(--bg);
-                color: white;
+                color: var(--fitensis-ink);
                 border: 1px solid #475569;
                 border-radius: 10px;
                 padding: 13px;
@@ -315,7 +315,7 @@
 
             .status.error {
                 display: block;
-                background: #7f1d1d;
+                background: #ffebe5;
             }
 
             .exercise-grid {
@@ -343,7 +343,7 @@
             .thumb {
                 position: relative;
                 height: 150px;
-                background: #111827;
+                background: var(--fitensis-card);
             }
 
             .thumb img {
@@ -374,7 +374,7 @@
                 align-items: center;
                 justify-content: center;
                 border-radius: 50%;
-                background: rgba(37, 99, 235, 0.94);
+                background: var(--fitensis-mint);
             }
 
             .content {
@@ -387,7 +387,7 @@
             }
 
             .info {
-                color: #bfdbfe;
+                color: var(--fitensis-muted);
                 font-size: 13px;
                 line-height: 1.4;
             }
@@ -403,11 +403,11 @@
                 border-radius: 999px;
                 padding: 4px 7px;
                 font-size: 11px;
-                background: #1e3a8a;
+                background: #deeff4;
             }
 
             .custom-badge {
-                background: #166534;
+                background: #d8f0e3;
             }
 
             .modal {
@@ -437,7 +437,7 @@
                 right: 15px;
                 border: 0;
                 background: transparent;
-                color: white;
+                color: var(--fitensis-ink);
                 font-size: 30px;
                 cursor: pointer;
             }
@@ -451,7 +451,7 @@
             .media {
                 border-radius: 12px;
                 overflow: hidden;
-                background: #111827;
+                background: var(--fitensis-card);
                 min-height: 230px;
             }
 
@@ -484,14 +484,14 @@
                 border-radius: 9px;
                 padding: 13px;
                 background: var(--blue);
-                color: white;
+                color: var(--fitensis-ink);
                 cursor: pointer;
                 font-weight: 800;
                 margin-top: 14px;
             }
 
             .delete-action {
-                background: #991b1b;
+                background: #f9d4cc;
             }
 
             .form-grid {
@@ -507,7 +507,7 @@
             .field label {
                 display: block;
                 margin-bottom: 6px;
-                color: #d1d5db;
+                color: var(--fitensis-muted);
             }
 
             .field input,
@@ -515,7 +515,7 @@
             .field textarea {
                 width: 100%;
                 background: var(--bg);
-                color: white;
+                color: var(--fitensis-ink);
                 border: 1px solid #475569;
                 border-radius: 9px;
                 padding: 11px;
@@ -537,7 +537,7 @@
                 display: flex;
                 gap: 7px;
                 align-items: center;
-                background: #0f172a;
+                background: var(--fitensis-bg);
                 border-radius: 8px;
                 padding: 8px;
                 font-size: 13px;
@@ -566,8 +566,12 @@
             }
         </style>
         <link rel="icon" href="/assets/datensis-light.png" />
-        <link rel="stylesheet" href="/assets/continuity.css" />
-        <link rel="stylesheet" href="/assets/exercises-theme.css" />
+        <link rel="stylesheet" href="/assets/continuity.css?v=light1" />
+        <link rel="stylesheet" href="/assets/exercises-theme.css?v=light1" />
+        <meta name="theme-color" content="#00778B">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="apple-touch-icon" href="/assets/fitensis-192.png">
+        <script src="/assets/install.js" defer></script>
     </head>
 
     <body class="exercise-page">
@@ -1496,7 +1500,7 @@
                     detailBox.appendChild(original);
                 }
                 const note = document.createElement("p");
-                note.style.cssText = "font-size:12px;color:#a8baad";
+                note.style.cssText = "font-size:12px;color:var(--fitensis-muted)";
                 note.textContent =
                     exercise.source === "remote"
                         ? loaded

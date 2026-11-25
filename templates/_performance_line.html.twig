@@ -5,7 +5,7 @@
             <line x1="48" y1="105" x2="548" y2="105" class="perf-gridline" />
             <line x1="48" y1="180" x2="548" y2="180" class="perf-gridline" />
             <text x="4" y="34">
-                {{ chart.max|round(1) }}
+                {{ chart.max|number_format(1, ',', ' ') }}
             </text>
             <text x="18" y="184">
                 0
@@ -35,12 +35,12 @@
                     class="perf-chart-dot"
                 />
             {% endfor %}
-            <text x="48" y="210">
-                {{ chart.first.date|date('d/m/y') }}
-            </text>
-            <text x="548" y="210" text-anchor="end">
-                {{ chart.last.date|date('d/m/y') }}
-            </text>
+            {% if chart.first.date == chart.last.date %}
+                <text x="298" y="210" text-anchor="middle">{{ chart.first.date|date('d/m/y') }}</text>
+            {% else %}
+                <text x="48" y="210">{{ chart.first.date|date('d/m/y') }}</text>
+                <text x="548" y="210" text-anchor="end">{{ chart.last.date|date('d/m/y') }}</text>
+            {% endif %}
         </svg>
         <p class="perf-chart-caption" aria-live="polite">
             {{ chart.last.label }} · {{ chart.last.display }}

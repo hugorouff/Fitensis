@@ -1,5 +1,5 @@
-@import url("/assets/original.css");
-@import url("/assets/continuity.css");
+@import url("/assets/original.css?v=light1");
+@import url("/assets/continuity.css?v=light1");
 :root {
     --ink: var(--text);
     --paper: var(--bg);
@@ -37,12 +37,12 @@ button:hover,
     border-color: var(--line);
 }
 .secondary:hover {
-    background: #27332a;
-    color: white;
+    background: #e1efe8;
+    color: var(--fitensis-ink);
 }
 .link {
     background: none;
-    color: var(--green);
+    color: var(--fitensis-petrol);
     padding: 8px 0;
     border: 0;
 }
@@ -51,8 +51,8 @@ button:hover,
     text-decoration: underline;
 }
 .danger {
-    background: #38221c;
-    color: #ffac96;
+    background: #fce9e4;
+    color: #7e4517;
 }
 .link.danger {
     background: none;
@@ -71,18 +71,18 @@ textarea {
     width: 100%;
     min-width: 0;
     background: var(--fitensis-bg);
-    border: 1px solid #303b32;
+    border: 1px solid var(--fitensis-line);
     border-radius: 10px;
     padding: 12px;
-    color: white;
+    color: var(--fitensis-ink);
     font: inherit;
-    color-scheme: dark;
+    color-scheme: light;
 }
 input:focus,
 select:focus,
 textarea:focus {
     outline: 1px solid var(--green);
-    border-color: var(--green);
+    border-color: var(--fitensis-petrol);
 }
 textarea {
     resize: vertical;
@@ -109,7 +109,7 @@ form > label {
 }
 .checkbox input {
     width: auto;
-    accent-color: var(--green);
+    accent-color: var(--fitensis-petrol);
 }
 .personal-page {
     padding-top: 25px;
@@ -133,11 +133,11 @@ form > label {
 .eyebrow {
     font-size: 10px;
     letter-spacing: 1.4px;
-    color: var(--green);
+    color: var(--fitensis-petrol);
     font-weight: 800;
 }
 .accent {
-    color: var(--green);
+    color: var(--fitensis-petrol);
 }
 .muted {
     color: var(--muted);
@@ -165,7 +165,7 @@ form > label {
 .section-head a,
 .edit-link {
     font-size: 12px;
-    color: var(--green);
+    color: var(--fitensis-petrol);
 }
 .actions {
     display: flex;
@@ -197,19 +197,19 @@ form > label {
     border-radius: 7px;
     font-size: 11px;
     line-height: 1.4;
-    color: #c5ffb9;
+    color: #225e49;
 }
 .pill.confirmed {
-    background: #214d26;
-    color: #bcffac;
+    background: #dff2e8;
+    color: #225e49;
 }
 .pill.cancelled {
-    background: #38241e;
-    color: #ffb296;
+    background: #fff0ec;
+    color: #7e4517;
 }
 .pill.waiting {
-    background: #3f391b;
-    color: #f7e89f;
+    background: #faf1d9;
+    color: var(--fitensis-muted);
 }
 .calendar-toolbar {
     display: flex;
@@ -226,14 +226,14 @@ form > label {
     padding: 2px 1px 20px;
 }
 .day {
-    background: #101712;
+    background: var(--fitensis-card);
     border: 1px solid var(--line);
     border-radius: 14px;
     padding: 10px;
     min-height: 220px;
 }
 .day.today {
-    border-color: var(--green);
+    border-color: var(--fitensis-petrol);
 }
 .day h3 {
     margin: 7px 3px 18px;
@@ -244,20 +244,20 @@ form > label {
 .day h3 strong {
     display: block;
     font-size: 24px;
-    color: white;
+    color: var(--fitensis-ink);
     margin-top: 7px;
 }
 .course {
     display: block;
-    background: #1b241d;
-    border: 1px solid #314334;
+    background: var(--fitensis-raised);
+    border: 1px solid var(--fitensis-line);
     padding: 12px;
     border-radius: 12px;
     margin-bottom: 10px;
-    color: white;
+    color: var(--fitensis-ink);
 }
 .course:hover {
-    border-color: var(--green);
+    border-color: var(--fitensis-petrol);
 }
 .course h4 {
     font-size: 15px;
@@ -276,12 +276,12 @@ form > label {
     display: block;
     margin-top: 15px;
     font-size: 12px;
-    color: var(--green);
+    color: var(--fitensis-petrol);
 }
 .add-training {
     display: block;
     padding: 12px 5px;
-    color: var(--green);
+    color: var(--fitensis-petrol);
     font-size: 12px;
 }
 .muscle-pills {
@@ -338,7 +338,7 @@ details form {
 .weight-point > div {
     width: 28px;
     border-radius: 6px 6px 0 0;
-    background: linear-gradient(var(--green), #387c3e);
+    background: linear-gradient(var(--fitensis-mint), var(--fitensis-petrol));
 }
 .weight-point span,
 .weight-point small {
@@ -363,7 +363,7 @@ details form {
 }
 progress {
     width: 100%;
-    accent-color: var(--green);
+    accent-color: var(--fitensis-petrol);
 }
 .empty {
     text-align: center;
@@ -419,7 +419,7 @@ td details[open] {
     align-items: center;
 }
 .footer-links a:hover {
-    color: var(--green);
+    color: var(--fitensis-petrol);
 }
 .footer-links button {
     font-size: 11px;
@@ -434,8 +434,8 @@ td details[open] {
     overflow: hidden;
     padding: 13vh 10%;
     background:
-        radial-gradient(circle at bottom right, #254429, transparent 70%),
-        #0d140f;
+        radial-gradient(circle at bottom right, #ccebdd, transparent 70%),
+        #e6f3ed;
 }
 .login-visual h1 {
     font-size: 64px;
@@ -445,7 +445,7 @@ td details[open] {
     z-index: 1;
 }
 .login-visual p {
-    color: #b1bfb3;
+    color: var(--fitensis-muted);
     line-height: 1.7;
 }
 .orb {
@@ -454,7 +454,7 @@ td details[open] {
     right: -70px;
     width: 450px;
     height: 450px;
-    border: 65px solid #28492b;
+    border: 65px solid #c8e7da;
     border-radius: 50%;
     opacity: 0.5;
 }
@@ -475,7 +475,7 @@ td details[open] {
     line-height: 1.6;
 }
 .login-form a {
-    color: var(--green);
+    color: var(--fitensis-petrol);
 }
 @media (max-width: 1100px) {
     .cards {
@@ -566,13 +566,13 @@ td details[open] {
 }
 .ai-examples button {
     background: transparent;
-    color: var(--green);
-    border: 1px solid #465237;
+    color: var(--fitensis-petrol);
+    border: 1px solid var(--fitensis-line);
     border-radius: 24px;
     padding: 10px 16px;
 }
 .ai-context {
-    border: 1px solid #333b32;
+    border: 1px solid var(--fitensis-line);
     border-radius: 14px;
     padding: 18px;
     margin: 20px 0;
@@ -593,15 +593,15 @@ td details[open] {
     justify-content: space-between;
     gap: 20px;
     padding: 16px 0;
-    border-bottom: 1px solid #30362d;
+    border-bottom: 1px solid var(--fitensis-line);
 }
 .ai-history-row small {
     flex-shrink: 0;
-    color: #a2aa9b;
+    color: var(--fitensis-muted);
 }
 .ai-favorite {
     padding: 18px;
-    border: 1px solid #333b32;
+    border: 1px solid var(--fitensis-line);
     border-radius: 14px;
 }
 #ai-results > section,
@@ -621,7 +621,7 @@ td details[open] {
     flex: 0 0 18px;
     width: 18px;
     height: 18px;
-    accent-color: var(--green);
+    accent-color: var(--fitensis-petrol);
 }
 .ai-context .checkbox {
     align-items: flex-start;
@@ -653,7 +653,7 @@ td details[open] {
 .wizard-combine {
     margin: 20px 0;
     padding: 18px;
-    border: 1px solid #333b32;
+    border: 1px solid var(--fitensis-line);
     border-radius: 14px;
 }
 .muscle-presets,
@@ -668,21 +668,21 @@ td details[open] {
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    border: 1px solid #394333;
+    border: 1px solid var(--fitensis-line);
     border-radius: 18px;
     font-size: 12px;
     text-transform: none;
     letter-spacing: normal;
 }
 .wizard-muscle-chips label:has(input:checked) {
-    border-color: var(--green);
+    border-color: var(--fitensis-petrol);
     background: rgba(130, 196, 168, 0.08);
 }
 .wizard-muscle-chips input {
     width: 16px;
     height: 16px;
     margin: 0;
-    accent-color: var(--green);
+    accent-color: var(--fitensis-petrol);
 }
 .ai-fold > summary {
     cursor: pointer;
@@ -698,7 +698,7 @@ td details[open] {
     position: absolute;
     right: 0;
     top: 0;
-    color: var(--green);
+    color: var(--fitensis-petrol);
     font-size: 24px;
 }
 .ai-fold[open] > summary::after {
@@ -732,13 +732,13 @@ td details[open] {
 }
 .perf-kpis strong {
     font-size: clamp(1.5rem, 3vw, 2.4rem);
-    color: var(--fitensis-mint);
+    color: var(--fitensis-petrol);
 }
 .perf-kpis small {
     font-size: 1rem;
 }
 .perf-kpis span {
-    color: #b9c5bd;
+    color: var(--fitensis-muted);
 }
 .perf-dashboard {
     display: grid;
@@ -764,13 +764,13 @@ td details[open] {
     overflow-wrap: anywhere;
 }
 .perf-rank small {
-    color: #b9c5bd;
+    color: var(--fitensis-muted);
 }
 .perf-rank-track {
     grid-column: 1/-1;
     display: block;
     height: 9px;
-    background: #28362c;
+    background: #d9e9e3;
     border-radius: 6px;
     overflow: hidden;
 }
@@ -782,7 +782,7 @@ td details[open] {
 }
 .perf-rank:hover,
 .perf-rank:focus-visible {
-    color: var(--fitensis-mint);
+    color: var(--fitensis-petrol);
 }
 .perf-weekly {
     display: flex;
@@ -804,12 +804,12 @@ td details[open] {
 }
 .perf-week small {
     font-size: 0.7rem;
-    color: #b9c5bd;
+    color: var(--fitensis-muted);
 }
 .perf-week-track {
     height: 160px;
     width: 20px;
-    background: #28362c;
+    background: #d9e9e3;
     display: flex;
     align-items: flex-end;
     border-radius: 5px;
@@ -826,7 +826,7 @@ td details[open] {
     margin: 20px 0;
 }
 .perf-comparison span {
-    color: #b9c5bd;
+    color: var(--fitensis-muted);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -842,11 +842,11 @@ td details[open] {
     overflow: visible;
 }
 .perf-line svg text {
-    fill: #b9c5bd;
+    fill: var(--fitensis-muted);
     font-size: 11px;
 }
 .perf-gridline {
-    stroke: #35463b;
+    stroke: #c1d9d0;
     stroke-dasharray: 4 5;
 }
 .perf-line-path {
@@ -910,3 +910,27 @@ td details[open] {
         font-size: 19px;
     }
 }
+
+.perf-dashboard .perf-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+    gap: 12px;
+}
+.perf-dashboard .perf-comparison span {
+    background: var(--fitensis-bg-soft);
+    border: 1px solid var(--fitensis-line);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+.perf-line svg {
+    background: var(--fitensis-white);
+    border: 1px solid var(--fitensis-line);
+    border-radius: 14px;
+}
+.perf-line svg text { fill: var(--fitensis-ink); }
+.perf-comparison strong,
+.perf-chart-caption,
+.perf-dashboard summary { color: var(--fitensis-petrol); }
+.perf-line-path,
+.perf-chart-target:focus { stroke: var(--fitensis-petrol); }
+.perf-chart-dot { fill: var(--fitensis-petrol); }

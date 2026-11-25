@@ -6,20 +6,20 @@
 .flash {
     margin: 14px 0;
     padding: 14px 18px;
-    background: #194B52;
-    border: 1px solid #4F8177;
+    background: #E3F3EC;
+    border: 1px solid #9BCBB8;
     border-radius: 12px;
-    color: #D8F2E8;
+    color: #225546;
 }
 .flash.error {
-    background: #321d19;
-    border-color: #834434;
-    color: #ffcbbd;
+    background: #FFF0EC;
+    border-color: #E9A89B;
+    color: #892E20;
 }
 .flash.info {
-    background: #242914;
-    border-color: #66703a;
-    color: #e9efc8;
+    background: #F7F3E5;
+    border-color: #DED2A5;
+    color: #694C1C;
 }
 @media (max-width: 760px) {
     .header-inner {
@@ -68,7 +68,7 @@
     font-size: 28px;
     font-weight: 900;
     letter-spacing: 2px;
-    color: #fff;
+    color: var(--fitensis-ink);
     text-decoration: none;
     line-height: 1.2;
 }
@@ -93,7 +93,7 @@
     font-size: 14px;
     font-weight: 700;
     line-height: 1.2;
-    color: #d4d8d5;
+    color: var(--fitensis-muted);
     text-decoration: none;
     white-space: nowrap;
     padding: 0;
@@ -104,7 +104,7 @@
 }
 .site-header .site-nav a:hover,
 .site-header .site-nav a:focus-visible {
-    color: #82C4A8;
+    color: var(--fitensis-petrol);
 }
 .site-header .site-nav a.site-cta {
     padding: 12px 18px;
@@ -157,7 +157,7 @@
 
 .site-nav a.is-current,
 .site-nav a[aria-current="page"] {
-    color: #82C4A8;
+    color: var(--fitensis-petrol);
     background: rgba(130, 196, 168, 0.09);
     box-shadow: inset 0 -2px 0 #82C4A8;
     border-radius: 6px;
@@ -199,15 +199,17 @@
 /* Palette commune : pages Twig et outils HTML. */
 :root {
     --fitensis-white:#FFFFFF;
+    --fitensis-ink:#16383C;
+    color-scheme:light;
     --fitensis-coral:#E96148;
     --fitensis-mint:#82C4A8;
     --fitensis-petrol:#00778B;
-    --fitensis-bg:#102C35;
-    --fitensis-bg-soft:#143943;
-    --fitensis-card:#17414C;
-    --fitensis-raised:#1B4C58;
-    --fitensis-line:#32616B;
-    --fitensis-muted:#ADC7CC;
+    --fitensis-bg:#F4F9F7;
+    --fitensis-bg-soft:#EAF5F0;
+    --fitensis-card:#FFFFFF;
+    --fitensis-raised:#F1F8F4;
+    --fitensis-line:#CDDED8;
+    --fitensis-muted:#4C6563;
     --fitensis-on-mint:#12313A;
     --fitensis-mint-hover:#A6DAC5;
 }
@@ -221,15 +223,11 @@
     background: #FFFFFF url("datensis-light.png") center / contain no-repeat;
     border-radius: .55rem;
 }
-@media (prefers-color-scheme: dark) {
-    .datensis-mark { background-color: #172C41; background-image: url("datensis-dark.png"); }
-}
 
 .site-logo { display:inline-flex; align-items:center; gap:.55rem; }
-.site-logo .datensis-mark, .auth-brand .datensis-mark { background-color:#172C41; background-image:url("datensis-dark.png"); }
-body .site-header { background:var(--fitensis-petrol); }
+body .site-header { background:var(--fitensis-white); border-bottom-color:var(--fitensis-line); }
 .flash.error { border-color:var(--fitensis-coral); }
-.auth-brand { display:flex; align-items:center; gap:.65rem; color:#FFFFFF; font-weight:800; }
+.auth-brand { display:flex; align-items:center; gap:.65rem; color:var(--fitensis-ink); font-weight:800; }
 
 .site-header .site-nav a.is-current,
 .site-header .site-nav a[aria-current="page"] {

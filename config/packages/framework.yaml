@@ -2,7 +2,9 @@ framework:
   secret: '%env(APP_SECRET)%'
   csrf_protection: true
   session:
-    handler_id: null
+    name: FITENSIS_SESSION
+    handler_id: session.handler.native_file
+    cookie_path: /
     save_path: '%kernel.project_dir%/var/sessions/%kernel.environment%'
     cookie_secure: auto
     cookie_httponly: true

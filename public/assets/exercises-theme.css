@@ -8,7 +8,7 @@ body.exercise-page {
     --muted: var(--fitensis-muted);
     background:
         radial-gradient(circle at 80% 0%, rgba(130, 196, 168, 0.08), transparent 25%), var(--bg);
-    color: #fff;
+    color: var(--fitensis-ink);
 }
 .exercise-page .exercise-toolbar {
     display: flex;
@@ -39,8 +39,8 @@ body.exercise-page {
 }
 .exercise-page .gender button,
 .exercise-page .cat {
-    background: #252d27;
-    color: #d4d8d5;
+    background: var(--fitensis-bg-soft);
+    color: var(--fitensis-ink);
 }
 .exercise-page .gender button.active,
 .exercise-page .cat.active,
@@ -54,21 +54,21 @@ body.exercise-page {
 }
 .exercise-page .secondary-option,
 .exercise-page .field label {
-    color: #d4d8d5;
+    color: var(--fitensis-ink);
 }
 .exercise-page input,
 .exercise-page select,
 .exercise-page textarea {
     accent-color: var(--fitensis-mint);
-    color-scheme: dark;
+    color-scheme: light;
 }
 .exercise-page .search,
 .exercise-page .field input,
 .exercise-page .field select,
 .exercise-page .field textarea {
-    border-color: #303b32;
+    border-color: var(--fitensis-line);
     background: var(--fitensis-bg);
-    color: #fff;
+    color: var(--fitensis-ink);
 }
 .exercise-page .search:focus,
 .exercise-page .field input:focus,
@@ -92,9 +92,9 @@ body.exercise-page {
     filter: drop-shadow(0 0 5px var(--fitensis-mint));
 }
 .exercise-page .help {
-    background: #194B52;
+    background: #e3f3ec;
     border-left-color: var(--fitensis-mint);
-    color: #d5e5d3;
+    color: var(--fitensis-muted);
 }
 .exercise-page .exercise:hover {
     border-color: var(--fitensis-mint);
@@ -108,17 +108,17 @@ body.exercise-page {
     color: var(--fitensis-on-mint);
 }
 .exercise-page .info {
-    color: #b6c2b8;
+    color: var(--fitensis-muted);
 }
 .exercise-page .badge {
-    background: #223b26;
-    color: #c5ffb9;
+    background: #e3f3e9;
+    color: #225e49;
 }
 .exercise-page .custom-badge {
-    background: #21562a;
+    background: #d5eddf;
 }
 .exercise-page .modal-card {
-    border: 1px solid #303b32;
+    border: 1px solid var(--fitensis-line);
 }
 .exercise-page .action {
     background: var(--fitensis-mint);
@@ -128,17 +128,17 @@ body.exercise-page {
     background: var(--fitensis-mint-hover);
 }
 .exercise-page .delete-action {
-    background: #991b1b;
-    color: #fff;
+    background: #f9d4cc;
+    color: var(--fitensis-ink);
 }
 .exercise-page .delete-action:hover {
-    background: #b52222;
+    background: #f5bfb4;
 }
 .exercise-page .secondary-check {
     background: var(--fitensis-bg-soft);
 }
 .exercise-page .status:not(.error) {
-    background: #194B52;
-    color: #d5e5d3;
+    background: #e3f3ec;
+    color: var(--fitensis-muted);
     border: 1px solid #4F8177;
 }

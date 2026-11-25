@@ -4,7 +4,7 @@
     --card: var(--fitensis-card);
     --card-2: var(--fitensis-raised);
     --line: var(--fitensis-line);
-    --text: var(--fitensis-white);
+    --text: var(--fitensis-ink);
     --muted: var(--fitensis-muted);
 
     --green: var(--fitensis-mint);
@@ -48,7 +48,7 @@ a {
     z-index: 50;
     background: rgba(9, 11, 10, 0.86);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(26, 78, 83, 0.13);
 }
 
 .header-inner {
@@ -83,14 +83,14 @@ a {
 }
 
 .nav a {
-    color: #d4d8d5;
+    color: var(--fitensis-ink);
     font-weight: 700;
     font-size: 14px;
     transition: 0.2s;
 }
 
 .nav a:hover {
-    color: var(--green);
+    color: var(--fitensis-petrol);
 }
 
 .nav .cta {
@@ -114,10 +114,10 @@ a {
     align-items: center;
     overflow: hidden;
     background:
-        linear-gradient(to right, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.52)),
+
         radial-gradient(circle at top right, rgba(130, 196, 168, 0.1), transparent 30%),
-        linear-gradient(135deg, var(--fitensis-bg) 0%, var(--fitensis-bg-soft) 50%, #0a0c0a 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        linear-gradient(135deg, var(--fitensis-bg) 0%, var(--fitensis-bg-soft) 50%, #e0f1e9 100%);
+    border-bottom: 1px solid rgba(26, 78, 83, 0.13);
 }
 
 .hero-grid {
@@ -135,7 +135,7 @@ a {
     padding: 10px 16px;
     border: 1px solid var(--green-border);
     border-radius: 999px;
-    color: #c7ffbc;
+    color: #225e49;
     font-size: 12px;
     font-weight: 900;
     letter-spacing: 1px;
@@ -155,7 +155,7 @@ a {
 }
 
 .hero h1 .green {
-    color: var(--green);
+    color: var(--fitensis-petrol);
     text-shadow: 0 0 28px rgba(130, 196, 168, 0.15);
 }
 
@@ -202,13 +202,13 @@ a {
 
 .btn-secondary {
     background: transparent;
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.18);
+    color: var(--fitensis-ink);
+    border-color: rgba(26, 78, 83, 0.13);
 }
 
 .btn-secondary:hover {
     border-color: var(--green-border);
-    color: var(--green);
+    color: var(--fitensis-petrol);
     background: var(--green-soft);
 }
 
@@ -218,8 +218,8 @@ a {
 }
 
 .mini-card {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: linear-gradient(180deg, rgba(26, 78, 83, 0.13), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(26, 78, 83, 0.13);
     border-radius: 24px;
     padding: 22px;
     transition: 0.2s;
@@ -232,7 +232,7 @@ a {
 
 .mini-card span {
     display: block;
-    color: var(--green);
+    color: var(--fitensis-petrol);
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -251,14 +251,14 @@ a {
     margin: 0;
     font-size: 14px;
     line-height: 1.6;
-    color: #aeb5b0;
+    color: var(--fitensis-muted);
 }
 
 /* FEATURES */
 .features {
     padding: 26px 0 18px;
     background: var(--fitensis-bg);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(26, 78, 83, 0.13);
 }
 
 .feature-grid {
@@ -269,7 +269,7 @@ a {
 
 .feature-box {
     background: var(--fitensis-card);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(26, 78, 83, 0.13);
     border-radius: 20px;
     padding: 20px;
     position: relative;
@@ -312,7 +312,7 @@ a {
 }
 
 .section-title .small {
-    color: var(--green);
+    color: var(--fitensis-petrol);
     text-transform: uppercase;
     letter-spacing: 1.2px;
     font-size: 12px;
@@ -344,7 +344,7 @@ a {
 
 .tool-card {
     background: linear-gradient(180deg, var(--fitensis-card) 0%, var(--fitensis-bg-soft) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(26, 78, 83, 0.13);
     border-radius: 28px;
     padding: 28px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.24);
@@ -401,7 +401,7 @@ label {
     display: block;
     margin-bottom: 8px;
     font-weight: 800;
-    color: #f1f1f1;
+    color: var(--fitensis-ink);
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -412,9 +412,9 @@ select {
     width: 100%;
     height: 56px;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(26, 78, 83, 0.13);
     background: var(--fitensis-bg);
-    color: #fff;
+    color: var(--fitensis-ink);
     padding: 0 18px;
     font-size: 16px;
     outline: none;
@@ -422,7 +422,7 @@ select {
 }
 
 input::placeholder {
-    color: #6f776f;
+    color: var(--fitensis-muted);
 }
 
 input:focus,
@@ -474,7 +474,7 @@ select:focus {
     font-weight: 900;
     letter-spacing: -1.5px;
     margin-top: 6px;
-    color: var(--green);
+    color: var(--fitensis-petrol);
 }
 
 .result-sub {
@@ -492,7 +492,7 @@ select:focus {
 
 .zone {
     background: var(--fitensis-card);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(26, 78, 83, 0.13);
     border-radius: 18px;
     padding: 16px;
 }
@@ -520,7 +520,7 @@ select:focus {
 
 .macro {
     background: var(--fitensis-card);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(26, 78, 83, 0.13);
     border-radius: 18px;
     padding: 18px 14px;
     text-align: center;
@@ -556,7 +556,7 @@ select:focus {
     border-radius: 999px;
     border: 1px solid var(--green-border);
     background: var(--green-soft);
-    color: #cfffca;
+    color: #225e49;
     font-size: 12px;
     font-weight: 900;
     text-transform: uppercase;
@@ -577,7 +577,7 @@ select:focus {
 
 .promo {
     background: linear-gradient(180deg, var(--fitensis-card), var(--fitensis-bg-soft));
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(26, 78, 83, 0.13);
     border-radius: 28px;
     padding: 26px;
     display: flex;
@@ -590,7 +590,7 @@ select:focus {
 .promo.green {
     background:
         radial-gradient(circle at right top, rgba(130, 196, 168, 0.12), transparent 40%),
-        linear-gradient(180deg, #121712, #0e120e);
+        linear-gradient(180deg, #eef9f3, #ffffff);
     border-color: rgba(130, 196, 168, 0.18);
 }
 
@@ -610,7 +610,7 @@ select:focus {
 
 .footer {
     padding: 24px 0 38px;
-    color: #757d76;
+    color: var(--fitensis-muted);
     font-size: 12px;
     text-align: center;
 }
@@ -664,14 +664,14 @@ select:focus {
 .nutrition-metric span {
     font-size: 10px;
     display: block;
-    color: #acc0b0;
+    color: var(--fitensis-muted);
     text-transform: uppercase;
     margin-bottom: 7px;
 }
 .nutrition-metric strong {
     display: block;
     font-size: 21px;
-    color: var(--green);
+    color: var(--fitensis-petrol);
 }
 .nutrition-goals {
     display: grid;
@@ -679,8 +679,8 @@ select:focus {
     margin-top: 16px;
 }
 .nutrition-goal-card {
-    background: #0b110d;
-    border: 1px solid #304233;
+    background: var(--fitensis-card);
+    border: 1px solid var(--fitensis-line);
     border-radius: 16px;
     padding: 16px;
 }
@@ -691,11 +691,11 @@ select:focus {
 .nutrition-goal-card .target {
     font-size: 27px;
     font-weight: 900;
-    color: var(--green);
+    color: var(--fitensis-petrol);
     margin: 3px 0 7px;
 }
 .nutrition-goal-card .macro-line {
-    color: #c2d3c3;
+    color: var(--fitensis-muted);
     font-size: 13px;
     line-height: 1.6;
 }
@@ -728,12 +728,12 @@ select:focus {
     flex-wrap: wrap;
 }
 .personal-goal-note strong {
-    color: var(--green);
+    color: var(--fitensis-petrol);
     font-size: 18px;
 }
 .personal-goal-note p {
     margin: 5px 0 0;
-    color: #aabbad;
+    color: var(--fitensis-muted);
     font-size: 13px;
     line-height: 1.5;
 }

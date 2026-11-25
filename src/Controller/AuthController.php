@@ -12,6 +12,9 @@ class AuthController extends AbstractController
     #[Route('/connexion', name: 'login', methods: ['GET', 'POST'])]
     public function login(Request $r, GymStore $store): Response
     {
+        if ($r->isMethod('GET') && $store->user()) {
+            return $this->redirectToRoute('home');
+        }
         $error = null;
         if ($r->isMethod('POST')) {
             $db = $store->db();
