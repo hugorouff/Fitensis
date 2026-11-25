@@ -174,11 +174,11 @@ final class AssistantService
         }
 
         $db = $this->store->db();
-        $db->executeStatement("BEGIN IMMEDIATE");
+        $this->store->beginWrite();
         try {
             $count = (int) $db->fetchOne(
-                "SELECT COUNT(*) FROM ai_runs WHERE user_id=? AND created_at>=datetime('now','-1 day')",
-                [$uid],
+                "SELECT COUNT(*) FROM ai_runs WHERE user_id=? AND created_at>=?",
+                [$uid, gmdate("Y-m-d H:i:s", time() - 86400)],
             );
             if ($count >= max(1, $this->requestsPerDay)) {
                 throw new AiException(
@@ -188,8 +188,8 @@ final class AssistantService
             }
             if (
                 $db->fetchOne(
-                    "SELECT COUNT(*) FROM ai_runs WHERE user_id=? AND created_at>datetime('now','-4 seconds')",
-                    [$uid],
+                    "SELECT COUNT(*) FROM ai_runs WHERE user_id=? AND created_at>?",
+                    [$uid, gmdate("Y-m-d H:i:s", time() - 4)],
                 )
             ) {
                 throw new AiException(
@@ -197,7 +197,7 @@ final class AssistantService
                     429,
                 );
             }
-            $db->insert("ai_runs", [
+            $id = $this->store->insertAndGetId("ai_runs", [
                 "user_id" => $uid,
                 "parent_id" => $parent,
                 "question" => $question,
@@ -206,7 +206,6 @@ final class AssistantService
                 "provider" => $this->client->providerName(),
                 "shared_context" => json_encode($shared),
             ]);
-            $id = (int) $db->lastInsertId();
             $db->executeStatement("COMMIT");
         } catch (\Throwable $error) {
             $db->executeStatement("ROLLBACK");
@@ -482,7 +481,7 @@ final class AssistantService
         }
         $uid = $this->userId();
         $db = $this->store->db();
-        $db->executeStatement("BEGIN IMMEDIATE");
+        $this->store->beginWrite();
         try {
             $run = $this->run($runId);
             $proposal =
@@ -511,7 +510,7 @@ final class AssistantService
                     " s : " .
                     $item["instructions"];
             }
-            $db->insert("training_sessions", [
+            $id = $this->store->insertAndGetId("training_sessions", [
                 "user_id" => $uid,
                 "title" => $proposal["title"],
                 "starts_at" => $date->format("Y-m-d H:i"),
@@ -521,7 +520,6 @@ final class AssistantService
                 "status" => "planned",
                 "notes" => mb_substr($notes, 0, 5000),
             ]);
-            $id = (int) $db->lastInsertId();
             foreach ($proposal["exercises"] as $item) {
                 $db->insert("training_items", [
                     "session_id" => $id,

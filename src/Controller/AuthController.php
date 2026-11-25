@@ -30,7 +30,7 @@ class AuthController extends AbstractController
             ) {
                 $error = 'Trop de tentatives. Réessaie dans 15 minutes.';
             } else {
-                $u = $db->fetchAssociative('SELECT * FROM users WHERE email=? AND active=1', [
+                $u = $db->fetchAssociative('SELECT * FROM users WHERE LOWER(email)=LOWER(?) AND active=1', [
                     trim($r->request->get('email', '')),
                 ]);
                 if ($u && password_verify($r->request->get('password', ''), $u['password'])) {
@@ -78,16 +78,13 @@ class AuthController extends AbstractController
             } else {
                 try {
                     // Public registration always creates a member, regardless of submitted fields.
-                    $store
-                        ->db()
-                        ->insert('users', [
-                            'name' => $name,
-                            'email' => $email,
-                            'password' => password_hash($password, PASSWORD_DEFAULT),
-                            'role' => 'member',
-                            'active' => 1,
-                        ]);
-                    $id = (int) $store->db()->lastInsertId();
+                    $id = $store->insertAndGetId('users', [
+                        'name' => $name,
+                        'email' => $email,
+                        'password' => password_hash($password, PASSWORD_DEFAULT),
+                        'role' => 'member',
+                        'active' => 1,
+                    ]);
                     $r->getSession()->migrate(true);
                     $r->getSession()->set('user_id', $id);
                     $this->addFlash('success', 'Ton compte est créé. Bienvenue au club !');

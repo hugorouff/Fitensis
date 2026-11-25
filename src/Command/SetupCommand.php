@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(
     name: 'app:setup',
-    description: 'Initialise la base SQLite et le premier administrateur',
+    description: 'Initialise la base et le premier administrateur',
 )]
 class SetupCommand extends Command
 {
@@ -95,14 +95,13 @@ class SetupCommand extends Command
                         ]
                         as [$offset, $title, $groups, $exercise]
                     ) {
-                        $db->insert('training_sessions', [
+                        $sid = $this->store->insertAndGetId('training_sessions', [
                             'user_id' => $uid,
                             'title' => $title,
                             'starts_at' => date('Y-m-d', strtotime("+$offset days")) . ' 18:00',
                             'preset' => 'custom',
                             'muscles' => json_encode($groups),
                         ]);
-                        $sid = (int) $db->lastInsertId();
                         $db->insert('training_items', [
                             'session_id' => $sid,
                             'exercise' => $exercise,

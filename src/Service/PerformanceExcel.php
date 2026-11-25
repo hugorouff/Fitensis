@@ -451,10 +451,7 @@ final class PerformanceExcel
             if ($value === null) {
                 $where[] = $key . " IS NULL";
             } else {
-                $where[] =
-                    $key .
-                    " = ?" .
-                    ($key === "exercise" ? " COLLATE NOCASE" : "");
+                $where[] = $key === "exercise" ? "LOWER(exercise) = LOWER(?)" : $key . " = ?";
                 $parameters[] = $value;
             }
         }
@@ -489,7 +486,7 @@ final class PerformanceExcel
         $db = $this->store->db();
         $uid = $this->owner();
         $added = ["workouts" => 0, "measurements" => 0, "duplicates" => 0];
-        $db->executeStatement("BEGIN IMMEDIATE");
+        $this->store->beginWrite();
         try {
             foreach ($preview["rows"] as $row) {
                 if ($this->exists($row["kind"], $row["data"])) {

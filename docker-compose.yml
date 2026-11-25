@@ -1,6 +1,7 @@
 services:
   gym:
     build: .
+    restart: unless-stopped
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
@@ -9,6 +10,7 @@ services:
       APP_ENV: prod
       APP_DEBUG: "0"
       APP_SECRET: ${APP_SECRET:?Definissez APP_SECRET dans votre environnement}
-      DATABASE_URL: sqlite:////app/var/gym.db
+      DATABASE_URL: ${DATABASE_URL:?Renseignez la connexion PostgreSQL}
+      AI_PROVIDER: ${AI_PROVIDER:-disabled}
 volumes:
   gym_data:

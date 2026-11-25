@@ -29,7 +29,7 @@ class DeleteUserCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $email = trim($input->getArgument('email'));
         $db = $this->store->db();
-        $user = $db->fetchAssociative('SELECT id,name,email,role FROM users WHERE email=?', [
+        $user = $db->fetchAssociative('SELECT id,name,email,role FROM users WHERE LOWER(email)=LOWER(?)', [
             $email,
         ]);
         if (!$user) {
@@ -43,8 +43,8 @@ class DeleteUserCommand extends Command
             $io->note('Suppression annulée.');
             return Command::SUCCESS;
         }
+        $this->store->beginWrite();
         try {
-            $db->executeStatement('BEGIN IMMEDIATE');
             $current = $db->fetchAssociative('SELECT * FROM users WHERE id=?', [$user['id']]);
             if (!$current) {
                 throw new \InvalidArgumentException('Ce compte a déjà été supprimé.');

@@ -199,7 +199,7 @@ class ToolsController extends AbstractController
                     $d[$f] = mb_substr($d[$f], 0, 5000);
                 }
             }
-            $db->insert("custom_exercises", [
+            $id = $this->store->insertAndGetId("custom_exercises", [
                 "user_id" => $uid,
                 "payload" => json_encode($d, JSON_THROW_ON_ERROR),
             ]);
@@ -207,7 +207,7 @@ class ToolsController extends AbstractController
                 [
                     "success" => true,
                     "data" => $this->exercises->custom([
-                        "id" => $db->lastInsertId(),
+                        "id" => $id,
                         "user_id" => $uid,
                         "payload" => json_encode($d),
                     ]),

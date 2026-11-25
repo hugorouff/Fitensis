@@ -247,8 +247,7 @@ class TrainingController extends AbstractController
                             ]);
                             $sid = $id;
                         } else {
-                            $db->insert("training_sessions", $data);
-                            $sid = (int) $db->lastInsertId();
+                            $sid = $this->store->insertAndGetId("training_sessions", $data);
                         }
                         if (!$created) {
                             $created = $sid;
@@ -293,7 +292,7 @@ class TrainingController extends AbstractController
         foreach ($items as &$i) {
             $i["previous"] =
                 $db->fetchAssociative(
-                    "SELECT date,sets,reps,weight FROM workouts WHERE user_id=? AND exercise=? COLLATE NOCASE AND (session_id IS NULL OR session_id!=?) ORDER BY date DESC,id DESC LIMIT 1",
+                    "SELECT date,sets,reps,weight FROM workouts WHERE user_id=? AND LOWER(exercise)=LOWER(?) AND (session_id IS NULL OR session_id!=?) ORDER BY date DESC,id DESC LIMIT 1",
                     [$uid, $i["exercise"], $id],
                 ) ?:
                 null;
@@ -422,8 +421,7 @@ class TrainingController extends AbstractController
             ->format("Y-m-d H:i");
         $s["status"] = "planned";
         $new = $this->store->db()->transactional(function ($db) use ($s, $id) {
-            $db->insert("training_sessions", $s);
-            $new = (int) $db->lastInsertId();
+            $new = $this->store->insertAndGetId("training_sessions", $s);
             foreach (
                 $db->fetchAllAssociative(
                     "SELECT exercise,sets,reps,weight FROM training_items WHERE session_id=?",

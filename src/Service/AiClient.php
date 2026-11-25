@@ -23,12 +23,12 @@ final class AiClient
 
     public function providerName(): string
     {
-        return $this->provider === "ollama" ? "Ollama" : "OpenAI";
+        return match ($this->provider) { "ollama" => "Ollama", "openai" => "OpenAI", default => "Désactivée" };
     }
 
     public function modelName(): string
     {
-        return $this->provider === "ollama" ? $this->ollamaModel : $this->model;
+        return match ($this->provider) { "ollama" => $this->ollamaModel, "openai" => $this->model, default => "" };
     }
 
     public function status(): array
@@ -39,6 +39,10 @@ final class AiClient
             "ready" => false,
             "message" => "",
         ];
+        if ($this->provider === "disabled") {
+            $status["message"] = "Assistant IA désactivé.";
+            return $status;
+        }
         if ($this->provider !== "ollama") {
             $status["ready"] = $this->configured();
             $status["message"] = $status["ready"]
