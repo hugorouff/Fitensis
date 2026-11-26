@@ -889,6 +889,7 @@
                     <div class="media">
                         <video
                             id="detailVideo"
+                            loop
                             controls
                             playsinline
                             preload="metadata"
@@ -898,6 +899,10 @@
                     </div>
                 </div>
 
+                <p id="demoCredit" hidden>Démonstration illustrée adaptée des dessins de
+                    <a href="https://github.com/everkinetic/data">Greg Priday / Everkinetic</a>
+                    (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>).
+                </p>
                 <div id="detailText" class="details"></div>
 
                 <button id="useExercise" type="button" class="action">
@@ -1406,16 +1411,16 @@
                 const thumbs = exercise.thumbnails || {};
 
                 return gender === "female"
-                    ? thumbs.female || thumbs.male || ""
-                    : thumbs.male || thumbs.female || "";
+                    ? thumbs.female || thumbs.male || thumbs.generic || ""
+                    : thumbs.male || thumbs.female || thumbs.generic || "";
             }
 
             function videoFor(exercise) {
                 const videos = exercise.videos || {};
 
                 return gender === "female"
-                    ? videos.female || videos.male || ""
-                    : videos.male || videos.female || "";
+                    ? videos.female || videos.male || videos.generic || ""
+                    : videos.male || videos.female || videos.generic || "";
             }
 
             function exerciseMediaButton(exercise) {
@@ -1559,6 +1564,7 @@
             function openDetails(exercise, loaded = false) {
                 const requestId = ++detailRequest;
                 selectedExercise = exercise;
+                document.getElementById("demoCredit").hidden = exercise.demoCredit !== "everkinetic";
 
                 document.getElementById("detailName").textContent =
                     exercise.name_fr || frenchExerciseName(exercise.name);

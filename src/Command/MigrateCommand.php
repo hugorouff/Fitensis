@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Service\ExerciseDemonstrations;
 use App\Service\GymStore;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -68,6 +69,7 @@ final class MigrateCommand extends Command
                 ),
                 $io,
             );
+            $this->apply($db, 'Version20261126000300', fn () => ExerciseDemonstrations::import($db), $io);
             $file = $input->getOption('source');
             if ($file !== null) {
                 $this->apply($db, self::IMPORT, fn () => $this->import($db, $file), $io);

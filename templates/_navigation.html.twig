@@ -16,6 +16,11 @@
         active: path == '/recipes'
     },
     {
+        url: '/calendrier',
+        label: 'Mes séances',
+        active: path == '/calendrier' or path starts with '/entrainements/'
+    },
+    {
         url: '/performances',
         label: 'Performances',
         active: path == '/performances' or path starts with '/performances/excel'

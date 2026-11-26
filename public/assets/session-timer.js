@@ -9,7 +9,9 @@
     const start = timer.querySelector('[data-timer-start]');
     const pause = timer.querySelector('[data-timer-pause]');
     const sound = timer.querySelector('[data-timer-sound]');
+    const silence = timer.querySelector('[data-timer-silence]');
     let audioContext;
+    let alarm;
     let end = 0;
     let remaining = Number(duration.value) * 1000;
     let paused = false;
@@ -42,17 +44,32 @@
     }
 
     function soundFinished() {
-        if (!sound.checked || audioContext?.state !== 'running') return;
+        if (alarm || !sound.checked || audioContext?.state !== 'running') return;
         const tone = audioContext.createOscillator();
         const gain = audioContext.createGain();
         const now = audioContext.currentTime;
-        tone.frequency.setValueAtTime(880, now);
-        gain.gain.setValueAtTime(0.14, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        tone.frequency.value = 660;
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.09, now + 0.08);
         tone.connect(gain);
         gain.connect(audioContext.destination);
-        tone.start(now);
-        tone.stop(now + 0.36);
+        tone.onended = () => {
+            tone.disconnect();
+            gain.disconnect();
+        };
+        tone.start();
+        alarm = { tone, gain };
+        silence.hidden = false;
+    }
+
+    function stopAlarm() {
+        if (!alarm) return;
+        const now = audioContext.currentTime;
+        alarm.gain.gain.cancelScheduledValues(now);
+        alarm.gain.gain.setTargetAtTime(0, now, 0.008);
+        alarm.tone.stop(now + 0.05);
+        alarm = null;
+        silence.hidden = true;
     }
 
     function render() {
@@ -75,6 +92,7 @@
 
     start.addEventListener('click', () => {
         if (!duration.reportValidity()) return;
+        stopAlarm();
         prepareSound();
         if (!paused) remaining = Number(duration.value) * 1000;
         end = Date.now() + remaining;
@@ -95,6 +113,7 @@
     });
 
     function reset() {
+        stopAlarm();
         end = 0;
         remaining = Number(duration.value) * 1000;
         paused = false;
@@ -107,7 +126,15 @@
     duration.addEventListener('change', () => {
         if (duration.checkValidity()) reset();
     });
-    sound.addEventListener('change', prepareSound);
+    silence.addEventListener('click', () => {
+        stopAlarm();
+        start.focus();
+    });
+    sound.addEventListener('change', () => {
+        if (sound.checked) prepareSound();
+        else stopAlarm();
+    });
+    window.addEventListener('pagehide', stopAlarm);
     render();
     setInterval(render, 250);
 })();

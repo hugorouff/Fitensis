@@ -172,6 +172,7 @@ class ExerciseCatalog
             "errors" => [],
         ];
         $media = array_fill_keys($this->store->db()->fetchFirstColumn("SELECT id FROM exercise_media"), true);
+        $demonstrations = ExerciseDemonstrations::index();
         foreach ($items as &$item) {
             $item = $this->normalize($item, "Gym App original", self::SOURCES["Gym App original"]);
             foreach (["thumbnails", "videos"] as $type) {
@@ -180,6 +181,14 @@ class ExerciseCatalog
                     $url = isset($media[$id]) ? "/api/exercices/media/" . $id : "";
                 }
                 unset($url);
+                $key = $demonstrations[$item['name']] ?? null;
+                if ($key !== null && !array_filter($item[$type])) {
+                    $id = ExerciseDemonstrations::mediaId($key, $type);
+                    if (isset($media[$id])) {
+                        $item[$type]['generic'] = '/api/exercices/media/'.$id;
+                        $item['demoCredit'] = str_starts_with($key, 'ek-') ? 'everkinetic' : 'other';
+                    }
+                }
             }
             $item["imageUrl"] = $item["gifUrl"] = $item["fallbackImageUrl"] = "";
         }
