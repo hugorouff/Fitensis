@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\{AiClient, AiException, AssistantService, GymStore, Nutrition, RecipeSearch};
+use Doctrine\DBAL\Exception\TableNotFoundException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
@@ -29,22 +30,28 @@ final class AssistantController extends AbstractController
             }
         }
         $uid = $this->store->user()["id"];
-        $history = $this->store
-            ->db()
-            ->fetchAllAssociative(
+        $history = [];
+        $favorites = [];
+        $archiveUnavailable = false;
+        try {
+            $db = $this->store->db();
+            $history = $db->fetchAllAssociative(
                 "SELECT id,question,status,created_at FROM ai_runs WHERE user_id=? ORDER BY id DESC LIMIT 12",
                 [$uid],
             );
-        $favorites = $this->store
-            ->db()
-            ->fetchAllAssociative(
+            $rows = $db->fetchAllAssociative(
                 "SELECT id,payload FROM ai_favorites WHERE user_id=? ORDER BY id DESC LIMIT 12",
                 [$uid],
             );
-        foreach ($favorites as &$favorite) {
-            $favorite["recipe"] = json_decode($favorite["payload"], true, 64, JSON_THROW_ON_ERROR);
+            foreach ($rows as $favorite) {
+                $recipe = json_decode((string) $favorite["payload"], true, 64);
+                if (is_array($recipe)) {
+                    $favorites[] = ["id" => $favorite["id"], "recipe" => $recipe];
+                }
+            }
+        } catch (TableNotFoundException) {
+            $archiveUnavailable = true;
         }
-        unset($favorite);
         $recent = $this->store->db()->fetchAllAssociative(
             "SELECT exercise, date, sets, reps, weight FROM workouts WHERE user_id=? ORDER BY date DESC, id DESC LIMIT 30",
             [$uid],
@@ -86,6 +93,7 @@ final class AssistantController extends AbstractController
             "selected" => $selected,
             "history" => $history,
             "favorites" => $favorites,
+            "archiveUnavailable" => $archiveUnavailable,
             "muscles" => $this->nutrition->catalog("MUSCLE_LABELS"),
         ]);
     }

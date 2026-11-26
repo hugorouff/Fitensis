@@ -155,3 +155,59 @@ body.login {
     .login .login-visual h1,
     .login .login-visual p { display: none; }
 }
+
+.fitensis-workspace .personal-page {
+    width: min(1200px, calc(100% - clamp(32px, 6vw, 80px)));
+    margin-inline: auto;
+}
+
+.fitensis-workspace .personal-page .page-head {
+    color: var(--workspace-ink);
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--workspace-line);
+}
+
+.fitensis-workspace .personal-page .panel,
+.fitensis-workspace .personal-page .week-grid .day {
+    background: #fff;
+    border: 1px solid var(--workspace-line);
+    border-radius: 14px;
+    color: var(--workspace-ink);
+    box-shadow: 0 4px 16px #12313a08;
+}
+
+.fitensis-workspace .personal-page .week-grid .day.today {
+    border-color: #00778b;
+}
+
+.fitensis-workspace .personal-page .perf-line svg {
+    background: #fff;
+    border-color: var(--workspace-line);
+}
+
+.fitensis-workspace .personal-page :is(button, .button):not(.secondary, .link, .danger) {
+    background: #007083;
+    color: #fff;
+    border-radius: 10px;
+}
+
+.fitensis-workspace .personal-page :is(button, .button):not(.secondary, .link, .danger):hover {
+    background: #005769;
+}
+
+.fitensis-workspace .personal-page .button.secondary {
+    background: #fff;
+    color: #005769;
+    border: 1px solid var(--workspace-line);
+    border-radius: 10px;
+}
+
+.fitensis-workspace .personal-page .button.secondary:hover {
+    background: #edf8f3;
+}
+
+.fitensis-workspace .personal-page :is(input, select, textarea):not([type="checkbox"], [type="radio"], [type="range"]) {
+    background: #fff;
+    color: var(--workspace-ink);
+    border-color: var(--workspace-line);
+}

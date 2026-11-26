@@ -79,6 +79,9 @@
         {% endif %}
     </section>
 
+    {% if archiveUnavailable %}
+        <p class="flash info">Les archives de l’ancien assistant sont indisponibles. Les suggestions restent accessibles.</p>
+    {% endif %}
     <section class="panel" id="ai-favorites">
         <h2>Mes recettes favorites de l’assistant</h2>
         <div class="cards">
