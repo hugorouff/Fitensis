@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Service\{AiClient, AiException, AssistantService, GymStore, Nutrition};
+use App\Service\{AiClient, AiException, AssistantService, GymStore, Nutrition, RecipeSearch};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,6 +14,7 @@ final class AssistantController extends AbstractController
         private AiClient $client,
         private AssistantService $assistant,
         private Nutrition $nutrition,
+        private RecipeSearch $recipes,
     ) {}
 
     #[Route("/assistant", name: "assistant", methods: ["GET"])]
@@ -44,12 +45,47 @@ final class AssistantController extends AbstractController
             $favorite["recipe"] = json_decode($favorite["payload"], true, 64, JSON_THROW_ON_ERROR);
         }
         unset($favorite);
+        $recent = $this->store->db()->fetchAllAssociative(
+            "SELECT exercise, date, sets, reps, weight FROM workouts WHERE user_id=? ORDER BY date DESC, id DESC LIMIT 30",
+            [$uid],
+        );
+        $recipes = null;
+        $recipeError = null;
+        $ingredients = trim(mb_substr($request->query->getString("ingredients"), 0, 300));
+        $exclude = trim(mb_substr($request->query->getString("exclude"), 0, 300));
+        if ($request->query->has("ingredients")) {
+            try {
+                $recipes = $this->recipes->search([
+                    "ingredients" => $ingredients,
+                    "exclude" => $exclude,
+                    "limit" => 6,
+                    "sort" => "pantry",
+                ]);
+                foreach ($recipes["data"] as &$recipe) {
+                    $recipe["name_fr"] = html_entity_decode($recipe["name_fr"], ENT_QUOTES | ENT_HTML5, "UTF-8");
+                }
+                unset($recipe);
+            } catch (\InvalidArgumentException $error) {
+                $recipeError = $error->getMessage();
+            }
+        }
+
         return $this->render("assistant.html.twig", [
+            "edit" => null,
+            "presets" => TrainingController::PRESETS,
+            "initialPreset" => "upper",
+            "initialGroups" => TrainingController::PRESETS["upper"]["muscles"],
+            "selectedDate" => date("Y-m-d"),
+            "exercise" => "",
+            "recentExercises" => array_column($recent, "exercise"),
+            "lastWorkout" => $recent[0] ?? null,
+            "recipes" => $recipes,
+            "ingredients" => $ingredients,
+            "recipeError" => $recipeError,
+            "exclude" => $exclude,
             "selected" => $selected,
             "history" => $history,
             "favorites" => $favorites,
-            "provider" => $this->client->providerName(),
-            "model" => $this->client->modelName(),
             "muscles" => $this->nutrition->catalog("MUSCLE_LABELS"),
         ]);
     }

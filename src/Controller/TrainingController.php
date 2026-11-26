@@ -148,6 +148,10 @@ class TrainingController extends AbstractController
             "muscles" => $this->nutrition->catalog("MUSCLE_LABELS"),
             "edit" => $edit,
             "selectedDate" => $date->format("Y-m-d"),
+            "recentExercises" => $edit ? [] : $this->store->db()->fetchFirstColumn(
+                "SELECT exercise FROM workouts WHERE user_id=? ORDER BY date DESC, id DESC LIMIT 30",
+                [$this->store->user()["id"]],
+            ),
             "initialGroups" => isset(
                 $this->nutrition->catalog("MUSCLE_LABELS")[
                     $r->query->getString("muscle")
@@ -226,6 +230,25 @@ class TrainingController extends AbstractController
                 ? 1
                 : $this->n($r->request->get("repeat", 1), 1, 12, true);
             $exercise = trim($r->request->getString("exercise"));
+            $items = $r->request->all("items");
+            if (count($items) > 20) {
+                throw new \InvalidArgumentException("Ajoute au maximum 20 exercices par séance.");
+            }
+            $exercises = [];
+            foreach ($items as $item) {
+                if (!is_array($item) || !is_string($item["name"] ?? null)) {
+                    throw new \InvalidArgumentException("Exercice invalide.");
+                }
+                $exercises[] = [
+                    "exercise" => $this->text($item["name"]),
+                    "sets" => $this->n($item["sets"] ?? null, 1, 50, true),
+                    "reps" => $this->n($item["reps"] ?? null, 1, 200, true),
+                    "weight" => $this->n($item["weight"] ?? null, 0, 1000),
+                ];
+            }
+            if ($exercise !== "") {
+                $exercises[] = ["exercise" => $this->text($exercise), "sets" => 3, "reps" => 10, "weight" => 0];
+            }
             $this->store
                 ->db()
                 ->transactional(function ($db) use (
@@ -233,7 +256,7 @@ class TrainingController extends AbstractController
                     $repeat,
                     $row,
                     $start,
-                    $exercise,
+                    $exercises,
                     &$created,
                 ) {
                     for ($i = 0; $i < $repeat; $i++) {
@@ -252,14 +275,8 @@ class TrainingController extends AbstractController
                         if (!$created) {
                             $created = $sid;
                         }
-                        if ($exercise !== "") {
-                            $db->insert("training_items", [
-                                "session_id" => $sid,
-                                "exercise" => $this->text($exercise),
-                                "sets" => 3,
-                                "reps" => 10,
-                                "weight" => 0,
-                            ]);
+                        foreach ($exercises as $exerciseRow) {
+                            $db->insert("training_items", ["session_id" => $sid] + $exerciseRow);
                         }
                     }
                 });

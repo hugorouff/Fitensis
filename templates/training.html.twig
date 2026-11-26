@@ -81,6 +81,18 @@
             </form>
         </div>
     </div>
+    <section class="panel" data-session-timer="{{ session.id }}">
+        <h2>Minuteur de repos</h2>
+        <div class="actions">
+            <label>Repos en secondes <input data-timer-duration type="number" min="5" max="900" value="90" required /></label>
+            <button type="button" data-timer-start>Démarrer</button>
+            <button type="button" class="button secondary" data-timer-pause>Pause</button>
+            <button type="button" class="button secondary" data-timer-reset>Réinitialiser</button>
+            <output data-timer-display>01:30</output>
+        </div>
+        <p role="status" data-timer-status></p>
+    </section>
+    <script defer src="/assets/session-timer.js?v=1"></script>
     <section class="panel">
         <div class="section-head">
             <h2>Mes exercices prévus</h2><a href="/exercises">Explorer les exercices ↗</a>
