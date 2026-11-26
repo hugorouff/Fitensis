@@ -10,6 +10,13 @@
     function save() { try { sessionStorage.setItem(key, JSON.stringify(state)); } catch {} }
     const active = () => items.find(i => i.dataset.guidedItem === state?.id);
     const resetRest = () => timer.querySelector('[data-timer-reset]').click();
+    function pinActive(scroll = false) {
+        const current = active();
+        if (!current) return;
+        const first = root.querySelector('[data-guided-item]');
+        if (first !== current) first.before(current);
+        if (scroll) current.scrollIntoView({block: "start", behavior: "smooth"});
+    }
     function render() {
         const current = active();
         timer.hidden = state?.phase !== 'rest';
@@ -17,7 +24,12 @@
             const selected = item === current;
             const phase = selected ? state.phase : '';
             item.querySelector('[data-guided-controls]').hidden = !selected;
-            item.querySelector('[data-select-exercise]').hidden = selected;
+            const select = item.querySelector('[data-select-exercise]');
+            select.hidden = selected;
+            select.disabled = !!current && !selected;
+            select.textContent = select.disabled ? 'Termine d’abord l’exercice en cours' : 'Choisir cet exercice';
+            item.toggleAttribute('data-active-exercise', selected);
+            item.querySelectorAll('[data-remove-exercise] button').forEach(button => { button.disabled = !!current; });
             item.querySelector('[data-guided-performance]').hidden = phase !== 'performance';
             item.querySelector('[data-guided-start]').hidden = phase !== 'ready';
             item.querySelector('[data-guided-next]').hidden = phase !== 'running';
@@ -31,8 +43,8 @@
     function change(phase) { state.phase = phase; save(); render(); }
     items.forEach(item => {
         item.querySelector('[data-select-exercise]').onclick = () => {
-            if (state && !confirm('Changer d’exercice ? La série en cours sera abandonnée.')) return;
-            resetRest(); state = { id: item.dataset.guidedItem, set: 1, phase: 'ready', started: 0 }; save(); render();
+            if (active()) return;
+            resetRest(); state = { id: item.dataset.guidedItem, set: 1, phase: 'ready', started: 0 }; save(); render(); pinActive(true);
         };
         item.querySelector('[data-guided-start]').onclick = () => { state.started = Date.now(); change('running'); };
         item.querySelector('[data-guided-next]').onclick = () => {
@@ -44,5 +56,5 @@
         };
     });
     if (state?.phase !== 'rest') resetRest();
-    render(); setInterval(render, 500);
+    pinActive(); render(); setInterval(render, 500);
 })();

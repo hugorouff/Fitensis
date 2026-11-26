@@ -182,7 +182,7 @@
                 </form>
                 <form
                     method="post"
-                    action="/entrainements/{{ session.id }}/exercices/{{ item.id }}/supprimer"
+                    action="/entrainements/{{ session.id }}/exercices/{{ item.id }}/supprimer" data-remove-exercise
                 >
                     <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><button
                         class="link small"
@@ -327,7 +327,7 @@
             </p>
         {% endfor %}
     </section>
-    <script defer src="/assets/guided-session.js?v=1"></script>
+    <script defer src="/assets/guided-session.js?v=2"></script>
     <div class="actions">
         <a class="button" href="/performances">Suivre ma progression →</a><form
             method="post"
