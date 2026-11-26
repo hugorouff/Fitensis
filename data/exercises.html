@@ -573,7 +573,7 @@
         <link rel="apple-touch-icon" href="/assets/fitensis-192.png">
         <script src="/assets/install.js" defer></script>
         <link rel="stylesheet" href="/assets/workspace.css?v=4" />
-        <link rel="stylesheet" href="/assets/visual-session.css?v=3" />
+        <link rel="stylesheet" href="/assets/visual-session.css?v=4" />
     </head>
 
     <body class="exercise-page fitensis-workspace">
@@ -1335,7 +1335,21 @@
                 field.type = "hidden";
                 field.name = `items[${visualIndex}][name]`;
                 field.value = name;
-                row.append(heading, field);
+                const preview = document.createElement("div");
+                preview.className = "visual-session-preview";
+                const thumb = document.createElement("div");
+                thumb.className = "visual-session-preview-image";
+                const img = document.createElement("img");
+                img.alt = name;
+                img.loading = "lazy";
+                const empty = document.createElement("span");
+                empty.textContent = "Image indisponible";
+                thumb.append(img, empty);
+                loadExerciseImage(img, exercise, empty);
+                const identity = document.createElement("div");
+                identity.append(heading, exerciseMediaButton(exercise));
+                preview.append(thumb, identity);
+                row.append(preview, field);
                 for (const [key, labelText, value, min, max] of [
                     ["sets", "Séries", 3, 1, 50],
                     ["reps", "Répétitions", 10, 1, 200],
@@ -1402,6 +1416,22 @@
                 return gender === "female"
                     ? videos.female || videos.male || ""
                     : videos.male || videos.female || "";
+            }
+
+            function exerciseMediaButton(exercise) {
+                const button = document.createElement("button");
+                const hasVideo = Boolean(videoFor(exercise));
+                button.type = "button";
+                button.className = "exercise-media-button";
+                button.textContent = hasVideo ? "Voir la vidéo" : "Voir la fiche";
+                button.addEventListener("click", event => {
+                    event.stopPropagation();
+                    openDetails(exercise);
+                    if (hasVideo) {
+                        document.getElementById("detailVideoEmpty").parentElement.scrollIntoView({ block: "nearest" });
+                    }
+                });
+                return button;
             }
 
             async function loadExercises() {
@@ -1495,6 +1525,7 @@
             `;
 
                     loadExerciseImage(card.querySelector("img"), exercise, card.querySelector(".thumb-fallback"));
+                    card.querySelector(".content").append(exerciseMediaButton(exercise));
                     if (visualMode) {
                         const add = document.createElement("button");
                         add.type = "button";
@@ -1530,34 +1561,36 @@
                 document.getElementById("detailName").textContent =
                     exercise.name_fr || frenchExerciseName(exercise.name);
 
-                loadExerciseImage(
-                    document.getElementById("detailImage"), exercise,
-                    document.getElementById("detailImageEmpty"),
-                );
+                if (!loaded) {
+                    loadExerciseImage(
+                        document.getElementById("detailImage"), exercise,
+                        document.getElementById("detailImageEmpty"),
+                    );
 
-                const video = document.getElementById("detailVideo");
-                const videoEmpty = document.getElementById("detailVideoEmpty");
-                const videos = exercise.videos || {};
-                const candidates = [...new Set([videoFor(exercise), videos.male, videos.female].filter(Boolean))];
+                    const video = document.getElementById("detailVideo");
+                    const videoEmpty = document.getElementById("detailVideoEmpty");
+                    const videos = exercise.videos || {};
+                    const candidates = [...new Set([videoFor(exercise), videos.male, videos.female].filter(Boolean))];
 
-                video.pause();
-                function nextVideo() {
-                    video.onerror = null;
-                    if (candidates.length) {
-                        video.onerror = nextVideo;
-                        video.src = candidates.shift();
-                        video.style.display = "block";
-                        videoEmpty.style.display = "none";
-                        return;
+                    video.pause();
+                    function nextVideo() {
+                        video.onerror = null;
+                        if (candidates.length) {
+                            video.onerror = nextVideo;
+                            video.src = candidates.shift();
+                            video.style.display = "block";
+                            videoEmpty.style.display = "none";
+                            return;
+                        }
+                        video.removeAttribute("src");
+                        video.style.display = "none";
+                        videoEmpty.textContent = videoFor(exercise)
+                            ? "Vidéo indisponible chez le fournisseur."
+                            : "Aucune vidéo fournie pour cet exercice.";
+                        videoEmpty.style.display = "flex";
                     }
-                    video.removeAttribute("src");
-                    video.style.display = "none";
-                    videoEmpty.textContent = videoFor(exercise)
-                        ? "Vidéo indisponible chez le fournisseur."
-                        : "Aucune vidéo fournie pour cet exercice.";
-                    videoEmpty.style.display = "flex";
+                    nextVideo();
                 }
-                nextVideo();
 
                 const primary = muscles[exercise.primaryGroup] || exercise.target || "Non classé";
 
