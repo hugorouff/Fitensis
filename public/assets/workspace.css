@@ -245,3 +245,20 @@ body.login {
 @media (max-width: 900px) {
     .fitensis-workspace .site-logout { margin-top: 0; }
 }
+
+.fitensis-workspace .site-nav a.site-session-link {
+    background: #b9e5d4;
+    color: #12313a;
+    font-weight: 800;
+}
+
+.fitensis-workspace .site-nav a.site-session-link:hover,
+.fitensis-workspace .site-nav a.site-session-link:focus-visible {
+    background: #e3f6ee;
+    color: #12313a;
+}
+
+.fitensis-workspace .site-nav a.site-session-link.is-current {
+    background: #fff;
+    color: #005769;
+}

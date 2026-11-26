@@ -572,8 +572,8 @@
         <link rel="manifest" href="/manifest.json">
         <link rel="apple-touch-icon" href="/assets/fitensis-192.png">
         <script src="/assets/install.js" defer></script>
-        <link rel="stylesheet" href="/assets/workspace.css?v=3" />
-        <link rel="stylesheet" href="/assets/visual-session.css?v=1" />
+        <link rel="stylesheet" href="/assets/workspace.css?v=4" />
+        <link rel="stylesheet" href="/assets/visual-session.css?v=2" />
     </head>
 
     <body class="exercise-page fitensis-workspace">
@@ -1461,7 +1461,6 @@
                     const card = document.createElement("article");
                     card.className = "exercise";
 
-                    const video = videoFor(exercise);
                     const primary =
                         muscles[exercise.primaryGroup] || exercise.target || "Non classé";
 
@@ -1469,7 +1468,6 @@
                 <div class="thumb">
                     <img alt="${esc(exercise.name)}" loading="lazy">
                     <div class="thumb-fallback">Image indisponible</div>
-                    ${video ? `<div class="play">▶</div>` : ""}
                 </div>
 
                 <div class="content">
@@ -1529,27 +1527,29 @@
                     document.getElementById("detailImageEmpty"),
                 );
 
-                const videoUrl = videoFor(exercise);
                 const video = document.getElementById("detailVideo");
                 const videoEmpty = document.getElementById("detailVideoEmpty");
+                const videos = exercise.videos || {};
+                const candidates = [...new Set([videoFor(exercise), videos.male, videos.female].filter(Boolean))];
 
                 video.pause();
-                video.onerror = () => {
-                    video.style.display = "none";
-                    videoEmpty.textContent = "Vidéo indisponible chez la source.";
-                    videoEmpty.style.display = "flex";
-                };
-                videoEmpty.textContent = "Aucune vidéo fournie pour cet exercice.";
-
-                if (videoUrl) {
-                    video.src = videoUrl;
-                    video.style.display = "block";
-                    videoEmpty.style.display = "none";
-                } else {
+                function nextVideo() {
+                    video.onerror = null;
+                    if (candidates.length) {
+                        video.onerror = nextVideo;
+                        video.src = candidates.shift();
+                        video.style.display = "block";
+                        videoEmpty.style.display = "none";
+                        return;
+                    }
                     video.removeAttribute("src");
                     video.style.display = "none";
+                    videoEmpty.textContent = videoFor(exercise)
+                        ? "Vidéo indisponible chez le fournisseur."
+                        : "Aucune vidéo fournie pour cet exercice.";
                     videoEmpty.style.display = "flex";
                 }
+                nextVideo();
 
                 const primary = muscles[exercise.primaryGroup] || exercise.target || "Non classé";
 

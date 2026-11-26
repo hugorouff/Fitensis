@@ -213,7 +213,14 @@ class ExerciseCatalog
                     implode("/", array_map("rawurlencode", explode("/", $row["images"][0])));
             }
             foreach ($data as &$exercise) {
-                $exercise["fallbackImageUrl"] = $images[RemoteCache::normalize($exercise["name"])] ?? "";
+                $exercise["fallbackImageUrl"] = "";
+                foreach ([$exercise["name"], ...$exercise["aliases"]] as $name) {
+                    $image = $images[RemoteCache::normalize($name)] ?? "";
+                    if ($image !== "") {
+                        $exercise["fallbackImageUrl"] = $image;
+                        break;
+                    }
+                }
             }
             unset($exercise);
         }

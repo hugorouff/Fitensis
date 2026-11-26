@@ -62,3 +62,20 @@
     right: 16px;
     box-shadow: 0 4px 14px #12313a25;
 }
+
+.visual-session-add {
+    appearance: none;
+    padding: 8px 12px;
+    border: 1px solid #007083;
+    border-radius: 8px;
+    background: #007083;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.visual-session-add:hover,
+.visual-session-add:focus-visible {
+    background: #005769;
+    color: #fff;
+}

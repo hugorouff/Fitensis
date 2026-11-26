@@ -18,6 +18,7 @@
     {
         url: '/calendrier',
         label: 'Mes séances',
+        emphasized: true,
         active: path == '/calendrier' or path starts with '/entrainements'
     },
     {
@@ -48,13 +49,9 @@
         </a>
         <nav class="site-nav" aria-label="Navigation principale">
             {% for link in links %}
-                {% if link.active %}
-                    <a href="{{ link.url }}" class="is-current" aria-current="page">
-                        {{ link.label }}
-                    </a>
-                {% else %}
-                    <a href="{{ link.url }}">{{ link.label }}</a>
-                {% endif %}
+                <a href="{{ link.url }}"
+                   class="{{ link.emphasized|default(false) ? 'site-session-link' : '' }}{{ link.active ? ' is-current' : '' }}"
+                   {% if link.active %}aria-current="page"{% endif %}>{{ link.label }}</a>
             {% endfor %}
             <form method="post" action="{{ path('logout') }}" class="site-logout">
                 <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
