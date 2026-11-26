@@ -178,11 +178,11 @@ class ExerciseCatalog
             foreach (["thumbnails", "videos"] as $type) {
                 foreach ($item[$type] as &$url) {
                     $id = hash("sha256", $url);
-                    $url = isset($media[$id]) ? "/api/exercices/media/" . $id : "";
+                    $url = isset($media[$id]) ? "/api/exercices/media/" . $id : $url;
                 }
                 unset($url);
                 $key = $demonstrations[$item['name']] ?? null;
-                if ($key !== null && !array_filter($item[$type])) {
+                if ($key !== null) {
                     $id = ExerciseDemonstrations::mediaId($key, $type);
                     if (isset($media[$id])) {
                         $item[$type]['generic'] = '/api/exercices/media/'.$id;

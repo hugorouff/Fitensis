@@ -245,3 +245,7 @@ body.login {
 @media (max-width: 900px) {
     .fitensis-workspace .site-logout { margin-top: 0; }
 }
+
+[data-guided-session] [hidden], [data-session-timer][hidden] { display: none !important; }
+[data-guided-controls] { margin-block: 1rem; }
+[data-guided-clock] { font-size: 1.5rem; font-variant-numeric: tabular-nums; margin-inline: .75rem; }

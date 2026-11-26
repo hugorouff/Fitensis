@@ -890,6 +890,8 @@
                         <video
                             id="detailVideo"
                             loop
+                            muted
+                            autoplay
                             controls
                             playsinline
                             preload="metadata"
@@ -1390,7 +1392,7 @@
             function loadExerciseImage(element, exercise, fallback) {
                 const thumbnails = exercise.thumbnails || {};
                 const images = [...new Set([
-                    imageFor(exercise), thumbnails.male, thumbnails.female, exercise.fallbackImageUrl,
+                    imageFor(exercise), thumbnails.generic, thumbnails.male, thumbnails.female, exercise.fallbackImageUrl,
                 ].filter(Boolean))];
                 function next() {
                     if (!images.length) {
@@ -1411,16 +1413,16 @@
                 const thumbs = exercise.thumbnails || {};
 
                 return gender === "female"
-                    ? thumbs.female || thumbs.male || thumbs.generic || ""
-                    : thumbs.male || thumbs.female || thumbs.generic || "";
+                    ? thumbs.generic || thumbs.female || thumbs.male || ""
+                    : thumbs.generic || thumbs.male || thumbs.female || "";
             }
 
             function videoFor(exercise) {
                 const videos = exercise.videos || {};
 
                 return gender === "female"
-                    ? videos.female || videos.male || videos.generic || ""
-                    : videos.male || videos.female || videos.generic || "";
+                    ? videos.generic || videos.female || videos.male || ""
+                    : videos.generic || videos.male || videos.female || "";
             }
 
             function exerciseMediaButton(exercise) {
@@ -1578,7 +1580,7 @@
                     const video = document.getElementById("detailVideo");
                     const videoEmpty = document.getElementById("detailVideoEmpty");
                     const videos = exercise.videos || {};
-                    const candidates = [...new Set([videoFor(exercise), videos.male, videos.female].filter(Boolean))];
+                    const candidates = [...new Set([videoFor(exercise), videos.generic, videos.male, videos.female].filter(Boolean))];
 
                     video.pause();
                     function nextVideo() {
@@ -1588,6 +1590,7 @@
                             video.src = candidates.shift();
                             video.style.display = "block";
                             videoEmpty.style.display = "none";
+                            video.play().catch(() => {});
                             return;
                         }
                         video.removeAttribute("src");

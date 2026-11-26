@@ -19,7 +19,7 @@
         >
             ← Mon planning
         </a>
-        <a class="button" href="#minuteur">Minuteur de repos</a>
+
     </div>
     <div class="panel">
         <div class="section-head">
@@ -82,21 +82,21 @@
             </form>
         </div>
     </div>
-    <section class="panel" id="minuteur" data-session-timer="{{ session.id }}">
+    <section class="panel" hidden id="minuteur" data-session-timer="{{ session.id }}">
         <h2>Minuteur de repos</h2>
         <div class="actions">
             <label>Repos en secondes <input data-timer-duration type="number" min="5" max="900" value="90" required /></label>
             <button type="button" data-timer-start>Démarrer</button>
             <button type="button" class="button secondary" data-timer-pause>Pause</button>
             <button type="button" class="button secondary" data-timer-reset>Réinitialiser</button>
-            <label><input type="checkbox" data-timer-sound checked /> Sonnerie continue en fin de repos</label>
+            <label><input type="checkbox" data-timer-sound checked /> Alarme de fin de repos</label>
             <button type="button" data-timer-silence hidden>Arrêter la sonnerie</button>
             <output data-timer-display>01:30</output>
         </div>
         <p role="status" data-timer-status></p>
     </section>
-    <script defer src="/assets/session-timer.js?v=3"></script>
-    <section class="panel">
+    <script defer src="/assets/session-timer.js?v=4"></script>
+    <section class="panel" data-guided-session="{{ session.id }}">
         <div class="section-head">
             <h2>Mes exercices prévus</h2><a href="/exercises">Explorer les exercices ↗</a>
         </div>
@@ -105,7 +105,20 @@
             alimenter ton suivi.
         </p>
         {% for item in items %}
-            <article class="training-exercise">
+            {% set recorded = logs|filter(log => log.exercise|lower == item.exercise|lower) %}
+            <article class="training-exercise" data-guided-item="{{ item.id }}" data-sets="{{ item.sets }}" data-done="{{ recorded is not empty ? '1' : '0' }}">
+                {% if recorded is not empty %}
+                    <p class="pill confirmed">Performance enregistrée</p>
+                    {% for log in recorded %}<p>{{ log.sets }} × {{ log.reps }} à {{ log.weight }} kg</p>{% endfor %}
+                {% endif %}
+                <button type="button" data-select-exercise>{{ recorded is not empty ? 'Refaire cet exercice' : 'Choisir cet exercice' }}</button>
+                <div data-guided-controls hidden>
+                    <p role="status" data-guided-status></p>
+                    <button type="button" data-guided-start>Démarrer la série</button>
+                    <output data-guided-clock>00:00</output>
+                    <button type="button" data-guided-next hidden>Série terminée</button>
+                    <button type="button" data-guided-resume hidden>Reprendre l’exercice</button>
+                </div>
                 <div class="section-head">
                     <div>
                         <h3>{{ item.exercise }}</h3>
@@ -126,7 +139,7 @@
                 <form
                     method="post"
                     action="/entrainements/{{ session.id }}/performances"
-                    class="form-grid compact-grid"
+                    class="form-grid compact-grid" data-guided-performance hidden
                 >
                     <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
                     <input type="hidden" name="exercise" value="{{ item.exercise }}" /><label>
@@ -244,7 +257,7 @@
     <section class="panel">
         <h2>Ce que j’ai réalisé</h2>
         {% for log in logs %}
-            <details class="performance-entry">
+            <details class="performance-entry" open>
                 <summary>
                     {{ log.exercise }} · {{ log.sets }} × {{ log.reps }} à {{ log.weight }} kg · {{ log.sets
                         * log.reps
@@ -318,6 +331,7 @@
             </p>
         {% endfor %}
     </section>
+    <script defer src="/assets/guided-session.js?v=1"></script>
     <div class="actions">
         <a class="button" href="/performances">Suivre ma progression →</a><form
             method="post"

@@ -45,18 +45,25 @@
 
     function soundFinished() {
         if (alarm || !sound.checked || audioContext?.state !== 'running') return;
-        const tone = audioContext.createOscillator();
+        // Alternance de deux frequences et impulsions, comme un reveil.
+        const rate = audioContext.sampleRate;
+        const buffer = audioContext.createBuffer(1, rate * 2, rate);
+        const samples = buffer.getChannelData(0);
+        for (let i = 0; i < samples.length; i++) {
+            const t = i / rate;
+            const beat = t % 0.5;
+            const envelope = Math.max(0, Math.min(1, beat / 0.015, (0.38 - beat) / 0.025));
+            const frequency = Math.floor(t * 2) % 2 ? 880 : 1250;
+            samples[i] = envelope * (0.6 * Math.sin(2 * Math.PI * frequency * t) + 0.2 * Math.sin(4 * Math.PI * frequency * t));
+        }
+        const tone = audioContext.createBufferSource();
+        tone.buffer = buffer;
+        tone.loop = true;
         const gain = audioContext.createGain();
-        const now = audioContext.currentTime;
-        tone.frequency.value = 660;
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.09, now + 0.08);
+        gain.gain.value = 0.35;
         tone.connect(gain);
         gain.connect(audioContext.destination);
-        tone.onended = () => {
-            tone.disconnect();
-            gain.disconnect();
-        };
+        tone.onended = () => { tone.disconnect(); gain.disconnect(); };
         tone.start();
         alarm = { tone, gain };
         silence.hidden = false;
@@ -79,6 +86,7 @@
                 end = 0;
                 status.textContent = 'Repos terminé.';
                 soundFinished();
+                timer.dispatchEvent(new CustomEvent('fitensis:rest-finished', { bubbles: true }));
                 save();
             }
         }
