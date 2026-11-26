@@ -25,6 +25,7 @@ final class ImportExerciseCatalogCommand extends Command
 
     protected function configure(): void
     {
+        $this->addOption('fichier', null, InputOption::VALUE_REQUIRED, 'Importe un catalogue JSON local.');
         $this->addOption('depuis-cache', null, InputOption::VALUE_NONE, 'Reprend une seule fois le catalogue précédemment téléchargé.');
     }
 
@@ -39,9 +40,25 @@ final class ImportExerciseCatalogCommand extends Command
         $url = ExerciseCatalog::SOURCES['Gym App original'];
         $db = $this->store->db();
         $fromCache = (bool) $input->getOption('depuis-cache');
+        $file = $input->getOption('fichier');
+        if ($fromCache && $file !== null) {
+            $io->error('Utilise --fichier ou --depuis-cache, un seul à la fois.');
+            return Command::FAILURE;
+        }
 
         try {
-            $items = $this->fetchCatalog($url, $fromCache);
+            if ($file !== null) {
+                if (!is_file($file) || !is_readable($file) || filesize($file) > 10 * 1024 * 1024) {
+                    throw new \UnexpectedValueException('Le fichier JSON doit être lisible et faire au maximum 10 Mio.');
+                }
+                $contents = file_get_contents($file);
+                $items = $contents === false ? null : json_decode($contents, true);
+                if (!is_array($items) || !array_is_list($items)) {
+                    throw new \UnexpectedValueException('Le JSON doit contenir une liste de fiches d’exercices.');
+                }
+            } else {
+                $items = $this->fetchCatalog($url, $fromCache);
+            }
             if (!$items) {
                 throw new \UnexpectedValueException('Le catalogue est vide ou son format est inconnu.');
             }
@@ -51,7 +68,7 @@ final class ImportExerciseCatalogCommand extends Command
                 }
             }
 
-            $items = $this->withFallbackImages($items, $fromCache);
+            $items = $this->withFallbackImages($items, $fromCache || $file !== null);
             $changed = $db->executeStatement(
                 'INSERT INTO exercise_catalog (source, payload) VALUES (?, CAST(? AS jsonb))
                  ON CONFLICT (source) ' . ($fromCache

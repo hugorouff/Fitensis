@@ -6,7 +6,6 @@ use App\Service\{GymStore, Nutrition, ExerciseCatalog, RecipeSearch};
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class ToolsController extends AbstractController
 {
@@ -16,25 +15,15 @@ class ToolsController extends AbstractController
         private ExerciseCatalog $exercises,
         private RecipeSearch $recipes,
     ) {}
-    #[Route("/", name: "home", methods: ["GET"], defaults: ["page" => "index"])]
-    #[Route("/outils", methods: ["GET"], defaults: ["page" => "index"])]
-    #[Route("/exercises", methods: ["GET"], defaults: ["page" => "exercises"])]
-    #[Route("/recipes", methods: ["GET"], defaults: ["page" => "recipes"])]
-    public function page(string $page, CsrfTokenManagerInterface $csrf): Response
+    #[Route("/", name: "home", methods: ["GET"], defaults: ["template" => "accueil/index.html.twig"])]
+    #[Route("/outils", methods: ["GET"], defaults: ["template" => "accueil/index.html.twig"])]
+    #[Route("/exercises", methods: ["GET"], defaults: ["template" => "exercices/index.html.twig"])]
+    #[Route("/recipes", methods: ["GET"], defaults: ["template" => "recettes/index.html.twig"])]
+    public function page(string $template): Response
     {
-        $path = $this->getParameter("kernel.project_dir") . "/data/" . $page . ".html";
-        return new Response(
-            str_replace(
-                ["__CSRF__", "__USER__", "__FLASHES__", "__NAV__"],
-                [
-                    (string) $csrf->getToken("gym"),
-                    (string) $this->store->user()["id"],
-                    $this->renderView("_flashes.html.twig"),
-                    $this->renderView("_navigation.html.twig"),
-                ],
-                file_get_contents($path),
-            ),
-        );
+        return $this->render($template, [
+            "user_id" => (int) $this->store->user()["id"],
+        ]);
     }
 
     #[Route("/api/calculate/1rm", methods: ["POST"])]

@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <script>
+            {
+                const uid = '{{ user_id }}';
+                const get = Storage.prototype.getItem,
+                    set = Storage.prototype.setItem,
+                    remove = Storage.prototype.removeItem;
+                const key = (k) => (String(k).startsWith('gymapp') ? 'user-' + uid + '-' + k : k);
+                Storage.prototype.getItem = function (k) {
+                    return get.call(this, key(k));
+                };
+                Storage.prototype.setItem = function (k, v) {
+                    return set.call(this, key(k), v);
+                };
+                Storage.prototype.removeItem = function (k) {
+                    return remove.call(this, key(k));
+                };
+            }
+        </script>
+        <meta name="csrf-token" content="{{ csrf_token('gym') }}" />
+        <script>
+            const originalFetch = window.fetch;
+            window.fetch = (url, options = {}) => {
+                if (
+                    typeof url === 'string' &&
+                    url.startsWith('/api/') &&
+                    options.method &&
+                    !['GET', 'HEAD'].includes(options.method.toUpperCase())
+                ) {
+                    options.headers = {
+                        ...options.headers,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    };
+                }
+                return originalFetch(url, options);
+            };
+        </script>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fitensis</title>
+
+        <style>
+            :root {
+                --bg: var(--fitensis-bg);
+                --bg-soft: var(--fitensis-bg-soft);
+                --card: var(--fitensis-card);
+                --card-2: var(--fitensis-raised);
+                --line: var(--fitensis-line);
+                --text: var(--fitensis-ink);
+                --muted: var(--fitensis-muted);
+
+                --green: var(--fitensis-mint);
+                --green-2: var(--fitensis-petrol);
+                --green-soft: rgba(130, 196, 168, 0.12);
+                --green-border: rgba(130, 196, 168, 0.28);
+
+                --white: var(--fitensis-white);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html {
+                scroll-behavior: smooth;
+            }
+
+            body {
+                margin: 0;
+                font-family: Arial, Helvetica, sans-serif;
+                background:
+                    radial-gradient(circle at 80% 0%, rgba(130, 196, 168, 0.08), transparent 25%),
+                    var(--bg);
+                color: var(--text);
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .container {
+                width: min(1240px, calc(100% - 40px));
+                margin: auto;
+            }
+
+            /* HEADER */
+            .header {
+                position: sticky;
+                top: 0;
+                z-index: 50;
+                background: rgba(9, 11, 10, 0.86);
+                backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(26, 78, 83, 0.13);
+            }
+
+            .header-inner {
+                min-height: 78px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+            }
+
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 28px;
+                font-weight: 900;
+                letter-spacing: 2px;
+            }
+
+            .logo-dot {
+                width: 11px;
+                height: 11px;
+                border-radius: 50%;
+                background: var(--green);
+                box-shadow: 0 0 18px rgba(130, 196, 168, 0.8);
+            }
+
+            .nav {
+                display: flex;
+                align-items: center;
+                gap: 18px;
+            }
+
+            .nav a {
+                color: var(--fitensis-ink);
+                font-weight: 700;
+                font-size: 14px;
+                transition: 0.2s;
+            }
+
+            .nav a:hover {
+                color: var(--fitensis-petrol);
+            }
+
+            .nav .cta {
+                padding: 12px 18px;
+                border-radius: 999px;
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+                font-weight: 900;
+            }
+
+            .nav .cta:hover {
+                background: var(--fitensis-mint-hover);
+                color: var(--fitensis-on-mint);
+            }
+
+            /* HERO */
+            .hero {
+                position: relative;
+                min-height: 84vh;
+                display: flex;
+                align-items: center;
+                overflow: hidden;
+                background:
+
+                    radial-gradient(circle at top right, rgba(130, 196, 168, 0.1), transparent 30%),
+                    linear-gradient(135deg, var(--fitensis-bg) 0%, var(--fitensis-bg-soft) 50%, #e0f1e9 100%);
+                border-bottom: 1px solid rgba(26, 78, 83, 0.13);
+            }
+
+            .hero-grid {
+                display: grid;
+                grid-template-columns: 1.2fr 0.8fr;
+                gap: 28px;
+                align-items: center;
+                padding: 70px 0;
+            }
+
+            .badge {
+                display: inline-flex;
+                gap: 8px;
+                align-items: center;
+                padding: 10px 16px;
+                border: 1px solid var(--green-border);
+                border-radius: 999px;
+                color: #225e49;
+                font-size: 12px;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                margin-bottom: 24px;
+                background: var(--green-soft);
+            }
+
+            .hero h1 {
+                margin: 0;
+                font-size: clamp(42px, 7vw, 92px);
+                line-height: 0.95;
+                font-weight: 900;
+                letter-spacing: -2px;
+                text-transform: uppercase;
+                max-width: 820px;
+            }
+
+            .hero h1 .green {
+                color: var(--fitensis-petrol);
+                text-shadow: 0 0 28px rgba(130, 196, 168, 0.15);
+            }
+
+            .hero p {
+                max-width: 650px;
+                margin: 24px 0 0;
+                color: var(--muted);
+                font-size: 18px;
+                line-height: 1.7;
+            }
+
+            .hero-actions {
+                display: flex;
+                gap: 14px;
+                flex-wrap: wrap;
+                margin-top: 34px;
+            }
+
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 54px;
+                padding: 0 24px;
+                border-radius: 999px;
+                font-weight: 900;
+                font-size: 14px;
+                letter-spacing: 0.4px;
+                transition: 0.2s ease;
+                border: 1px solid transparent;
+                cursor: pointer;
+            }
+
+            .btn-primary {
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+            }
+
+            .btn-primary:hover {
+                background: var(--fitensis-mint-hover);
+                transform: translateY(-1px);
+                box-shadow: 0 14px 30px rgba(130, 196, 168, 0.16);
+            }
+
+            .btn-secondary {
+                background: transparent;
+                color: var(--fitensis-ink);
+                border-color: rgba(26, 78, 83, 0.13);
+            }
+
+            .btn-secondary:hover {
+                border-color: var(--green-border);
+                color: var(--fitensis-petrol);
+                background: var(--green-soft);
+            }
+
+            .hero-side {
+                display: grid;
+                gap: 16px;
+            }
+
+            .mini-card {
+                background: linear-gradient(
+                    180deg,
+                    rgba(26, 78, 83, 0.13),
+                    rgba(255, 255, 255, 0.02)
+                );
+                border: 1px solid rgba(26, 78, 83, 0.13);
+                border-radius: 24px;
+                padding: 22px;
+                transition: 0.2s;
+            }
+
+            .mini-card:hover {
+                border-color: var(--green-border);
+                transform: translateY(-2px);
+            }
+
+            .mini-card span {
+                display: block;
+                color: var(--fitensis-petrol);
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 900;
+                margin-bottom: 12px;
+            }
+
+            .mini-card h3 {
+                margin: 0 0 8px;
+                font-size: 27px;
+                font-weight: 900;
+                letter-spacing: -0.6px;
+            }
+
+            .mini-card p {
+                margin: 0;
+                font-size: 14px;
+                line-height: 1.6;
+                color: var(--fitensis-muted);
+            }
+
+            /* FEATURES */
+            .features {
+                padding: 26px 0 18px;
+                background: var(--fitensis-bg);
+                border-bottom: 1px solid rgba(26, 78, 83, 0.13);
+            }
+
+            .feature-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 14px;
+            }
+
+            .feature-box {
+                background: var(--fitensis-card);
+                border: 1px solid rgba(26, 78, 83, 0.13);
+                border-radius: 20px;
+                padding: 20px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .feature-box::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 3px;
+                height: 100%;
+                background: var(--green);
+                opacity: 0.75;
+            }
+
+            .feature-box h4 {
+                margin: 0 0 8px;
+                font-size: 16px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+            }
+
+            .feature-box p {
+                margin: 0;
+                color: var(--fitensis-muted);
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            /* TOOLS */
+            .section {
+                padding: 70px 0;
+            }
+
+            .section-title {
+                margin-bottom: 28px;
+            }
+
+            .section-title .small {
+                color: var(--fitensis-petrol);
+                text-transform: uppercase;
+                letter-spacing: 1.2px;
+                font-size: 12px;
+                font-weight: 900;
+                margin-bottom: 10px;
+                display: block;
+            }
+
+            .section-title h2 {
+                margin: 0 0 10px;
+                font-size: 42px;
+                font-weight: 900;
+                letter-spacing: -1px;
+                text-transform: uppercase;
+            }
+
+            .section-title p {
+                margin: 0;
+                color: var(--fitensis-muted);
+                max-width: 780px;
+                line-height: 1.7;
+            }
+
+            .tools-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 22px;
+            }
+
+            .tool-card {
+                background: linear-gradient(180deg, var(--fitensis-card) 0%, var(--fitensis-bg-soft) 100%);
+                border: 1px solid rgba(26, 78, 83, 0.13);
+                border-radius: 28px;
+                padding: 28px;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.24);
+            }
+
+            .tool-card:hover {
+                border-color: rgba(130, 196, 168, 0.18);
+            }
+
+            .tool-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+
+            .tool-head-left {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+
+            .tool-icon {
+                width: 54px;
+                height: 54px;
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                background: var(--green-soft);
+                border: 1px solid var(--green-border);
+            }
+
+            .tool-head h3 {
+                margin: 0;
+                font-size: 28px;
+                font-weight: 900;
+                letter-spacing: -0.5px;
+            }
+
+            .tool-head p {
+                margin: 5px 0 0;
+                color: var(--fitensis-muted);
+                font-size: 13px;
+            }
+
+            .field {
+                margin-bottom: 16px;
+            }
+
+            label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 800;
+                color: var(--fitensis-ink);
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            input,
+            select {
+                width: 100%;
+                height: 56px;
+                border-radius: 16px;
+                border: 1px solid rgba(26, 78, 83, 0.13);
+                background: var(--fitensis-bg);
+                color: var(--fitensis-ink);
+                padding: 0 18px;
+                font-size: 16px;
+                outline: none;
+                transition: 0.2s ease;
+            }
+
+            input::placeholder {
+                color: var(--fitensis-muted);
+            }
+
+            input:focus,
+            select:focus {
+                border-color: var(--green-border);
+                box-shadow: 0 0 0 3px var(--green-soft);
+            }
+
+            .submit-btn {
+                width: 100%;
+                height: 58px;
+                border: 0;
+                border-radius: 999px;
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+                font-weight: 900;
+                font-size: 15px;
+                text-transform: uppercase;
+                letter-spacing: 0.7px;
+                cursor: pointer;
+                margin-top: 8px;
+                transition: 0.2s ease;
+            }
+
+            .submit-btn:hover {
+                background: var(--fitensis-mint-hover);
+                transform: translateY(-1px);
+            }
+
+            .result {
+                display: none;
+                margin-top: 22px;
+                padding: 22px;
+                border-radius: 22px;
+                background: var(--fitensis-bg);
+                border: 1px solid rgba(130, 196, 168, 0.16);
+            }
+
+            .result-label {
+                color: var(--fitensis-muted);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-size: 12px;
+                font-weight: 900;
+            }
+
+            .result-value {
+                font-size: 46px;
+                font-weight: 900;
+                letter-spacing: -1.5px;
+                margin-top: 6px;
+                color: var(--fitensis-petrol);
+            }
+
+            .result-sub {
+                color: var(--fitensis-muted);
+                margin-top: 4px;
+                font-size: 14px;
+            }
+
+            .weight-zones,
+            .calorie-zones {
+                display: grid;
+                gap: 12px;
+                margin-top: 18px;
+            }
+
+            .zone {
+                background: var(--fitensis-card);
+                border: 1px solid rgba(26, 78, 83, 0.13);
+                border-radius: 18px;
+                padding: 16px;
+            }
+
+            .zone strong {
+                display: block;
+                margin-bottom: 6px;
+                font-size: 15px;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+            }
+
+            .muted {
+                color: var(--fitensis-muted);
+                line-height: 1.6;
+                font-size: 14px;
+            }
+
+            .macro-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+                margin-top: 14px;
+            }
+
+            .macro {
+                background: var(--fitensis-card);
+                border: 1px solid rgba(26, 78, 83, 0.13);
+                border-radius: 18px;
+                padding: 18px 14px;
+                text-align: center;
+            }
+
+            .macro span {
+                display: block;
+                color: var(--fitensis-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                font-size: 11px;
+                font-weight: 800;
+                margin-bottom: 8px;
+            }
+
+            .macro strong {
+                font-size: 24px;
+                font-weight: 900;
+            }
+
+            .recipe-links {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin-top: 16px;
+            }
+
+            .recipe-links a {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 44px;
+                border-radius: 999px;
+                border: 1px solid var(--green-border);
+                background: var(--green-soft);
+                color: #225e49;
+                font-size: 12px;
+                font-weight: 900;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+            }
+
+            .recipe-links a:hover {
+                background: var(--green);
+                color: var(--fitensis-on-mint);
+            }
+
+            .promo-grid {
+                margin-top: 26px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 18px;
+            }
+
+            .promo {
+                background: linear-gradient(180deg, var(--fitensis-card), var(--fitensis-bg-soft));
+                border: 1px solid rgba(26, 78, 83, 0.13);
+                border-radius: 28px;
+                padding: 26px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+
+            .promo.green {
+                background:
+                    radial-gradient(
+                        circle at right top,
+                        rgba(130, 196, 168, 0.12),
+                        transparent 40%
+                    ),
+                    linear-gradient(180deg, #eef9f3, #ffffff);
+                border-color: rgba(130, 196, 168, 0.18);
+            }
+
+            .promo h3 {
+                margin: 0 0 8px;
+                font-size: 27px;
+                font-weight: 900;
+                text-transform: uppercase;
+            }
+
+            .promo p {
+                margin: 0;
+                color: var(--fitensis-muted);
+                line-height: 1.7;
+                max-width: 520px;
+            }
+
+            .footer {
+                padding: 24px 0 38px;
+                color: var(--fitensis-muted);
+                font-size: 12px;
+                text-align: center;
+            }
+
+            @media (max-width: 1024px) {
+                .hero-grid,
+                .tools-grid,
+                .feature-grid,
+                .promo-grid {
+                    grid-template-columns: 1fr;
+                }
+                .hero {
+                    min-height: auto;
+                }
+            }
+
+            @media (max-width: 700px) {
+                .container {
+                    width: min(100% - 24px, 1240px);
+                }
+                .nav a:not(.cta) {
+                    display: none;
+                }
+                .hero-grid {
+                    padding: 40px 0 50px;
+                }
+                .hero h1 {
+                    font-size: 44px;
+                }
+                .section-title h2 {
+                    font-size: 30px;
+                }
+                .macro-grid,
+                .recipe-links {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .nutrition-metric {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+                margin: 14px 0;
+            }
+            .nutrition-metric div {
+                padding: 13px;
+                border: 1px solid var(--green-border);
+                border-radius: 14px;
+                background: var(--green-soft);
+            }
+            .nutrition-metric span {
+                font-size: 10px;
+                display: block;
+                color: var(--fitensis-muted);
+                text-transform: uppercase;
+                margin-bottom: 7px;
+            }
+            .nutrition-metric strong {
+                display: block;
+                font-size: 21px;
+                color: var(--fitensis-petrol);
+            }
+            .nutrition-goals {
+                display: grid;
+                gap: 12px;
+                margin-top: 16px;
+            }
+            .nutrition-goal-card {
+                background: var(--fitensis-card);
+                border: 1px solid #304233;
+                border-radius: 16px;
+                padding: 16px;
+            }
+            .nutrition-goal-card h4 {
+                margin: 0 0 7px;
+                font-size: 16px;
+            }
+            .nutrition-goal-card .target {
+                font-size: 27px;
+                font-weight: 900;
+                color: var(--fitensis-petrol);
+                margin: 3px 0 7px;
+            }
+            .nutrition-goal-card .macro-line {
+                color: var(--fitensis-muted);
+                font-size: 13px;
+                line-height: 1.6;
+            }
+            .nutrition-goal-card a {
+                display: inline-flex;
+                color: #0b150b;
+                background: var(--green);
+                border-radius: 999px;
+                padding: 9px 13px;
+                font-weight: 900;
+                font-size: 12px;
+                margin-top: 10px;
+            }
+            @media (max-width: 700px) {
+                .nutrition-metric {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .personal-goal-note {
+                margin: 12px 0 20px;
+                padding: 17px 19px;
+                border-radius: 15px;
+                border: 1px solid rgba(130, 196, 168, 0.24);
+                background: rgba(130, 196, 168, 0.07);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+            .personal-goal-note strong {
+                color: var(--fitensis-petrol);
+                font-size: 18px;
+            }
+            .personal-goal-note p {
+                margin: 5px 0 0;
+                color: var(--fitensis-muted);
+                font-size: 13px;
+                line-height: 1.5;
+            }
+            .personal-goal-note a {
+                background: var(--green);
+                color: #081008;
+                padding: 12px 17px;
+                border-radius: 999px;
+                text-decoration: none;
+                font-weight: 900;
+                font-size: 13px;
+            }
+        </style>
+        <link rel="icon" href="/assets/datensis-light.png" />
+        <link rel="stylesheet" href="/assets/continuity.css?v=light1" />
+        <meta name="theme-color" content="#00778B">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="apple-touch-icon" href="/assets/fitensis-192.png">
+        <script src="/assets/install.js" defer></script>
+        <link rel="stylesheet" href="/assets/workspace.css?v=4" />
+    </head>
+
+    <body class="fitensis-workspace">
+        {% include '_navigation.html.twig' %}
+        <div class="container flash-container">{% include '_flashes.html.twig' %}</div>
+
+        <section class="hero">
+            <div class="container hero-grid">
+                <div>
+                    <div class="badge">● Progression intelligente</div>
+
+                    <h1>
+                        Track your strength.<br />
+                        <span class="green">Build your physique.</span>
+                    </h1>
+
+                    <p>
+                        Calcule tes charges, adapte tes calories et trouve des recettes
+                        correspondant à ton objectif : sèche, maintien ou prise de masse.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a href="#outils" class="btn btn-primary">Commencer maintenant</a>
+                        <a href="/recipes" class="btn btn-secondary">Voir les recettes</a>
+                    </div>
+                </div>
+
+                <div class="hero-side">
+                    <div class="mini-card">
+                        <span>Force</span>
+                        <h3>1RM & charges</h3>
+                        <p>
+                            Estime tes charges utiles pour la force, l’hypertrophie et l’endurance.
+                        </p>
+                    </div>
+
+                    <div class="mini-card">
+                        <span>Nutrition</span>
+                        <h3>Calories & macros</h3>
+                        <p>Définis un point de départ cohérent selon ton objectif physique.</p>
+                    </div>
+
+                    <div class="mini-card">
+                        <span>Food</span>
+                        <h3>Recettes par objectif</h3>
+                        <p>Des repas simples classés par sèche, maintien et prise de masse.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container feature-grid">
+                <div class="feature-box">
+                    <h4>Force</h4>
+                    <p>Calcule ton maximum théorique et tes charges utiles.</p>
+                </div>
+                <div class="feature-box">
+                    <h4>Hypertrophie</h4>
+                    <p>Travaille dans des fourchettes adaptées à ton objectif.</p>
+                </div>
+                <div class="feature-box">
+                    <h4>Nutrition</h4>
+                    <p>Estime tes calories et tes macros quotidiennes.</p>
+                </div>
+                <div class="feature-box">
+                    <h4>Recettes</h4>
+                    <p>Choisis des repas cohérents avec ton objectif.</p>
+                </div>
+            </div>
+        </section>
+
+        <main class="container">
+            <section class="section" id="outils">
+                <div class="section-title">
+                    <span class="small">Outils</span>
+                    <h2>Train smarter</h2>
+                    <p>
+                        Structure ton entraînement et ta nutrition avec des outils simples et un
+                        catalogue musculaire interactif.
+                    </p>
+                </div>
+
+                <div class="tools-grid">
+                    <section class="tool-card">
+                        <div class="tool-head">
+                            <div class="tool-head-left">
+                                <div class="tool-icon">🏋️</div>
+                                <div>
+                                    <h3>Estimation 1RM</h3>
+                                    <p>Calcule ton maximum théorique</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="exercise">Exercice</label>
+                            <input id="exercise" placeholder="Développé couché" />
+                        </div>
+
+                        <div class="field">
+                            <label for="weight">Poids utilisé (kg)</label>
+                            <input id="weight" type="number" min="0" step="0.5" placeholder="120" />
+                        </div>
+
+                        <div class="field">
+                            <label for="reps">Répétitions</label>
+                            <input id="reps" type="number" min="1" max="30" placeholder="7" />
+                        </div>
+
+                        <button class="submit-btn" type="button" onclick="calculate1RM()">
+                            Calculer mon 1RM
+                        </button>
+
+                        <div id="strengthResult" class="result"></div>
+                    </section>
+
+                    <section class="tool-card">
+                        <div class="tool-head">
+                            <div class="tool-head-left">
+                                <div class="tool-icon">🥗</div>
+                                <div>
+                                    <h3>Besoins nutritionnels</h3>
+                                    <p>Calcul basé sur ton profil et ton activité réelle</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="sex">Sexe</label>
+                            <select id="sex">
+                                <option value="male">Homme</option>
+                                <option value="female">Femme</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="age">Âge (adultes)</label>
+                            <input id="age" type="number" min="18" max="100" placeholder="21" />
+                        </div>
+
+                        <div class="field">
+                            <label for="bodyweight">Poids (kg)</label>
+                            <input
+                                id="bodyweight"
+                                type="number"
+                                min="30"
+                                step="0.1"
+                                placeholder="92"
+                            />
+                        </div>
+
+                        <div class="field">
+                            <label for="height">Taille (cm)</label>
+                            <input
+                                id="height"
+                                type="number"
+                                min="120"
+                                max="230"
+                                placeholder="183"
+                            />
+                        </div>
+
+                        <div class="field">
+                            <label for="activity"
+                                >Activité quotidienne (travail, déplacements et sport)</label
+                            >
+                            <select id="activity">
+                                <option value="1.2">Sédentaire</option>
+                                <option value="1.375">Activité légère</option>
+                                <option value="1.55" selected>Modérément actif</option>
+                                <option value="1.725">Très actif</option>
+                                <option value="1.9">Extrêmement actif</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="goalWeight">Poids souhaité en sèche (kg)</label>
+                            <input
+                                id="goalWeight"
+                                type="number"
+                                min="35"
+                                max="250"
+                                step="0.1"
+                                value="85"
+                                placeholder="Ex. 85"
+                            />
+                        </div>
+                        <div class="field">
+                            <label for="goalDate">Date souhaitée</label>
+                            <input id="goalDate" type="date" value="2026-12-31" />
+                        </div>
+                        <div class="field">
+                            <label for="cutProtein"
+                                >Protéines de sèche (g/kg de poids actuel)</label
+                            >
+                            <select id="cutProtein">
+                                <option value="1.6">1,6 g/kg (modéré)</option>
+                                <option value="1.8" selected>1,8 g/kg (équilibré)</option>
+                                <option value="2.0">2,0 g/kg (élevé)</option>
+                            </select>
+                        </div>
+                        <p
+                            style="
+                                color: var(--muted);
+                                font-size: 12px;
+                                line-height: 1.5;
+                                margin-top: -4px;
+                            "
+                        >
+                            L’activité totale inclut les déplacements et le travail, pas uniquement
+                            les séances de musculation. Le poids/date sont préremplis pour ton
+                            projet de sèche et restent modifiables.
+                        </p>
+                        <div class="personal-goal-note" id="personalGoalNote">
+                            <div>
+                                <strong id="personalGoalText"
+                                    >🎯 Ton objectif personnel : 2 300 kcal/jour</strong
+                                >
+                                <p>
+                                    La sèche personnalisée est différente du calcul automatique
+                                    fondé sur l'activité.
+                                </p>
+                            </div>
+                            <a id="personalGoalLink" href="/recipes?goal=cut&mode=custom"
+                                >Préparer mon menu</a
+                            >
+                        </div>
+                        <button class="submit-btn" type="button" onclick="calculateCalories()">
+                            Calculer mes calories
+                        </button>
+
+                        <div id="calorieResult" class="result"></div>
+                    </section>
+                </div>
+
+                <div class="promo-grid">
+                    <div class="promo">
+                        <div>
+                            <h3>Exercices</h3>
+                            <p>
+                                Explore les groupes musculaires et retrouve les exercices associés.
+                            </p>
+                        </div>
+                        <a href="/exercises" class="btn btn-secondary">Explorer</a>
+                    </div>
+
+                    <div class="promo green">
+                        <div>
+                            <h3>Recettes fitness</h3>
+                            <p>
+                                Filtre les repas selon une sèche, un maintien ou une prise de masse.
+                            </p>
+                        </div>
+                        <a href="/recipes" class="btn btn-primary">Voir les recettes</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <div class="footer">
+            Les calories et macros sont des estimations à ajuster selon ton évolution réelle.
+        </div>
+
+        <script>
+            const params = new URLSearchParams(window.location.search);
+
+            if (params.get('exercise')) {
+                document.getElementById('exercise').value = params.get('exercise');
+            }
+
+            async function calculate1RM() {
+                const weight = Number(document.getElementById('weight').value);
+                const reps = Number(document.getElementById('reps').value);
+                const exercise = document.getElementById('exercise').value || 'Exercice';
+
+                if (!weight || !reps) {
+                    alert('Entre un poids et un nombre de répétitions.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/calculate/1rm', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ weight, reps }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.detail || 'Erreur lors du calcul.');
+                    }
+
+                    const result = document.getElementById('strengthResult');
+                    result.style.display = 'block';
+
+                    result.innerHTML = `
+          <div class="result-label">${exercise}</div>
+          <div class="result-value">${data.estimated_1rm} kg</div>
+          <div class="result-sub">1RM estimé • Formule d’Epley</div>
+
+          <div class="weight-zones">
+            <div class="zone">
+              <strong>Force</strong>
+              <div class="muted">85–90 % : ${data.working_weights.strength.min} à ${data.working_weights.strength.max} kg</div>
+            </div>
+            <div class="zone">
+              <strong>Hypertrophie</strong>
+              <div class="muted">65–80 % : ${data.working_weights.hypertrophy.min} à ${data.working_weights.hypertrophy.max} kg</div>
+            </div>
+            <div class="zone">
+              <strong>Endurance musculaire</strong>
+              <div class="muted">50–65 % : ${data.working_weights.endurance.min} à ${data.working_weights.endurance.max} kg</div>
+            </div>
+          </div>
+        `;
+                } catch (error) {
+                    alert(error.message);
+                }
+            }
+
+            async function calculateCalories() {
+                const sex = document.getElementById('sex').value;
+                const age = Number(document.getElementById('age').value);
+                const weight = Number(document.getElementById('bodyweight').value);
+                const height = Number(document.getElementById('height').value);
+                const activity = Number(document.getElementById('activity').value);
+                const targetWeightValue = document.getElementById('goalWeight').value.trim();
+                const targetDateValue = document.getElementById('goalDate').value;
+                const cutProtein = Number(document.getElementById('cutProtein').value);
+                if (Boolean(targetWeightValue) !== Boolean(targetDateValue)) {
+                    alert(
+                        'Renseigne à la fois le poids cible et la date, ou laisse les deux champs vides.',
+                    );
+                    return;
+                }
+                const result = document.getElementById('calorieResult');
+                const button = document.querySelector('button[onclick="calculateCalories()"]');
+                if (!Number.isInteger(age) || age < 18 || weight < 35 || height < 120) {
+                    alert('Renseigne un âge adulte, ton poids et ta taille.');
+                    return;
+                }
+                button.disabled = true;
+                button.textContent = 'Calcul en cours…';
+                try {
+                    const response = await fetch('/api/nutrition/calculate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sex,
+                            age,
+                            weight_kg: weight,
+                            height_cm: height,
+                            activity_factor: activity,
+                            target_weight_kg: targetWeightValue ? Number(targetWeightValue) : null,
+                            target_date: targetDateValue || null,
+                            cut_protein_g_per_kg: cutProtein,
+                        }),
+                    });
+                    const data = await response.json();
+                    if (!response.ok)
+                        throw new Error(
+                            typeof data.detail === 'string' ? data.detail : 'Profil invalide.',
+                        );
+                    const { cut, maintain, bulk } = data.plans;
+                    // Compatibilité avec la page Recettes déjà présente dans Fitensis.
+                    localStorage.setItem(
+                        'gymapp-calorie-targets',
+                        JSON.stringify({
+                            version: 5,
+                            targetWeight: targetWeightValue ? Number(targetWeightValue) : null,
+                            targetDate: targetDateValue || null,
+                            cutProtein,
+                            trajectory: data.trajectory,
+                            cut: cut.calories,
+                            maintenance: maintain.calories,
+                            bulk: bulk.calories,
+                            protein: cut.protein,
+                            fats: cut.fat,
+                            carbs: cut.carbs,
+                            weight,
+                            height,
+                            age,
+                            sex,
+                            activity,
+                            profile: data.profile,
+                            plans: data.plans,
+                            bmr: data.bmr,
+                            tdee: data.maintenance,
+                            savedAt: Date.now(),
+                        }),
+                    );
+                    const trajectoryHtml = data.trajectory
+                        ? `
+          <div style="border:1px solid rgba(130,196,168,.25);background:rgba(130,196,168,.07);padding:14px;border-radius:13px;margin-top:15px;line-height:1.6;font-size:13px">
+            <strong>Objectif : ${data.trajectory.target_weight_kg} kg pour le ${data.trajectory.target_date.split('-').reverse().join('/')}</strong>
+            <div>${data.trajectory.weight_to_lose_kg} kg à perdre en ${data.trajectory.weeks_remaining} semaines, soit ≈ ${data.trajectory.average_kg_per_week} kg/semaine.</div>
+            <div>Déficit de planification ≈ ${data.trajectory.applied_daily_deficit} kcal/j. ${data.trajectory.note}</div>
+          </div>`
+                        : '';
+                    const planCard = (p, note) => `
+          <article class="nutrition-goal-card">
+            <h4>${p.label}</h4>
+            <div class="target">${p.calories} kcal/j <small style="font-size:11px;color:var(--muted)">(estimation)</small></div>
+            <div class="macro-line">${p.protein} g protéines · ${p.carbs} g glucides · ${p.fat} g lipides</div>
+            <div class="muted">${note}</div>
+            <a href="/recipes?goal=${p.goal}&mode=auto&kcal=${p.calories}">Utiliser cette estimation →</a>
+          </article>`;
+                    result.style.display = 'block';
+                    result.innerHTML = `
+          <div class="result-label">Tes besoins estimés</div>
+          <div class="nutrition-metric">
+            <div><span>Métabolisme de repos</span><strong>${data.bmr}</strong><small>kcal / jour</small></div>
+            <div><span>Maintien estimé</span><strong>${data.maintenance}</strong><small>kcal / jour</small></div>
+            <div><span>Équation</span><strong style="font-size:14px;line-height:1.8">Mifflin-St Jeor</strong><small>+ activité</small></div>
+          </div>
+          <div class="nutrition-goals">
+            ${planCard(cut, data.trajectory ? 'Déficit indicatif fondé sur le poids/date cible.' : 'Déficit initial indicatif de 15 % du maintien.')}
+            ${planCard(maintain, 'Estimation de ton équilibre énergétique.')}
+            ${planCard(bulk, 'Surplus initial d’environ 8 % par rapport au maintien.')}
+          </div>
+          ${trajectoryHtml}
+          <p style="margin-top:14px;color:var(--muted);font-size:12px;line-height:1.6">
+            Ce sont des points de départ : la date ne peut pas être garantie et le maintien est à vérifier.
+            Suis la moyenne de tes pesées sur 2 à 3 semaines et ajuste si nécessaire.
+            Tu peux conserver une autre cible calorique dans le planificateur des recettes.
+          </p>`;
+                } catch (error) {
+                    result.style.display = 'block';
+                    result.textContent = 'Calcul impossible : ' + error.message;
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Calculer mes calories';
+                }
+            }
+
+            // L'objectif manuel est stocké séparément, et n'est pas remplacé par l'API.
+            function showPersonalGoalOnDashboard() {
+                let current = 2300;
+                try {
+                    const pref = JSON.parse(
+                        localStorage.getItem('gymapp-objectifs-personnalises-v6') || 'null',
+                    );
+                    const saved = Number(pref?.goals?.cut?.calories);
+                    if (saved >= 1200 && saved <= 6000) current = Math.round(saved);
+                } catch (e) {}
+                document.getElementById('personalGoalText').textContent =
+                    `🎯 Ta cible personnelle de sèche : ${current.toLocaleString('fr-FR')} kcal/jour`;
+                document.getElementById('personalGoalLink').href =
+                    `/recipes?goal=cut&mode=custom&kcal=${current}`;
+            }
+            showPersonalGoalOnDashboard();
+
+            // Restaure le profil sur le même navigateur sans modifier automatiquement les objectifs.
+            try {
+                const saved = JSON.parse(localStorage.getItem('gymapp-calorie-targets') || 'null');
+                if (saved) {
+                    for (const [id, value] of Object.entries({
+                        sex: saved.sex,
+                        age: saved.age,
+                        bodyweight: saved.weight,
+                        height: saved.height,
+                        activity: saved.activity,
+                        goalWeight: saved.targetWeight,
+                        goalDate: saved.targetDate,
+                        cutProtein: saved.cutProtein,
+                    })) {
+                        const node = document.getElementById(id);
+                        if (node && value !== undefined && value !== null)
+                            node.value = String(value);
+                    }
+                }
+            } catch (error) {
+                console.warn('Profil non restauré', error);
+            }
+        </script>
+    </body>
+</html>

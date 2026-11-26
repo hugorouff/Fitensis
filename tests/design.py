@@ -6,8 +6,9 @@ import hashlib, json, pathlib, re
 
 root = pathlib.Path(__file__).resolve().parents[1]
 reference = json.loads((root / "tests/original_ui.json").read_text())
+folders = {"index": "accueil", "exercises": "exercices", "recipes": "recettes"}
 for name, expected in reference.items():
-    text = (root / "data" / f"{name}.html").read_text()
+    text = (root / "templates" / folders[name] / "index.html.twig").read_text()
     styles = [css_fingerprint(css) for css in re.findall(r"<style[^>]*>(.*?)</style>", text, re.S)]
     assert styles == expected["normalized_styles"], f"{name}: styles différents de la référence Fitensis"
     assert set(expected["ids"]) <= set(

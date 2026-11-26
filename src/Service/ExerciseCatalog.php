@@ -171,10 +171,21 @@ class ExerciseCatalog
             "stale" => false,
             "errors" => [],
         ];
-        return array_map(
-            fn (array $item) => $this->normalize($item, "Gym App original", self::SOURCES["Gym App original"]),
-            $items,
-        );
+        $media = array_fill_keys($this->store->db()->fetchFirstColumn("SELECT id FROM exercise_media"), true);
+        foreach ($items as &$item) {
+            $item = $this->normalize($item, "Gym App original", self::SOURCES["Gym App original"]);
+            foreach (["thumbnails", "videos"] as $type) {
+                foreach ($item[$type] as &$url) {
+                    $id = hash("sha256", $url);
+                    if (isset($media[$id])) {
+                        $url = "/api/exercices/media/" . $id;
+                    }
+                }
+                unset($url);
+            }
+        }
+        unset($item);
+        return $items;
     }
 
     public function all(): array

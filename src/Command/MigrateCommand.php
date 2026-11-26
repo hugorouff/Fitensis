@@ -56,6 +56,18 @@ final class MigrateCommand extends Command
                 ),
                 $io,
             );
+            $this->apply(
+                $db,
+                'Version20261126000200',
+                fn () => $db->executeStatement(
+                    "CREATE TABLE IF NOT EXISTS exercise_media (
+                        id CHAR(64) PRIMARY KEY,
+                        mime VARCHAR(20) NOT NULL,
+                        content BYTEA NOT NULL
+                    )",
+                ),
+                $io,
+            );
             $file = $input->getOption('source');
             if ($file !== null) {
                 $this->apply($db, self::IMPORT, fn () => $this->import($db, $file), $io);

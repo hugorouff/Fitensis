@@ -202,7 +202,7 @@ L’ouverture d’une fiche charge sa traduction française à la demande via My
 
 ## Recettes et nutrition
 
-Les 12 cartes génériques de l’ancienne page sont désactivées. Leur tableau d’origine est conservé dans un commentaire de `data/recipes.html` (`archivedGenericRecipes`), avec un tableau actif vide. Les calculateurs et le générateur nutritionnel indépendant sont conservés.
+Les 12 cartes génériques de l’ancienne page sont désactivées. Leur tableau d’origine est conservé dans un commentaire de `templates/recettes/index.html.twig` (`archivedGenericRecipes`), avec un tableau actif vide. Les calculateurs et le générateur nutritionnel indépendant sont conservés.
 
 La page Recettes réunit désormais deux catalogues réels : **TheMealDB** (26 lettres de l’alphabet) et **Wikibooks Cookbook** (catégorie Recipes, toutes les pages de continuation). Le cache public dure 24 heures. Ce périmètre couvre les sources prises en charge, pas toutes les recettes d’Internet. Les titres sont dédupliqués par identifiant de source ; deux variantes provenant de sources différentes peuvent rester visibles. Le compteur indique les fiches réellement récupérées. Une panne ou une indexation incomplète est signalée ; « Continuer le chargement des sources » permet de poursuivre si nécessaire.
 
@@ -263,7 +263,7 @@ Le Compose utilise une base externe fournie par `DATABASE_URL`. Pour une install
 ```bash
 docker compose --env-file .env.server config --quiet
 docker compose --env-file .env.server build gym
-docker compose --env-file .env.server run --rm gym php bin/console app:migrations:migrate
+docker compose --env-file .env.server run --rm gym php bin/console app:setup --email=admin@example.fr
 docker compose --env-file .env.server up -d gym
 ```
 
@@ -294,5 +294,3 @@ Toutes les pages utilisent désormais la même barre de navigation (logo GYM APP
 ## Présentation du code
 
 Les fichiers du projet sont réindentés : PHP, Twig, HTML, JavaScript, CSS, JSON et tests Python utilisent quatre espaces ; YAML utilise deux espaces. Le fichier `.editorconfig` conserve ces conventions lors des prochaines modifications. Les dépendances tierces du dossier `vendor` restent dans leur présentation officielle. Le test de design compare les règles CSS en ignorant les changements de mise en forme.
-
-Pour reprendre une base existante, monte le fichier privé fitensis-donnees.json en lecture seule et passe --source=/import/fitensis-donnees.json. La migration initialise le schéma puis importe les données dans PostgreSQL. Elle ne crée aucun nouvel administrateur. Pour une installation sans données existantes, app:setup permet de créer l’administrateur.
