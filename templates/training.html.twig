@@ -19,6 +19,7 @@
         >
             ← Mon planning
         </a>
+        <a class="button" href="#minuteur">Minuteur de repos</a>
     </div>
     <div class="panel">
         <div class="section-head">
@@ -81,7 +82,7 @@
             </form>
         </div>
     </div>
-    <section class="panel" data-session-timer="{{ session.id }}">
+    <section class="panel" id="minuteur" data-session-timer="{{ session.id }}">
         <h2>Minuteur de repos</h2>
         <div class="actions">
             <label>Repos en secondes <input data-timer-duration type="number" min="5" max="900" value="90" required /></label>

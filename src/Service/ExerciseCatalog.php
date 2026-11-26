@@ -199,6 +199,24 @@ class ExerciseCatalog
                 "errors" => $errors,
             ];
         }
+        if ($data && ($this->metadata["source"] ?? null) === "Gym App original") {
+            $url = self::SOURCES["Free Exercise DB"];
+            $fallback = $this->cache->json($url, [], 86400);
+            $images = [];
+            $payload = $fallback["data"];
+            $rows = is_array($payload) ? ($payload["data"] ?? $payload["exercises"] ?? $payload) : [];
+            foreach (is_array($rows) ? $rows : [] as $row) {
+                if (!is_array($row) || !is_string($row["name"] ?? null) || !is_string($row["images"][0] ?? null) || $row["images"][0] === "") {
+                    continue;
+                }
+                $images[RemoteCache::normalize($row["name"])] = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/" .
+                    implode("/", array_map("rawurlencode", explode("/", $row["images"][0])));
+            }
+            foreach ($data as &$exercise) {
+                $exercise["fallbackImageUrl"] = $images[RemoteCache::normalize($exercise["name"])] ?? "";
+            }
+            unset($exercise);
+        }
         $uid = $this->store->user()["id"] ?? null;
         if ($uid) {
             foreach (

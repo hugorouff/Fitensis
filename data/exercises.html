@@ -573,6 +573,7 @@
         <link rel="apple-touch-icon" href="/assets/fitensis-192.png">
         <script src="/assets/install.js" defer></script>
         <link rel="stylesheet" href="/assets/workspace.css?v=2" />
+        <link rel="stylesheet" href="/assets/visual-session.css?v=1" />
     </head>
 
     <body class="exercise-page fitensis-workspace">
@@ -580,6 +581,24 @@
         <div class="container flash-container">__FLASHES__</div>
 
         <main class="container">
+            <section class="card" id="visual-session" hidden>
+                <h2>Créer ma séance</h2>
+                <p>Sélectionne un muscle sur la carte, puis ajoute les exercices que tu veux réaliser.</p>
+                <form method="post" action="/entrainements/enregistrer" id="visual-session-form">
+                    <input type="hidden" name="_token" value="__CSRF__">
+                    <input type="hidden" name="preset" value="custom">
+                    <div class="visual-session-fields">
+                        <label>Nom <input name="title" maxlength="250" placeholder="Ex. Entraînement jambes"></label>
+                        <label>Date <input name="date" type="date" required></label>
+                        <label>Heure <input name="time" type="time" value="18:00" required></label>
+                        <label>Durée prévue (min) <input name="duration" type="number" min="10" max="300" value="45" required></label>
+                    </div>
+                    <fieldset id="visual-session-muscles"><legend>Muscles à travailler</legend></fieldset>
+                    <p id="visual-session-status" role="status"></p>
+                    <div id="visual-session-items"></div>
+                    <button type="submit" class="btn btn-primary">Enregistrer la séance</button>
+                </form>
+            </section>
             <div class="exercise-toolbar">
                 <button id="createButton" type="button">＋ Créer un exercice</button>
             </div>
@@ -1219,6 +1238,7 @@
 
             function setMuscle(value) {
                 currentMuscle = value;
+                if (visualMode && value) selectSessionMuscle(value);
 
                 document.getElementById("selectedMuscle").textContent = value
                     ? muscles[value]
@@ -1254,6 +1274,111 @@
                     loadExercises();
                 });
             });
+
+            const visualForm = document.getElementById("visual-session-form");
+            const visualItems = document.getElementById("visual-session-items");
+            const visualStatus = document.getElementById("visual-session-status");
+            const visualMode = new URLSearchParams(location.search).get("seance") === "1";
+            let visualIndex = 0;
+            if (visualMode) {
+                const link = document.createElement("a");
+                link.className = "btn btn-secondary visual-session-shortcut";
+                link.href = "#visual-session";
+                link.textContent = "Voir ma séance";
+                document.querySelector("main").append(link);
+            }
+            if (visualMode) {
+                document.getElementById("visual-session").hidden = false;
+                const today = new Date();
+                today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+                visualForm.elements.date.value = today.toISOString().slice(0, 10);
+                for (const [key, name] of Object.entries(muscles)) {
+                    const label = document.createElement("label");
+                    const input = document.createElement("input");
+                    input.type = "checkbox";
+                    input.name = "muscles[]";
+                    input.value = key;
+                    label.append(input, document.createTextNode(name));
+                    document.getElementById("visual-session-muscles").append(label);
+                }
+                visualForm.addEventListener("submit", event => {
+                    if (!visualItems.children.length || !visualForm.querySelector('[name="muscles[]"]:checked')) {
+                        event.preventDefault();
+                        visualStatus.textContent = "Choisis au moins un muscle et ajoute un exercice.";
+                    }
+                });
+            }
+
+            function selectSessionMuscle(key) {
+                for (const input of visualForm.querySelectorAll('[name="muscles[]"]')) {
+                    if (input.value === key) input.checked = true;
+                }
+            }
+
+            function addToVisualSession(exercise) {
+                if (visualItems.children.length >= 20) {
+                    visualStatus.textContent = "La séance contient déjà 20 exercices.";
+                    return;
+                }
+                const row = document.createElement("div");
+                row.className = "visual-session-fields visual-session-item";
+                const name = exercise.name_fr || frenchExerciseName(exercise.name);
+                const heading = document.createElement("strong");
+                heading.textContent = name;
+                const field = document.createElement("input");
+                field.type = "hidden";
+                field.name = `items[${visualIndex}][name]`;
+                field.value = name;
+                row.append(heading, field);
+                for (const [key, labelText, value, min, max] of [
+                    ["sets", "Séries", 3, 1, 50],
+                    ["reps", "Répétitions", 10, 1, 200],
+                    ["weight", "Charge (kg)", 0, 0, 1000],
+                ]) {
+                    const label = document.createElement("label");
+                    label.textContent = labelText;
+                    const input = document.createElement("input");
+                    Object.assign(input, {
+                        name: `items[${visualIndex}][${key}]`, type: "number",
+                        value, min, max, step: key === "weight" ? "any" : "1", required: true,
+                    });
+                    label.append(input);
+                    row.append(label);
+                }
+                const remove = document.createElement("button");
+                remove.type = "button";
+                remove.className = "btn btn-secondary";
+                remove.textContent = "Retirer";
+                remove.addEventListener("click", () => {
+                    row.remove();
+                    visualStatus.textContent = `${name} retiré.`;
+                });
+                row.append(remove);
+                visualItems.append(row);
+                visualIndex++;
+                selectSessionMuscle(currentMuscle || exercise.primaryGroup);
+                visualStatus.textContent = `${name} ajouté à la séance.`;
+            }
+
+            function loadExerciseImage(element, exercise, fallback) {
+                const thumbnails = exercise.thumbnails || {};
+                const images = [...new Set([
+                    imageFor(exercise), thumbnails.male, thumbnails.female, exercise.fallbackImageUrl,
+                ].filter(Boolean))];
+                function next() {
+                    if (!images.length) {
+                        element.removeAttribute("src");
+                        element.style.display = "none";
+                        fallback.style.display = "flex";
+                        return;
+                    }
+                    element.src = images.shift();
+                }
+                element.onerror = next;
+                fallback.style.display = "none";
+                element.style.display = "";
+                next();
+            }
 
             function imageFor(exercise) {
                 const thumbs = exercise.thumbnails || {};
@@ -1336,20 +1461,14 @@
                     const card = document.createElement("article");
                     card.className = "exercise";
 
-                    const image = imageFor(exercise);
                     const video = videoFor(exercise);
                     const primary =
                         muscles[exercise.primaryGroup] || exercise.target || "Non classé";
 
                     card.innerHTML = `
                 <div class="thumb">
-                    ${
-                        image
-                            ? `<img src="${esc(image)}" alt="${esc(exercise.name)}" loading="lazy"
-                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                           <div class="thumb-fallback" style="display:none;">Image indisponible</div>`
-                            : `<div class="thumb-fallback">Image indisponible</div>`
-                    }
+                    <img alt="${esc(exercise.name)}" loading="lazy">
+                    <div class="thumb-fallback">Image indisponible</div>
                     ${video ? `<div class="play">▶</div>` : ""}
                 </div>
 
@@ -1369,6 +1488,18 @@
                 </div>
             `;
 
+                    loadExerciseImage(card.querySelector("img"), exercise, card.querySelector(".thumb-fallback"));
+                    if (visualMode) {
+                        const add = document.createElement("button");
+                        add.type = "button";
+                        add.className = "btn btn-secondary visual-session-add";
+                        add.textContent = "+ Ajouter à ma séance";
+                        add.addEventListener("click", event => {
+                            event.stopPropagation();
+                            addToVisualSession(exercise);
+                        });
+                        card.querySelector(".content").append(add);
+                    }
                     card.addEventListener("click", () => openDetails(exercise));
                     grid.appendChild(card);
                 }
@@ -1393,29 +1524,22 @@
                 document.getElementById("detailName").textContent =
                     exercise.name_fr || frenchExerciseName(exercise.name);
 
-                const image = imageFor(exercise);
-                const imageEl = document.getElementById("detailImage");
-                const imageEmpty = document.getElementById("detailImageEmpty");
-
-                imageEmpty.style.display = "none";
-
-                if (image) {
-                    imageEl.style.display = "block";
-                    imageEl.src = image;
-                    imageEl.onerror = () => {
-                        imageEl.style.display = "none";
-                        imageEmpty.style.display = "flex";
-                    };
-                } else {
-                    imageEl.style.display = "none";
-                    imageEmpty.style.display = "flex";
-                }
+                loadExerciseImage(
+                    document.getElementById("detailImage"), exercise,
+                    document.getElementById("detailImageEmpty"),
+                );
 
                 const videoUrl = videoFor(exercise);
                 const video = document.getElementById("detailVideo");
                 const videoEmpty = document.getElementById("detailVideoEmpty");
 
                 video.pause();
+                video.onerror = () => {
+                    video.style.display = "none";
+                    videoEmpty.textContent = "Vidéo indisponible chez la source.";
+                    videoEmpty.style.display = "flex";
+                };
+                videoEmpty.textContent = "Aucune vidéo fournie pour cet exercice.";
 
                 if (videoUrl) {
                     video.src = videoUrl;
@@ -1481,6 +1605,17 @@
                     a.rel = "noopener noreferrer";
                     a.style.color = "#bfffaf";
                     links.appendChild(a);
+                }
+                if (visualMode) {
+                    const add = document.createElement("button");
+                    add.type = "button";
+                    add.className = "btn btn-primary";
+                    add.textContent = "Ajouter à ma séance";
+                    add.addEventListener("click", () => {
+                        addToVisualSession(exercise);
+                        closeModal("detailModal");
+                    });
+                    links.prepend(add);
                 }
                 detailBox.appendChild(links);
                 if (exercise.description_original) {
