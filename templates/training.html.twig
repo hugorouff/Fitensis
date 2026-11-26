@@ -98,7 +98,7 @@
     <script defer src="/assets/session-timer.js?v=4"></script>
     <section class="panel" data-guided-session="{{ session.id }}">
         <div class="section-head">
-            <h2>Mes exercices prévus</h2><a href="/exercises">Explorer les exercices ↗</a>
+            <h2>Exercices restant à faire</h2><a href="/exercises">Explorer les exercices ↗</a>
         </div>
         <p class="muted">
             Les valeurs prévues servent de repère. Enregistre les séries réellement effectuées pour
@@ -142,6 +142,7 @@
                     class="form-grid compact-grid" data-guided-performance hidden
                 >
                     <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                    <input type="hidden" name="item_id" value="{{ item.id }}" />
                     <input type="hidden" name="exercise" value="{{ item.exercise }}" /><label>
                         Séries réalisées<input
                             name="sets"
@@ -197,7 +198,7 @@
             </article>
         {% else %}
             <p class="empty">
-                Ajoute ton premier exercice ci-dessous.
+                {{ logs is empty ? "Ajoute ton premier exercice ci-dessous." : "Tous les exercices prévus sont terminés. Tu peux ajouter un exercice ou terminer ta séance." }}
             </p>
         {% endfor %}
         <details {{ items is empty or exercise ? 'open' : '' }}>

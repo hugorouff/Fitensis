@@ -389,7 +389,20 @@ class TrainingController extends AbstractController
                 }
                 $db->update("workouts", $data, ["id" => $logId]);
             } else {
-                $db->insert("workouts", $data);
+                $itemId = $r->request->getInt("item_id");
+                $db->transactional(function ($db) use ($id, $itemId, $data) {
+                    if ($itemId) {
+                        $removed = $db->delete("training_items", [
+                            "id" => $itemId,
+                            "session_id" => $id,
+                            "exercise" => $data["exercise"],
+                        ]);
+                        if ($removed !== 1) {
+                            throw new \InvalidArgumentException("Cet exercice a déjà été terminé ou retiré.");
+                        }
+                    }
+                    $db->insert("workouts", $data);
+                });
             }
         }, "/entrainements/" . $id);
     }
