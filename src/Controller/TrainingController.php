@@ -303,8 +303,8 @@ class TrainingController extends AbstractController
         $db = $this->store->db();
         $uid = $this->store->user()["id"];
         $items = $db->fetchAllAssociative(
-            "SELECT * FROM training_items WHERE session_id=? ORDER BY id",
-            [$id],
+            "SELECT i.* FROM training_items i WHERE i.session_id=? AND NOT EXISTS (SELECT 1 FROM workouts w WHERE w.session_id=i.session_id AND w.user_id=? AND LOWER(TRIM(w.exercise))=LOWER(TRIM(i.exercise))) ORDER BY i.id",
+            [$id, $uid],
         );
         foreach ($items as &$i) {
             $i["previous"] =
@@ -338,9 +338,14 @@ class TrainingController extends AbstractController
     {
         $this->own($id);
         return $this->finish(function () use ($id, $r) {
-            $this->store->db()->insert("training_items", [
+            $db = $this->store->db();
+            $exercise = $this->text($r->request->getString("exercise"));
+            if ($db->fetchOne("SELECT COUNT(*) FROM workouts WHERE session_id=? AND user_id=? AND LOWER(TRIM(exercise))=LOWER(TRIM(?))", [$id, $this->store->user()["id"], $exercise])) {
+                throw new \InvalidArgumentException("Cet exercice est déjà terminé dans cette séance.");
+            }
+            $db->insert("training_items", [
                 "session_id" => $id,
-                "exercise" => $this->text($r->request->getString("exercise")),
+                "exercise" => $exercise,
                 "sets" => $this->n($r->request->get("sets"), 1, 50, true),
                 "reps" => $this->n($r->request->get("reps"), 1, 200, true),
                 "weight" => $this->n($r->request->get("weight"), 0, 1000),
@@ -391,17 +396,16 @@ class TrainingController extends AbstractController
             } else {
                 $itemId = $r->request->getInt("item_id");
                 $db->transactional(function ($db) use ($id, $itemId, $data) {
-                    if ($itemId) {
-                        $removed = $db->delete("training_items", [
-                            "id" => $itemId,
-                            "session_id" => $id,
-                            "exercise" => $data["exercise"],
-                        ]);
-                        if ($removed !== 1) {
-                            throw new \InvalidArgumentException("Cet exercice a déjà été terminé ou retiré.");
-                        }
+                    // Serialize completion of the same session on PostgreSQL.
+                    $db->executeStatement("UPDATE training_sessions SET id=id WHERE id=?", [$id]);
+                    if ($db->fetchOne("SELECT COUNT(*) FROM workouts WHERE session_id=? AND user_id=? AND LOWER(TRIM(exercise))=LOWER(TRIM(?))", [$id, $data["user_id"], $data["exercise"]])) {
+                        throw new \InvalidArgumentException("Cet exercice est déjà terminé dans cette séance.");
+                    }
+                    if ($itemId && !$db->fetchOne("SELECT id FROM training_items WHERE id=? AND session_id=? AND LOWER(TRIM(exercise))=LOWER(TRIM(?))", [$itemId, $id, $data["exercise"]])) {
+                        throw new \InvalidArgumentException("Cet exercice a été retiré de la séance.");
                     }
                     $db->insert("workouts", $data);
+                    $db->executeStatement("DELETE FROM training_items WHERE session_id=? AND LOWER(TRIM(exercise))=LOWER(TRIM(?))", [$id, $data["exercise"]]);
                 });
             }
         }, "/entrainements/" . $id);

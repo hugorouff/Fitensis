@@ -105,13 +105,8 @@
             alimenter ton suivi.
         </p>
         {% for item in items %}
-            {% set recorded = logs|filter(log => log.exercise|lower == item.exercise|lower) %}
-            <article class="training-exercise" data-guided-item="{{ item.id }}" data-sets="{{ item.sets }}" data-done="{{ recorded is not empty ? '1' : '0' }}">
-                {% if recorded is not empty %}
-                    <p class="pill confirmed">Performance enregistrée</p>
-                    {% for log in recorded %}<p>{{ log.sets }} × {{ log.reps }} à {{ log.weight }} kg</p>{% endfor %}
-                {% endif %}
-                <button type="button" data-select-exercise>{{ recorded is not empty ? 'Refaire cet exercice' : 'Choisir cet exercice' }}</button>
+            <article class="training-exercise" data-guided-item="{{ item.id }}" data-sets="{{ item.sets }}" data-done="0">
+                <button type="button" data-select-exercise>Choisir cet exercice</button>
                 <div data-guided-controls hidden>
                     <p role="status" data-guided-status></p>
                     <button type="button" data-guided-start>Démarrer la série</button>
@@ -258,9 +253,9 @@
     <section class="panel">
         <h2>Ce que j’ai réalisé</h2>
         {% for log in logs %}
-            <details class="performance-entry" open>
+            <details class="performance-entry">
                 <summary>
-                    {{ log.exercise }} · {{ log.sets }} × {{ log.reps }} à {{ log.weight }} kg · {{ log.sets
+                    Terminé — {{ log.exercise }} · {{ log.sets }} × {{ log.reps }} à {{ log.weight }} kg · {{ log.sets
                         * log.reps
                         * log.weight }} kg de volume
                 </summary>
@@ -271,7 +266,7 @@
                 >
                     <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
                     <input type="hidden" name="log_id" value="{{ log.id }}" /><label>
-                        Exercice<input name="exercise" value="{{ log.exercise }}" required />
+                        Exercice<input name="exercise" value="{{ log.exercise }}" readonly required />
                     </label><label>
                         Séries<input
                             name="sets"
