@@ -137,11 +137,62 @@ class ExerciseCatalog
             "thumbnails" => $thumbs,
             "gifUrl" => $image,
             "imageUrl" => $image,
+            "fallbackImageUrl" => RemoteCache::safeUrl($e["fallbackImageUrl"] ?? ""),
             "aliases" => $this->lines($e["aliases"] ?? []),
         ];
     }
 
+    private function storedExercises(): array
+    {
+        $row = $this->store->db()->fetchAssociative(
+            "SELECT payload, imported_at FROM exercise_catalog WHERE source = ?",
+            [self::SOURCES["Gym App original"]],
+        );
+        if (!$row) {
+            $this->metadata = [
+                "status" => "degraded",
+                "source" => "Catalogue local de secours",
+                "remote_count" => 0,
+                "cached" => false,
+                "stale" => false,
+                "errors" => ["Le catalogue PostgreSQL n’a pas encore été importé."],
+            ];
+            return $this->local();
+        }
+        $items = json_decode($row["payload"], true, 64, JSON_THROW_ON_ERROR);
+        $this->metadata = [
+            "status" => "ok",
+            "source" => "Gym App original",
+            "source_url" => self::SOURCES["Gym App original"],
+            "remote_count" => count($items),
+            "imported_at" => $row["imported_at"],
+            "storage" => "postgresql",
+            "cached" => false,
+            "stale" => false,
+            "errors" => [],
+        ];
+        return array_map(
+            fn (array $item) => $this->normalize($item, "Gym App original", self::SOURCES["Gym App original"]),
+            $items,
+        );
+    }
+
     public function all(): array
+    {
+        $data = $this->store->isPostgreSql() ? $this->storedExercises() : $this->legacyExercises();
+        $uid = $this->store->user()["id"] ?? null;
+        if ($uid) {
+            foreach ($this->store->db()->fetchAllAssociative(
+                "SELECT * FROM custom_exercises WHERE user_id=?", [$uid],
+            ) as $row) {
+                $data[] = $this->custom($row);
+            }
+        }
+        usort($data, fn ($a, $b) => strcasecmp($a["name"], $b["name"]));
+        return $data;
+    }
+
+    private function legacyExercises(): array
     {
         $data = [];
         $errors = [];
@@ -224,18 +275,6 @@ class ExerciseCatalog
             }
             unset($exercise);
         }
-        $uid = $this->store->user()["id"] ?? null;
-        if ($uid) {
-            foreach (
-                $this->store
-                    ->db()
-                    ->fetchAllAssociative("SELECT * FROM custom_exercises WHERE user_id=?", [$uid])
-                as $row
-            ) {
-                $data[] = $this->custom($row);
-            }
-        }
-        usort($data, fn($a, $b) => strcasecmp($a["name"], $b["name"]));
         return $data;
     }
 
@@ -250,21 +289,23 @@ class ExerciseCatalog
     /** A compact cached catalogue for the assistant; no user data and no remote fetch. */
     public function cachedSuggestions(int $limit = 40): array
     {
-        $items = [];
-        foreach (self::SOURCES as $name => $url) {
-            $cached = $this->cache->read($url . "?", 900);
-            $data = $cached["data"] ?? [];
-            $list = $data["data"] ?? ($data["exercises"] ?? $data);
-            if (!is_array($list)) {
-                continue;
-            }
-            foreach ($list as $row) {
-                if (is_array($row) && isset($row["name"])) {
-                    $items[] = $this->normalize($row, $name, $url);
+        $items = $this->store->isPostgreSql() ? $this->storedExercises() : [];
+        if (!$this->store->isPostgreSql()) {
+            foreach (self::SOURCES as $name => $url) {
+                $cached = $this->cache->read($url . "?", 900);
+                $data = $cached["data"] ?? [];
+                $list = $data["data"] ?? ($data["exercises"] ?? $data);
+                if (!is_array($list)) {
+                    continue;
                 }
-            }
-            if ($items) {
-                break;
+                foreach ($list as $row) {
+                    if (is_array($row) && isset($row["name"])) {
+                        $items[] = $this->normalize($row, $name, $url);
+                    }
+                }
+                if ($items) {
+                    break;
+                }
             }
         }
         $items = $items ?: $this->local();

@@ -1472,8 +1472,10 @@
                         status.textContent =
                             "Source : " +
                             meta.source +
-                            (meta.stale
-                                ? " · dernière version enregistrée (source indisponible)"
+                            (meta.storage === "postgresql"
+                                ? " · fiches enregistrées en base"
+                                : meta.stale
+                                  ? " · dernière version enregistrée (source indisponible)"
                                 : meta.status === "degraded"
                                   ? " · mode de secours local"
                                   : meta.cached

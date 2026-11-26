@@ -44,6 +44,18 @@ final class MigrateCommand extends Command
 
             $db = $this->store->db();
             $this->apply($db, self::SCHEMA, fn () => $this->store->init(), $io);
+            $this->apply(
+                $db,
+                'Version20261126000100',
+                fn () => $db->executeStatement(
+                    'CREATE TABLE IF NOT EXISTS exercise_catalog (
+                        source TEXT PRIMARY KEY,
+                        payload JSONB NOT NULL,
+                        imported_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    )',
+                ),
+                $io,
+            );
             $file = $input->getOption('source');
             if ($file !== null) {
                 $this->apply($db, self::IMPORT, fn () => $this->import($db, $file), $io);
