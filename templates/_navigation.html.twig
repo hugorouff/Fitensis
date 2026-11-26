@@ -16,12 +16,6 @@
         active: path == '/recipes'
     },
     {
-        url: '/calendrier',
-        label: 'Mes séances',
-        emphasized: true,
-        active: path == '/calendrier' or path starts with '/entrainements'
-    },
-    {
         url: '/performances',
         label: 'Performances',
         active: path == '/performances' or path starts with '/performances/excel'
@@ -50,7 +44,7 @@
         <nav class="site-nav" aria-label="Navigation principale">
             {% for link in links %}
                 <a href="{{ link.url }}"
-                   class="{{ link.emphasized|default(false) ? 'site-session-link' : '' }}{{ link.active ? ' is-current' : '' }}"
+                   class="{{ link.active ? 'is-current' : '' }}"
                    {% if link.active %}aria-current="page"{% endif %}>{{ link.label }}</a>
             {% endfor %}
             <form method="post" action="{{ path('logout') }}" class="site-logout">

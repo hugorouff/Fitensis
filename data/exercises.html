@@ -573,7 +573,7 @@
         <link rel="apple-touch-icon" href="/assets/fitensis-192.png">
         <script src="/assets/install.js" defer></script>
         <link rel="stylesheet" href="/assets/workspace.css?v=4" />
-        <link rel="stylesheet" href="/assets/visual-session.css?v=2" />
+        <link rel="stylesheet" href="/assets/visual-session.css?v=3" />
     </head>
 
     <body class="exercise-page fitensis-workspace">
@@ -581,6 +581,11 @@
         <div class="container flash-container">__FLASHES__</div>
 
         <main class="container">
+            <div class="visual-session-toolbar">
+                <a class="visual-session-link" href="/calendrier">Mes séances</a>
+                <a class="visual-session-link" href="/exercises?seance=1" id="visual-session-create">Créer une séance avec la carte</a>
+            </div>
+            <a class="visual-session-link visual-session-shortcut" id="visual-session-shortcut" href="#visual-session" hidden>Ma séance · 0 exercice</a>
             <section class="card" id="visual-session" hidden>
                 <h2>Créer ma séance</h2>
                 <p>Sélectionne un muscle sur la carte, puis ajoute les exercices que tu veux réaliser.</p>
@@ -1280,14 +1285,15 @@
             const visualStatus = document.getElementById("visual-session-status");
             const visualMode = new URLSearchParams(location.search).get("seance") === "1";
             let visualIndex = 0;
-            if (visualMode) {
-                const link = document.createElement("a");
-                link.className = "btn btn-secondary visual-session-shortcut";
-                link.href = "#visual-session";
-                link.textContent = "Voir ma séance";
-                document.querySelector("main").append(link);
+            const shortcut = document.getElementById("visual-session-shortcut");
+            function updateSessionShortcut() {
+                const count = visualItems.children.length;
+                shortcut.textContent = `Ma séance · ${count} exercice${count > 1 ? "s" : ""}`;
             }
+
             if (visualMode) {
+                shortcut.hidden = false;
+                document.getElementById("visual-session-create").hidden = true;
                 document.getElementById("visual-session").hidden = false;
                 const today = new Date();
                 today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
@@ -1351,10 +1357,12 @@
                 remove.textContent = "Retirer";
                 remove.addEventListener("click", () => {
                     row.remove();
+                    updateSessionShortcut();
                     visualStatus.textContent = `${name} retiré.`;
                 });
                 row.append(remove);
                 visualItems.append(row);
+                updateSessionShortcut();
                 visualIndex++;
                 selectSessionMuscle(currentMuscle || exercise.primaryGroup);
                 visualStatus.textContent = `${name} ajouté à la séance.`;

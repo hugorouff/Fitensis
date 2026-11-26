@@ -8,6 +8,8 @@
     const status = timer.querySelector('[data-timer-status]');
     const start = timer.querySelector('[data-timer-start]');
     const pause = timer.querySelector('[data-timer-pause]');
+    const sound = timer.querySelector('[data-timer-sound]');
+    let audioContext;
     let end = 0;
     let remaining = Number(duration.value) * 1000;
     let paused = false;
@@ -28,12 +30,38 @@
         } catch {}
     }
 
+    function prepareSound() {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext || !sound.checked) return;
+        try {
+            audioContext ??= new AudioContext();
+            audioContext.resume().catch(() => {});
+        } catch {
+            // L'indication visuelle reste disponible.
+        }
+    }
+
+    function soundFinished() {
+        if (!sound.checked || audioContext?.state !== 'running') return;
+        const tone = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const now = audioContext.currentTime;
+        tone.frequency.setValueAtTime(880, now);
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        tone.connect(gain);
+        gain.connect(audioContext.destination);
+        tone.start(now);
+        tone.stop(now + 0.36);
+    }
+
     function render() {
         if (end) {
             remaining = Math.max(0, end - Date.now());
             if (remaining === 0) {
                 end = 0;
                 status.textContent = 'Repos terminé.';
+                soundFinished();
                 save();
             }
         }
@@ -47,6 +75,7 @@
 
     start.addEventListener('click', () => {
         if (!duration.reportValidity()) return;
+        prepareSound();
         if (!paused) remaining = Number(duration.value) * 1000;
         end = Date.now() + remaining;
         paused = false;
@@ -78,6 +107,7 @@
     duration.addEventListener('change', () => {
         if (duration.checkValidity()) reset();
     });
+    sound.addEventListener('change', prepareSound);
     render();
     setInterval(render, 250);
 })();

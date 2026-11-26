@@ -79,3 +79,37 @@
     background: #005769;
     color: #fff;
 }
+
+.visual-session-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.visual-session-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: #007083;
+    color: #fff;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.visual-session-link[hidden] { display: none; }
+
+.visual-session-link:hover,
+.visual-session-link:focus-visible {
+    background: #005769;
+    color: #fff;
+}
+
+.visual-session-shortcut {
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 55;
+    border: 2px solid #fff;
+    background: #007083;
+}
