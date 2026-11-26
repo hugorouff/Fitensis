@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#00778B" />
+    <title>{% block title %}Fitensis{% endblock %}</title>
+    <link rel="icon" href="/assets/datensis-light.png" />
+    <link rel="stylesheet" href="/assets/auth.css?v=1" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/assets/fitensis-192.png" />
+    <script src="/assets/install.js" defer></script>
+</head>
+<body>
+    <header class="auth-header">
+        <a class="auth-logo" href="{{ path('login') }}">
+            <img src="/assets/datensis-light.png" alt="" width="42" height="42" />
+            Fitensis
+        </a>
+        <a href="{{ path('fitensis_help') }}">Aide</a>
+    </header>
+    <main class="auth-main">
+        {% block body %}{% endblock %}
+    </main>
+</body>
+</html>

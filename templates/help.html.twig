@@ -1,0 +1,31 @@
+{% extends signed_in ? 'base.html.twig' : '_auth_layout.html.twig' %}
+{% block title %}Aide · Fitensis{% endblock %}
+{% block body %}
+    <section class="panel auth-card auth-card-wide" aria-labelledby="help-title">
+        <h1 id="help-title">Aide Fitensis</h1>
+        <p>Préparer une séance, utiliser le minuteur et retrouver ta progression.</p>
+        <details open>
+            <summary>Créer une séance avec la carte des muscles</summary>
+            <p>Ouvre <strong>Mes séances → Créer avec la carte des muscles</strong>. Choisis les muscles à travailler, indique la durée prévue, puis ajoute les exercices. Règle les séries, les répétitions et la charge avant d’enregistrer.</p>
+            {% if signed_in %}<p><a href="/exercises?seance=1">Créer une séance</a></p>{% endif %}
+        </details>
+        <details>
+            <summary>Utiliser le minuteur de repos</summary>
+            <p>Ouvre une séance enregistrée, puis sélectionne <strong>Minuteur de repos</strong>. Renseigne le nombre de secondes et clique sur <strong>Démarrer</strong>. Tu peux mettre le compte à rebours en pause, le reprendre ou le réinitialiser.</p>
+        </details>
+        <details>
+            <summary>Trouver une idée de séance ou de recette</summary>
+            <p>Dans <strong>Assistant</strong>, choisis tes muscles, le matériel disponible, ton objectif et la durée. Pour les recettes, indique les ingrédients dont tu disposes et ceux que tu souhaites écarter.</p>
+            {% if signed_in %}<p><a href="{{ path('assistant') }}">Ouvrir l’assistant</a></p>{% endif %}
+        </details>
+        <details>
+            <summary>Suivre mes performances</summary>
+            <p>Dans ta séance, note les séries, répétitions et charges réellement effectuées. La rubrique <strong>Performances</strong> te permet de retrouver et comparer ces résultats.</p>
+        </details>
+        <details>
+            <summary>Gérer mon compte et me déconnecter</summary>
+            <p>Dans <strong>Mon compte</strong>, tu peux modifier tes coordonnées et ton mot de passe. Pour fermer ta session sur cet appareil, sélectionne <strong>Se déconnecter</strong> dans le menu.</p>
+        </details>
+        {% if not signed_in %}<p><a href="{{ path('login') }}">Retour à la connexion</a></p>{% endif %}
+    </section>
+{% endblock %}

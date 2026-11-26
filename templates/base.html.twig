@@ -16,7 +16,7 @@
         <link rel="manifest" href="/manifest.json">
         <link rel="apple-touch-icon" href="/assets/fitensis-192.png">
         <script src="/assets/install.js" defer></script>
-        <link rel="stylesheet" href="/assets/workspace.css?v=2" />
+        <link rel="stylesheet" href="/assets/workspace.css?v=3" />
     </head>
     <body class="fitensis-workspace">
         {% include '_navigation.html.twig' %}
@@ -37,13 +37,6 @@
                 {% if gym.user.role == 'admin' %}
                     <a href="/espace/memberships">Abonnements</a><a href="/espace/payments">Encaissements</a>
                 {% endif %}
-                <form method="post" action="/deconnexion">
-                    <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" /><button
-                        class="link"
-                    >
-                        Se déconnecter
-                    </button>
-                </form>
             </div>
             <p>
                 Fitensis · Entraînement, nutrition & progression

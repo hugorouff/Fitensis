@@ -29,7 +29,7 @@ class AccessSubscriber implements EventSubscriberInterface
         if ($path === '/health') {
             return;
         }
-        if (!in_array($path, ['/connexion', '/inscription'], true) && !$this->store->user()) {
+        if (!in_array($path, ['/connexion', '/inscription', '/aide'], true) && !$this->store->user()) {
             $e->setResponse(
                 str_starts_with($path, '/api/')
                     ? new JsonResponse(['detail' => 'Connexion requise.'], 401)

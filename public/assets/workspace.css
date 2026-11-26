@@ -211,3 +211,37 @@ body.login {
     color: var(--workspace-ink);
     border-color: var(--workspace-line);
 }
+
+.fitensis-workspace .site-logout { flex-shrink: 0; margin-top: 12px; }
+
+.fitensis-workspace .site-logout button {
+    appearance: none;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid #ffffff70;
+    border-radius: 10px;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.fitensis-workspace .site-logout button:hover,
+.fitensis-workspace .site-logout button:focus-visible { background: #ffffff24; }
+
+.fitensis-workspace .auth-card-wide details {
+    padding: 12px 0;
+    border-top: 1px solid var(--workspace-line);
+}
+
+.fitensis-workspace .auth-card-wide summary {
+    font-weight: 700;
+    cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .fitensis-workspace .site-logout { margin-top: 0; }
+}

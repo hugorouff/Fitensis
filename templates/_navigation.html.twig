@@ -34,6 +34,11 @@
         url: '/assistant',
         label: 'Assistant',
         active: path == '/assistant'
+    },
+    {
+        url: '/aide',
+        label: 'Aide',
+        active: path == '/aide'
     }
 ] %}
 <header class="site-header">
@@ -51,6 +56,10 @@
                     <a href="{{ link.url }}">{{ link.label }}</a>
                 {% endif %}
             {% endfor %}
+            <form method="post" action="{{ path('logout') }}" class="site-logout">
+                <input type="hidden" name="_token" value="{{ csrf_token('gym') }}" />
+                <button type="submit">Se déconnecter</button>
+            </form>
         </nav>
     </div>
 </header>

@@ -16,7 +16,9 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('home');
         }
         $error = null;
+        $email = '';
         if ($r->isMethod('POST')) {
+            $email = trim($r->request->getString('email'));
             $db = $store->db();
             $db->executeStatement(
                 'CREATE TABLE IF NOT EXISTS login_attempts(key TEXT PRIMARY KEY,failures INTEGER NOT NULL,blocked_until INTEGER NOT NULL)',
@@ -31,7 +33,7 @@ class AuthController extends AbstractController
                 $error = 'Trop de tentatives. Réessaie dans 15 minutes.';
             } else {
                 $u = $db->fetchAssociative('SELECT * FROM users WHERE LOWER(email)=LOWER(?) AND active=1', [
-                    trim($r->request->get('email', '')),
+                    $email,
                 ]);
                 if ($u && password_verify($r->request->get('password', ''), $u['password'])) {
                     $db->delete('login_attempts', ['key' => $key]);
@@ -50,7 +52,7 @@ class AuthController extends AbstractController
                 $error = 'Adresse mail ou mot de passe incorrect.';
             }
         }
-        return $this->render('login.html.twig', ['error' => $error]);
+        return $this->render('login.html.twig', compact('error', 'email'));
     }
 
     #[Route('/inscription', name: 'register', methods: ['GET', 'POST'])]
@@ -101,7 +103,14 @@ class AuthController extends AbstractController
     public function logout(Request $r): Response
     {
         $r->getSession()->invalidate();
-        return $this->redirect('/connexion');
+        $this->addFlash('signed_out', 'Tu es déconnecté de Fitensis.');
+        return $this->redirectToRoute('login');
+    }
+
+    #[Route('/aide', name: 'fitensis_help', methods: ['GET'])]
+    public function help(GymStore $store): Response
+    {
+        return $this->render('help.html.twig', ['signed_in' => (bool) $store->user()]);
     }
 
     #[Route('/health', methods: ['GET'])]

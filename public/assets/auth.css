@@ -1,0 +1,92 @@
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f3f9f7;
+    color: #12313a;
+    font: 16px/1.55 system-ui, sans-serif;
+}
+
+.auth-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px clamp(16px, 5vw, 64px);
+    background: #00778b;
+    color: #fff;
+}
+
+.auth-header a { color: inherit; }
+.auth-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 22px;
+    font-weight: 750;
+    text-decoration: none;
+}
+.auth-logo img {
+    padding: 4px;
+    border-radius: 10px;
+    background: #fff;
+    object-fit: contain;
+}
+
+.auth-main {
+    display: grid;
+    justify-items: center;
+    padding: clamp(28px, 10vh, 100px) 16px 32px;
+}
+
+.auth-card {
+    width: min(100%, 460px);
+    padding: clamp(22px, 6vw, 40px);
+    background: #fff;
+    border: 1px solid #c8e3db;
+    border-radius: 18px;
+    box-shadow: 0 14px 44px #12313a12;
+}
+.auth-card-wide { width: min(100%, 720px); }
+.auth-card h1 { margin: 0; font-size: clamp(26px, 7vw, 36px); }
+.auth-card p { color: #36545e; }
+.auth-card a { color: #006678; }
+.auth-card form,
+.auth-card label { display: grid; gap: 7px; }
+.auth-card form { gap: 16px; margin-block: 24px; }
+.auth-card label { font-weight: 650; }
+.auth-card input {
+    width: 100%;
+    min-height: 46px;
+    padding: 8px 12px;
+    border: 1px solid #a7c6bc;
+    border-radius: 9px;
+    color: #12313a;
+    background: #fff;
+    font: inherit;
+}
+.auth-submit {
+    min-height: 46px;
+    border: 0;
+    border-radius: 9px;
+    color: #fff;
+    background: #007083;
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+}
+.auth-submit:hover { background: #005769; }
+.auth-register { text-align: center; }
+.auth-card .auth-notice {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #e3f3ec;
+    color: #215346;
+}
+.auth-card .auth-error { background: #fff0ec; color: #892e20; }
+.auth-card details { padding: 12px 0; border-top: 1px solid #c8e3db; }
+.auth-card summary { font-weight: 700; cursor: pointer; }
+
+:focus-visible { outline: 3px solid #00778b; outline-offset: 3px; }
+.auth-header :focus-visible { outline-color: #fff; }
