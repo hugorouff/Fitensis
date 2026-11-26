@@ -25,7 +25,6 @@ final class ImportExerciseCatalogCommand extends Command
 
     protected function configure(): void
     {
-        $this->addOption('alternatif', null, InputOption::VALUE_NONE, 'Active Free Exercise DB à la place du catalogue original.');
         $this->addOption('fichier', null, InputOption::VALUE_REQUIRED, 'Importe un catalogue JSON local.');
         $this->addOption('depuis-cache', null, InputOption::VALUE_NONE, 'Reprend une seule fois le catalogue précédemment téléchargé.');
     }
@@ -38,8 +37,7 @@ final class ImportExerciseCatalogCommand extends Command
             return Command::FAILURE;
         }
 
-        $alternative = (bool) $input->getOption('alternatif');
-        $url = ExerciseCatalog::SOURCES[$alternative ? 'Free Exercise DB' : 'Gym App original'];
+        $url = ExerciseCatalog::SOURCES['Gym App original'];
         $db = $this->store->db();
         $fromCache = (bool) $input->getOption('depuis-cache');
         $file = $input->getOption('fichier');
@@ -70,9 +68,6 @@ final class ImportExerciseCatalogCommand extends Command
                 }
             }
 
-            if (!$alternative) {
-                $items = $this->withFallbackImages($items, $fromCache || $file !== null);
-            }
             $changed = $db->executeStatement(
                 'INSERT INTO exercise_catalog (source, payload) VALUES (?, CAST(? AS jsonb))
                  ON CONFLICT (source) ' . ($fromCache
@@ -108,36 +103,4 @@ final class ImportExerciseCatalogCommand extends Command
         $items = is_array($payload) ? ($payload['data'] ?? $payload['exercises'] ?? $payload) : null;
         return is_array($items) && array_is_list($items) ? $items : [];
     }
-
-    private function withFallbackImages(array $items, bool $fromCache): array
-    {
-        try {
-            $reference = $this->fetchCatalog(ExerciseCatalog::SOURCES['Free Exercise DB'], $fromCache);
-        } catch (\Symfony\Contracts\HttpClient\Exception\ExceptionInterface) {
-            return $items;
-        }
-
-        $images = [];
-        foreach ($reference as $row) {
-            if (!is_array($row) || !is_string($row['name'] ?? null) || !is_string($row['images'][0] ?? null)) {
-                continue;
-            }
-            $images[RemoteCache::normalize($row['name'])] =
-                'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/' .
-                implode('/', array_map('rawurlencode', explode('/', $row['images'][0])));
-        }
-
-        foreach ($items as &$item) {
-            $aliases = is_array($item['aliases'] ?? null) ? $item['aliases'] : [];
-            foreach ([$item['name'], ...$aliases] as $name) {
-                if (is_string($name) && isset($images[RemoteCache::normalize($name)])) {
-                    $item['fallbackImageUrl'] = $images[RemoteCache::normalize($name)];
-                    break;
-                }
-            }
-        }
-        unset($item);
-        return $items;
-    }
-
 }

@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Service\{ExerciseCatalog, GymStore};
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\{InputArgument, InputInterface};
+use Symfony\Component\Console\Input\{InputArgument, InputInterface, InputOption};
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -22,6 +22,7 @@ final class ImportExerciseMediaCommand extends Command
     protected function configure(): void
     {
         $this->addArgument('dossier', InputArgument::REQUIRED, 'Dossier contenant videos et thumbnails.');
+        $this->addOption('remplacer', null, InputOption::VALUE_NONE, 'Remplace les médias déjà importés pour les fichiers fournis.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -55,11 +56,12 @@ final class ImportExerciseMediaCommand extends Command
             }
         }
 
+        $replace = (bool) $input->getOption('remplacer');
         $stored = array_fill_keys($db->fetchFirstColumn('SELECT id FROM exercise_media'), true);
         $detector = new \finfo(FILEINFO_MIME_TYPE);
         $imported = $existing = $missing = $rejected = 0;
         foreach ($files as $id => [$relative, $mime]) {
-            if (isset($stored[$id])) {
+            if (!$replace && isset($stored[$id])) {
                 $existing++;
                 continue;
             }
@@ -83,7 +85,8 @@ final class ImportExerciseMediaCommand extends Command
             }
 
             $imported += $db->executeStatement(
-                "INSERT INTO exercise_media (id, mime, content) VALUES (?, ?, decode(?, 'base64')) ON CONFLICT (id) DO NOTHING",
+                "INSERT INTO exercise_media (id, mime, content) VALUES (?, ?, decode(?, 'base64')) ON CONFLICT (id) " .
+                ($replace ? "DO UPDATE SET mime = EXCLUDED.mime, content = EXCLUDED.content" : "DO NOTHING"),
                 [$id, $mime, base64_encode($data)],
             );
         }
