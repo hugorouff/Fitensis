@@ -25,6 +25,7 @@ final class ImportExerciseCatalogCommand extends Command
 
     protected function configure(): void
     {
+        $this->addOption('alternatif', null, InputOption::VALUE_NONE, 'Active Free Exercise DB à la place du catalogue original.');
         $this->addOption('fichier', null, InputOption::VALUE_REQUIRED, 'Importe un catalogue JSON local.');
         $this->addOption('depuis-cache', null, InputOption::VALUE_NONE, 'Reprend une seule fois le catalogue précédemment téléchargé.');
     }
@@ -37,7 +38,8 @@ final class ImportExerciseCatalogCommand extends Command
             return Command::FAILURE;
         }
 
-        $url = ExerciseCatalog::SOURCES['Gym App original'];
+        $alternative = (bool) $input->getOption('alternatif');
+        $url = ExerciseCatalog::SOURCES[$alternative ? 'Free Exercise DB' : 'Gym App original'];
         $db = $this->store->db();
         $fromCache = (bool) $input->getOption('depuis-cache');
         $file = $input->getOption('fichier');
@@ -68,7 +70,9 @@ final class ImportExerciseCatalogCommand extends Command
                 }
             }
 
-            $items = $this->withFallbackImages($items, $fromCache || $file !== null);
+            if (!$alternative) {
+                $items = $this->withFallbackImages($items, $fromCache || $file !== null);
+            }
             $changed = $db->executeStatement(
                 'INSERT INTO exercise_catalog (source, payload) VALUES (?, CAST(? AS jsonb))
                  ON CONFLICT (source) ' . ($fromCache

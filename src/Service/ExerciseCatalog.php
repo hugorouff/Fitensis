@@ -145,8 +145,8 @@ class ExerciseCatalog
     private function storedExercises(): array
     {
         $row = $this->store->db()->fetchAssociative(
-            "SELECT payload, imported_at FROM exercise_catalog WHERE source = ?",
-            [self::SOURCES["Gym App original"]],
+            "SELECT source, payload, imported_at FROM exercise_catalog WHERE source IN (?, ?) ORDER BY imported_at DESC, source LIMIT 1",
+            [self::SOURCES["Gym App original"], self::SOURCES["Free Exercise DB"]],
         );
         if (!$row) {
             $this->metadata = [
@@ -160,10 +160,12 @@ class ExerciseCatalog
             return $this->local();
         }
         $items = json_decode($row["payload"], true, 64, JSON_THROW_ON_ERROR);
+        $original = $row["source"] === self::SOURCES["Gym App original"];
+        $name = $original ? "Gym App original" : "Free Exercise DB";
         $this->metadata = [
             "status" => "ok",
-            "source" => "Gym App original",
-            "source_url" => self::SOURCES["Gym App original"],
+            "source" => $name,
+            "source_url" => $row["source"],
             "remote_count" => count($items),
             "imported_at" => $row["imported_at"],
             "storage" => "postgresql",
@@ -171,6 +173,9 @@ class ExerciseCatalog
             "stale" => false,
             "errors" => [],
         ];
+        if (!$original) {
+            return array_map(fn (array $item) => $this->normalize($item, $name, $row["source"]), $items);
+        }
         $media = array_fill_keys($this->store->db()->fetchFirstColumn("SELECT id FROM exercise_media"), true);
         foreach ($items as &$item) {
             $item = $this->normalize($item, "Gym App original", self::SOURCES["Gym App original"]);
